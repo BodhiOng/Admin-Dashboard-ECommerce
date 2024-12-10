@@ -8,7 +8,7 @@ export default function Sidebar() {
   const activeTab = pathname.split('/')[1] || 'dashboard';
 
   return (
-    <aside className="w-64 bg-gray-800 text-white p-5 h-screen flex flex-col justify-center">
+    <aside className="h-screen w-64 bg-gray-800 text-white p-5 flex flex-col">
       <div className="flex flex-col items-center mb-8">
         <img
           src="https://eu.ui-avatars.com/api/?name=Bodhi+Ong&size=250"
@@ -19,19 +19,63 @@ export default function Sidebar() {
         <span className="text-sm text-gray-300">Bodhidharma Ong</span>
       </div>
 
-      <nav className="flex flex-col gap-2 mb-8">
-        {["dashboard", "products", "orders", "analytics"].map((tab) => (
-          <Link
-            key={tab}
-            href={`/${tab}`}
-            className={`p-2 rounded-lg text-left ${
-              activeTab === tab ? "bg-gray-600" : "hover:bg-gray-700"
-            }`}
-          >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
-          </Link>
-        ))}
-      </nav>
+      <div className="flex-1 space-y-2">
+        <Link
+          href="/dashboard"
+          className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+            activeTab === 'dashboard'
+              ? 'bg-gray-900 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+          <span>Dashboard</span>
+        </Link>
+
+        <Link
+          href="/products"
+          className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+            activeTab === 'products'
+              ? 'bg-gray-900 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+          <span>Products</span>
+        </Link>
+
+        <Link
+          href="/orders"
+          className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+            activeTab === 'orders'
+              ? 'bg-gray-900 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+          </svg>
+          <span>Orders</span>
+        </Link>
+
+        <Link
+          href="/analytics"
+          className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+            activeTab === 'analytics'
+              ? 'bg-gray-900 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0h2a2 2 0 012 2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2a2 2 0 012-2zm0 0h2a2 2 0 012 2v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-2a2 2 0 012-2z" />
+          </svg>
+          <span>Analytics</span>
+        </Link>
+      </div>
 
       <div className="flex flex-col gap-3">
         <button className="p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2">
