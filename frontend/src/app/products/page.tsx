@@ -34,12 +34,13 @@ interface Product {
   id: number;
   name: string;
   price: number;
-  image: string;
+  image?: string;
   stock: number;
   category: string;
 }
 
-const ProductImage = ({ src }: { src: string }) => {
+const ProductImage = ({ src }: { src?: string }) => {
+  if (!src) return null;
   return (
     <img
       src={src}
