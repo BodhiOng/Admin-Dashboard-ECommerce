@@ -5,50 +5,35 @@ import { useState } from 'react';
 // Mock data
 const mockProducts = [
   {
-    id: 1,
+    id: 'P101',
     name: 'Wireless Mouse',
     price: 29.99,
-    image: 'https://placehold.co/100x100',
     stock: 45,
     category: 'Electronics'
   },
   {
-    id: 2,
+    id: 'P202',
     name: 'Mechanical Keyboard',
     price: 89.99,
-    image: 'https://placehold.co/100x100',
     stock: 30,
     category: 'Electronics'
   },
   {
-    id: 3,
+    id: 'P303',
     name: 'Gaming Headset',
     price: 59.99,
-    image: 'https://placehold.co/100x100',
     stock: 20,
     category: 'Electronics'
   },
 ];
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   price: number;
-  image?: string;
   stock: number;
   category: string;
 }
-
-const ProductImage = ({ src }: { src?: string }) => {
-  if (!src) return null;
-  return (
-    <img
-      src={src}
-      alt="Product"
-      className="w-12 h-12 rounded-lg object-cover"
-    />
-  );
-};
 
 const StatusPill = ({ stock }: { stock: number }) => {
   const status = stock > 20 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
@@ -128,19 +113,17 @@ export default function Products() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <ProductImage src={product.image} />
-                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
