@@ -1,83 +1,109 @@
 "use client";
 
 import { useState } from 'react';
+import OrderDetails from '@/components/OrderDetails';
 
 // Mock data
-const mockProducts = [
+const mockOrders = [
   {
-    id: 1,
-    name: 'Wireless Mouse',
-    price: 29.99,
-    image: 'https://placehold.co/100x100',
-    stock: 45,
-    category: 'Electronics'
+    _id: '1',
+    customer: { name: 'John Doe' },
+    orderNumber: 'ORD-001',
+    date: '2023-12-10',
+    status: 'PENDING',
+    total: 129.99,
   },
   {
-    id: 2,
-    name: 'Mechanical Keyboard',
-    price: 89.99,
-    image: 'https://placehold.co/100x100',
-    stock: 30,
-    category: 'Electronics'
+    _id: '2',
+    customer: { name: 'Jane Smith' },
+    orderNumber: 'ORD-002',
+    date: '2023-12-09',
+    status: 'COMPLETED',
+    total: 259.99,
   },
   {
-    id: 3,
-    name: 'Gaming Headset',
-    price: 59.99,
-    image: 'https://placehold.co/100x100',
-    stock: 20,
-    category: 'Electronics'
+    _id: '3',
+    customer: { name: 'Mike Johnson' },
+    orderNumber: 'ORD-003',
+    date: '2023-12-08',
+    status: 'PROCESSING',
+    total: 89.99,
+  },
+  {
+    _id: '4',
+    customer: { name: 'Sarah Williams' },
+    orderNumber: 'ORD-004',
+    date: '2023-12-08',
+    status: 'COMPLETED',
+    total: 199.99,
+  },
+  {
+    _id: '5',
+    customer: { name: 'Robert Brown' },
+    orderNumber: 'ORD-005',
+    date: '2023-12-07',
+    status: 'PENDING',
+    total: 149.99,
   },
 ];
 
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  image: string;
-  stock: number;
-  category: string;
+interface Order {
+  _id: string;
+  customer: {
+    name: string;
+  };
+  orderNumber: string;
+  date: string;
+  status: string;
+  total: number;
 }
 
-const ProductImage = ({ src }: { src: string }) => {
-  return (
-    <img
-      src={src}
-      alt="Product"
-      className="w-12 h-12 rounded-lg object-cover"
-    />
-  );
-};
-
-const StatusPill = ({ stock }: { stock: number }) => {
-  const status = stock > 20 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
-  const colorClass = stock > 20 
-    ? 'bg-green-100 text-green-800'
-    : stock > 0
-    ? 'bg-yellow-100 text-yellow-800'
-    : 'bg-red-100 text-red-800';
+const StatusPill = ({ status }: { status: string }) => {
+  const getStatusStyle = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'processing':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(status)}`}>
       {status}
     </span>
   );
 };
 
-export default function Products() {
-  const [products] = useState<Product[]>(mockProducts);
+export default function Orders() {
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  const filteredProducts = products.filter(product => 
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredOrders = orders.filter(order => 
+    order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    order.status.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  const totalPages = Math.ceil(filteredOrders.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + pageSize);
+  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
+
+  const handleSelectOrder = (orderId: string) => {
+    const foundOrder = orders.find((order) => order._id === orderId);
+    setSelectedOrder(foundOrder || null);
+  };
+
+  const handleCloseDetails = () => {
+    setSelectedOrder(null);
+  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -86,15 +112,15 @@ export default function Products() {
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
-    setCurrentPage(1); // Reset to first page when changing page size
+    setCurrentPage(1);
   };
 
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+        <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
         <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors">
-          Add Product
+          Create Order
         </button>
       </div>
 
@@ -102,7 +128,7 @@ export default function Products() {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
@@ -127,24 +153,26 @@ export default function Products() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
+              {paginatedOrders.map((order) => (
+                <tr 
+                  key={order._id} 
+                  className="hover:bg-gray-50 cursor-pointer"
+                  onClick={() => handleSelectOrder(order._id)}
+                >
+                  <td className="px-6 py-4 whitespace-nowrap">{order.orderNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{order.customer.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <ProductImage src={product.image} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusPill stock={product.stock} />
+                    <StatusPill status={order.status} />
                   </td>
                 </tr>
               ))}
@@ -209,6 +237,13 @@ export default function Products() {
           </div>
         </div>
       </div>
+
+      {selectedOrder && (
+        <OrderDetails
+          order={selectedOrder}
+          onClose={handleCloseDetails}
+        />
+      )}
     </div>
   );
 }

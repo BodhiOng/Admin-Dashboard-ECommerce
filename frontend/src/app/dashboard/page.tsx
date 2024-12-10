@@ -20,9 +20,9 @@ const recentOrders = [
 ];
 
 const lowStockItems = [
-  { id: 1, product: 'Wireless Mouse', stock: 5, threshold: 10 },
-  { id: 2, product: 'USB-C Cable', stock: 3, threshold: 15 },
-  { id: 3, product: 'Power Bank', stock: 7, threshold: 12 },
+  { id: 1, product: 'Wireless Mouse', stock: 5 },
+  { id: 2, product: 'USB-C Cable', stock: 3 },
+  { id: 3,  product: 'Power Bank', stock: 7 },
 ];
 
 export default function Dashboard() {
@@ -88,7 +88,7 @@ export default function Dashboard() {
                 <tr key={order.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.product}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.amount}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.amount}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                       ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 
