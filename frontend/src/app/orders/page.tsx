@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from 'react';
-import OrderDetails from '@/components/OrderDetails';
 
 // Mock data
 const mockOrders = [
@@ -81,7 +80,6 @@ const StatusPill = ({ status }: { status: string }) => {
 
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>(mockOrders);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
@@ -95,15 +93,6 @@ export default function Orders() {
   const totalPages = Math.ceil(filteredOrders.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
-
-  const handleSelectOrder = (orderId: string) => {
-    const foundOrder = orders.find((order) => order._id === orderId);
-    setSelectedOrder(foundOrder || null);
-  };
-
-  const handleCloseDetails = () => {
-    setSelectedOrder(null);
-  };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -153,7 +142,7 @@ export default function Orders() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order #</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
@@ -165,7 +154,6 @@ export default function Orders() {
                 <tr 
                   key={order._id} 
                   className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleSelectOrder(order._id)}
                 >
                   <td className="px-6 py-4 whitespace-nowrap">{order.orderNumber}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{order.customer.name}</td>
@@ -237,13 +225,6 @@ export default function Orders() {
           </div>
         </div>
       </div>
-
-      {selectedOrder && (
-        <OrderDetails
-          order={selectedOrder}
-          onClose={handleCloseDetails}
-        />
-      )}
     </div>
   );
 }

@@ -5,21 +5,21 @@ import { useState } from 'react';
 // Mock data
 const mockProducts = [
   {
-    id: 'P101',
+    id: 'P-101',
     name: 'Wireless Mouse',
     price: 29.99,
     stock: 45,
     category: 'Electronics'
   },
   {
-    id: 'P202',
+    id: 'P-202',
     name: 'Mechanical Keyboard',
     price: 89.99,
     stock: 30,
     category: 'Electronics'
   },
   {
-    id: 'P303',
+    id: 'P-303',
     name: 'Gaming Headset',
     price: 59.99,
     stock: 20,
