@@ -36,15 +36,31 @@ interface Product {
 }
 
 const StatusPill = ({ stock }: { stock: number }) => {
-  const status = stock > 20 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
-  const colorClass = stock > 20 
-    ? 'bg-green-100 text-green-800'
-    : stock > 0
-    ? 'bg-yellow-100 text-yellow-800'
-    : 'bg-red-100 text-red-800';
+  const getStatus = (stock: number) => {
+    if (stock > 20) {
+      return 'In Stock';
+    } else if (stock > 0) {
+      return 'Low Stock';
+    } else {
+      return 'Out of Stock';
+    }
+  };
+  const status = getStatus(stock);
+  const colorClass = () => {
+    switch (status) {
+      case 'In Stock':
+        return 'bg-green-100 text-green-800';
+      case 'Low Stock':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'Out of Stock':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass}`}>
+    <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass()}`}>
       {status}
     </span>
   );
