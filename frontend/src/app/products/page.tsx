@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, useMemo } from 'react';
-import { useTable, Column } from 'react-table';
+import { useState } from 'react';
 
 // Mock data
 const mockProducts = [
@@ -44,21 +43,21 @@ interface Product {
   category: string;
 }
 
-function ProductImage({ value }: { value: string }) {
+const ProductImage = ({ src }: { src: string }) => {
   return (
     <img
-      src={value}
+      src={src}
       alt="Product"
       className="w-12 h-12 rounded-lg object-cover"
     />
   );
-}
+};
 
-function StatusPill({ value }: { value: number }) {
-  const status = value > 20 ? 'In Stock' : value > 0 ? 'Low Stock' : 'Out of Stock';
-  const colorClass = value > 20 
+const StatusPill = ({ stock }: { stock: number }) => {
+  const status = stock > 20 ? 'In Stock' : stock > 0 ? 'Low Stock' : 'Out of Stock';
+  const colorClass = stock > 20 
     ? 'bg-green-100 text-green-800'
-    : value > 0
+    : stock > 0
     ? 'bg-yellow-100 text-yellow-800'
     : 'bg-red-100 text-red-800';
 
@@ -67,57 +66,10 @@ function StatusPill({ value }: { value: number }) {
       {status}
     </span>
   );
-}
+};
 
 export default function Products() {
-  const [data] = useState<Product[]>(mockProducts);
-  
-  const columns = useMemo<Column<Product>[]>(
-    () => [
-      {
-        Header: 'Product',
-        columns: [
-          {
-            Header: 'Image',
-            accessor: 'image',
-            Cell: ProductImage
-          },
-          {
-            Header: 'Name',
-            accessor: 'name',
-          },
-        ],
-      },
-      {
-        Header: 'Details',
-        columns: [
-          {
-            Header: 'Category',
-            accessor: 'category',
-          },
-          {
-            Header: 'Price',
-            accessor: 'price',
-            Cell: ({ value }: { value: number }) => `$${value.toFixed(2)}`
-          },
-          {
-            Header: 'Stock',
-            accessor: 'stock',
-            Cell: StatusPill
-          },
-        ],
-      },
-    ],
-    []
-  );
-
-  const {
-    getTableProps,
-    getTableBodyProps,
-    headerGroups,
-    rows,
-    prepareRow,
-  } = useTable({ columns, data });
+  const [products] = useState<Product[]>(mockProducts);
 
   return (
     <div className="p-6">
@@ -130,34 +82,30 @@ export default function Products() {
 
       <div className="bg-white rounded-lg shadow-sm">
         <div className="overflow-x-auto">
-          <table {...getTableProps()} className="w-full">
+          <table className="w-full">
             <thead>
-              {headerGroups.map(headerGroup => (
-                <tr {...headerGroup.getHeaderGroupProps()}>
-                  {headerGroup.headers.map(column => (
-                    <th
-                      {...column.getHeaderProps()}
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      {column.render('Header')}
-                    </th>
-                  ))}
+              <tr className="bg-gray-50">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Image</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {products.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <ProductImage src={product.image} />
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <StatusPill stock={product.stock} />
+                  </td>
                 </tr>
               ))}
-            </thead>
-            <tbody {...getTableBodyProps()} className="bg-white divide-y divide-gray-200">
-              {rows.map(row => {
-                prepareRow(row);
-                return (
-                  <tr {...row.getRowProps()} className="hover:bg-gray-50">
-                    {row.cells.map(cell => (
-                      <td {...cell.getCellProps()} className="px-6 py-4 whitespace-nowrap">
-                        {cell.render('Cell')}
-                      </td>
-                    ))}
-                  </tr>
-                );
-              })}
             </tbody>
           </table>
         </div>
