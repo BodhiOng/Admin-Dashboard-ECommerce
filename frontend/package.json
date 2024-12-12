@@ -13,11 +13,13 @@
     "@emotion/styled": "^11.14.0",
     "@mui/material": "^6.1.10",
     "@types/react-table": "^7.7.20",
+    "@types/uuid": "^10.0.0",
     "next": "15.0.3",
     "react": "19.0.0-rc-66855b96-20241106",
     "react-dom": "19.0.0-rc-66855b96-20241106",
     "react-table": "^7.8.0",
-    "recharts": "^2.14.1"
+    "recharts": "^2.14.1",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@types/node": "^20",

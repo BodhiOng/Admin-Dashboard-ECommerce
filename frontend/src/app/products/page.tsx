@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 
 // Mock data
 const mockProducts = [
@@ -88,7 +89,7 @@ export default function Products() {
   };
 
   const handleAddProduct = () => {
-    const newId = `P-${Math.floor(Math.random() * 1000)}`;
+    const newId = uuidv4();
     const productToAdd = {
       id: newId,
       ...newProduct
