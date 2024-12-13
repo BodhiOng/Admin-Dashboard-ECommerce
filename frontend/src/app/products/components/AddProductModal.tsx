@@ -27,6 +27,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   onAddProduct, 
   onClose 
 }) => {
+  // Check if all fields are filled
+  const isFormValid = 
+    newProduct.name.trim() !== '' && 
+    newProduct.price > 0 && 
+    newProduct.stock >= 0 && 
+    newProduct.category.trim() !== '';
+
   return (
     // Full-screen modal overlay with semi-transparent background
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -72,6 +79,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter price"
               step="0.01"
+              min="0"
               required  // Ensure the field is not left empty
             />
           </div>
@@ -86,6 +94,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               onChange={onInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter stock quantity"
+              min="0"
               required  // Ensure the field is not left empty
             />
           </div>
@@ -118,7 +127,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             {/* Add Product button */}
             <button
               onClick={onAddProduct}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              disabled={!isFormValid}
+              className={`px-4 py-2 rounded-md ${
+                isFormValid 
+                  ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               Add Product
             </button>
