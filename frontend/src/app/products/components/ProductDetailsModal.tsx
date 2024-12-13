@@ -46,13 +46,13 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
           {/* Product Name */}
           <div>
             <p className="text-sm font-medium text-gray-600">Name</p>
-            <p className="text-gray-900">{product.name}</p>
+            <p className="text-gray-900 break-words">{product.name}</p>
           </div>
 
           {/* Product Category */}
           <div>
             <p className="text-sm font-medium text-gray-600">Category</p>
-            <p className="text-gray-900">{product.category}</p>
+            <p className="text-gray-900 break-words">{product.category}</p>
           </div>
 
           {/* Product Price (formatted to two decimal places) */}
