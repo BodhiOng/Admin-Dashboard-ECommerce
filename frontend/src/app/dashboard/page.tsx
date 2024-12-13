@@ -2,7 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Mock data
+// Mock data for sales chart
 const salesData = [
   { month: 'Jan', sales: 4000 },
   { month: 'Feb', sales: 3000 },
@@ -12,6 +12,7 @@ const salesData = [
   { month: 'Jun', sales: 5500 },
 ];
 
+// Mock data for recent orders table
 const recentOrders = [
   { id: 1, customer: 'John Doe', product: 'Gaming Mouse', amount: 89.99, status: 'Completed' },
   { id: 2, customer: 'Jane Smith', product: 'Mechanical Keyboard', amount: 159.99, status: 'Pending' },
@@ -19,6 +20,7 @@ const recentOrders = [
   { id: 4, customer: 'Alice Brown', product: 'Headphones', amount: 129.99, status: 'Completed' },
 ];
 
+// Mock data for low stock alerts
 const lowStockItems = [
   { id: 1, product: 'Wireless Mouse', stock: 5 },
   { id: 2, product: 'USB-C Cable', stock: 3 },
@@ -29,7 +31,7 @@ export default function Dashboard() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6 text-gray-800">Dashboard</h1>
-      
+
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">

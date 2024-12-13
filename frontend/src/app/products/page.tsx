@@ -2,6 +2,8 @@
 
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
+import ProductDetailsModal from './components/ProductDetailsModal';
+import AddProductModal from './components/AddProductModal';
 
 // Mock data
 const mockProducts = [
@@ -28,6 +30,7 @@ const mockProducts = [
   },
 ];
 
+// Product interface defining the structure of a product
 interface Product {
   id: string;
   name: string;
@@ -36,7 +39,9 @@ interface Product {
   category: string;
 }
 
+// StatusPill component to display product stock status with color-coded indicators
 const StatusPill = ({ stock }: { stock: number }) => {
+  // Determine stock status based on current stock level
   const getStatus = (stock: number) => {
     if (stock > 20) {
       return 'In Stock';
@@ -47,6 +52,8 @@ const StatusPill = ({ stock }: { stock: number }) => {
     }
   };
   const status = getStatus(stock);
+
+  // Select color based on stock status
   const colorClass = () => {
     switch (status) {
       case 'In Stock':
@@ -68,33 +75,44 @@ const StatusPill = ({ stock }: { stock: number }) => {
 };
 
 export default function Products() {
+  // State management for products, search, pagination, and modals
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  
+  // Initial state for a new product with empty values
   const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
     name: '',
     price: 0,
     stock: 0,
     category: ''
   });
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+  // Handle input changes when adding a new product
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setNewProduct(prev => ({
       ...prev,
+      // Convert price and stock to numbers, keep other fields as strings
       [name]: name === 'price' || name === 'stock' ? Number(value) : value
     }));
   };
 
+  // Add a new product to the products list
   const handleAddProduct = () => {
+    // Generate a unique ID for the new product
     const newId = uuidv4();
     const productToAdd = {
       id: newId,
       ...newProduct
     };
+    // Update products state with the new product
     setProducts([...products, productToAdd]);
+    // Reset modal and new product state
     setIsModalOpen(false);
     setNewProduct({
       name: '',
@@ -104,19 +122,29 @@ export default function Products() {
     });
   };
 
+  // Open product details modal
+  const handleViewDetails = (product: Product) => {
+    setSelectedProduct(product);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Filter products based on search query (case-insensitive)
   const filteredProducts = products.filter(product => 
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Pagination calculations
   const totalPages = Math.ceil(filteredProducts.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedProducts = filteredProducts.slice(startIndex, startIndex + pageSize);
 
+  // Change current page
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
 
+  // Change number of products displayed per page
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
@@ -127,6 +155,7 @@ export default function Products() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Products</h1>
+        {/* Add Product button */}
         <button 
           onClick={() => setIsModalOpen(true)}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
@@ -135,6 +164,7 @@ export default function Products() {
         </button>
       </div>
 
+      {/* Search input field */}
       <div className="mb-6">
         <div className="relative">
           <input
@@ -164,15 +194,18 @@ export default function Products() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
+              {/* Table headers */}
               <tr className="bg-gray-50">
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
+              {/* Product rows */}
               {paginatedProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
@@ -182,6 +215,14 @@ export default function Products() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusPill stock={product.stock} />
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button 
+                      onClick={() => handleViewDetails(product)}
+                      className="text-blue-600 underline hover:text-blue-700 transition-colors"
+                    >
+                      View Details
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -190,6 +231,7 @@ export default function Products() {
 
         <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
           <div className="flex items-center">
+            {/* Page size selector */}
             <span className="mr-2 text-sm text-gray-700">Show</span>
             <select
               value={pageSize}
@@ -205,6 +247,7 @@ export default function Products() {
           </div>
 
           <div className="flex items-center space-x-2">
+            {/* Previous button */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
@@ -217,6 +260,7 @@ export default function Products() {
               Previous
             </button>
             
+            {/* Page numbers */}
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
               <button
                 key={page}
@@ -231,6 +275,7 @@ export default function Products() {
               </button>
             ))}
 
+            {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -248,80 +293,20 @@ export default function Products() {
 
       {/* Add Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Add New Product</h2>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                ×
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Product Name</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={newProduct.name}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Enter product name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Price</label>
-                <input
-                  type="number"
-                  name="price"
-                  value={newProduct.price}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Enter price"
-                  step="0.01"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Stock</label>
-                <input
-                  type="number"
-                  name="stock"
-                  value={newProduct.stock}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Enter stock quantity"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700">Category</label>
-                <input
-                  type="text"
-                  name="category"
-                  value={newProduct.category}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                  placeholder="Enter category"
-                />
-              </div>
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddProduct}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
-                >
-                  Add Product
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AddProductModal 
+          newProduct={newProduct}
+          onInputChange={handleInputChange}
+          onAddProduct={handleAddProduct}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
+
+      {/* Product Details Modal */}
+      {isDetailsModalOpen && selectedProduct && (
+        <ProductDetailsModal 
+          product={selectedProduct} 
+          onClose={() => setIsDetailsModalOpen(false)} 
+        />
       )}
     </div>
   );
