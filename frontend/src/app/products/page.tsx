@@ -8,21 +8,21 @@ import AddProductModal from './components/AddProductModal';
 // Mock data
 const mockProducts = [
   {
-    id: 'P-101',
+    id: '550e8400-e29b-41d4-a716-446655440001',
     name: 'Wireless Mouse',
     price: 29.99,
     stock: 45,
     category: 'Electronics'
   },
   {
-    id: 'P-202',
+    id: '550e8400-e29b-41d4-a716-446655440002',
     name: 'Mechanical Keyboard',
     price: 89.99,
     stock: 30,
     category: 'Electronics'
   },
   {
-    id: 'P-303',
+    id: '550e8400-e29b-41d4-a716-446655440003',
     name: 'Gaming Headset',
     price: 59.99,
     stock: 20,

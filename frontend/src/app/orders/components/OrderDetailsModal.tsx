@@ -52,7 +52,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
           </div>
           <div>
             <p className="text-sm font-medium text-gray-600">Status</p>
-            <p className="text-gray-900">{order.status}</p>
+            <p className="text-gray-900">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</p>
           </div>
         </div>
       </div>
