@@ -219,7 +219,7 @@ export default function Products() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button 
                       onClick={() => handleViewDetails(product)}
-                      className="text-blue-600 underline hover:text-blue-700 transition-colors"
+                      className="text-indigo-600 hover:text-indigo-900 hover:underline"
                     >
                       View Details
                     </button>
