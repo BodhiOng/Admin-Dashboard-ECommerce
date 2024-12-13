@@ -208,9 +208,9 @@ export default function Products() {
               {/* Product rows */}
               {paginatedProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.category}>{product.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusPill stock={product.stock} />
