@@ -130,6 +130,7 @@ export default function Products() {
 
   // Filter products based on search query (case-insensitive)
   const filteredProducts = products.filter(product => 
+    product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
