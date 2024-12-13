@@ -56,6 +56,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               onChange={onInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter product name"
+              maxLength={50}  // Limit product name to 50 characters
+              required  // Ensure the field is not left empty
             />
           </div>
 
@@ -70,6 +72,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter price"
               step="0.01"
+              required  // Ensure the field is not left empty
             />
           </div>
 
@@ -83,6 +86,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               onChange={onInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter stock quantity"
+              required  // Ensure the field is not left empty
             />
           </div>
 
@@ -96,6 +100,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
               onChange={onInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Enter category"
+              maxLength={30}  // Limit category to 30 characters
+              required  // Ensure the field is not left empty
             />
           </div>
 
