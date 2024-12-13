@@ -107,6 +107,24 @@ export default function Orders() {
     setCurrentPage(1);
   };
 
+  // Function to handle status change
+  const handleStatusChange = (orderId: string) => {
+    const currentOrder = orders.find(order => order._id === orderId);
+    if (!currentOrder) return;
+
+    const statusCycle = ['PENDING', 'PROCESSING', 'COMPLETED'];
+    const currentIndex = statusCycle.indexOf(currentOrder.status);
+    const nextIndex = (currentIndex + 1) % statusCycle.length;
+
+    const updatedOrders = orders.map(order => 
+      order._id === orderId 
+        ? { ...order, status: statusCycle[nextIndex] } 
+        : order
+    );
+
+    setOrders(updatedOrders);
+  };
+
   // Open order details modal
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
@@ -167,7 +185,12 @@ export default function Orders() {
                   <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
                   <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusPill status={order.status} />
+                    <div 
+                      onClick={() => handleStatusChange(order._id)}
+                      className="cursor-pointer inline-block"
+                    >
+                      <StatusPill status={order.status} />
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <button 
