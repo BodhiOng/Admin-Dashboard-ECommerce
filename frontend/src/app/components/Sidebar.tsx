@@ -1,14 +1,20 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
 import { usePathname } from "next/navigation";
 
+// Sidebar component for navigation in the admin dashboard
 export default function Sidebar() {
+  // Get the current pathname to determine active navigation item
   const pathname = usePathname();
+  
+  // Extracts the first path segment or defaults to 'dashboard'
+  // This helps highlight the current active navigation item
   const activeTab = pathname.split('/')[1] || 'dashboard';
 
   return (
+    // Full-height sidebar with dark background and flexible layout
     <aside className="h-screen w-64 bg-gray-800 text-white p-5 flex flex-col">
+      {/* User profile section */}
       <div className="flex flex-col items-center mb-8">
         <img
           src="https://eu.ui-avatars.com/api/?name=Bodhi+Ong&size=250"
@@ -19,7 +25,9 @@ export default function Sidebar() {
         <span className="text-sm text-gray-300">Bodhidharma Ong</span>
       </div>
 
+      {/* Navigation links */}
       <div className="flex-1 space-y-2">
+        {/* Dashboard navigation link */}
         <Link
           href="/dashboard"
           className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
@@ -34,6 +42,7 @@ export default function Sidebar() {
           <span>Dashboard</span>
         </Link>
 
+        {/* Products navigation link */}
         <Link
           href="/products"
           className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
@@ -48,6 +57,7 @@ export default function Sidebar() {
           <span>Products</span>
         </Link>
 
+        {/* Orders navigation link */}
         <Link
           href="/orders"
           className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
@@ -61,9 +71,26 @@ export default function Sidebar() {
           </svg>
           <span>Orders</span>
         </Link>
+
+        {/* Admins navigation link */}
+        <Link
+          href="/admins"
+          className={`flex items-center space-x-3 p-2 rounded-lg transition-colors ${
+            activeTab === 'admins'
+              ? 'bg-gray-900 text-white'
+              : 'text-gray-300 hover:bg-gray-700'
+          }`}
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+          <span>Admins</span>
+        </Link>
       </div>
 
+      {/* User actions section */}
       <div className="flex flex-col gap-3">
+        {/* Profile button */}
         <button className="p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -81,6 +108,8 @@ export default function Sidebar() {
           </svg>
           Profile
         </button>
+
+        {/* Logout button */}
         <button className="p-2 rounded-lg border border-red-400 text-red-400 hover:bg-red-500/10 transition-all duration-200 flex items-center justify-center gap-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
