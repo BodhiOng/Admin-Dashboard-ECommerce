@@ -1,13 +1,10 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useSidebar } from '../contexts/SidebarContext';
 
 // Sidebar component for navigation in the admin dashboard
 export default function Sidebar() {
-  // State to control sidebar minimization
-  const [isMinimized, setIsMinimized] = useState(false);
-
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
@@ -15,10 +12,7 @@ export default function Sidebar() {
   // This helps highlight the current active navigation item
   const activeTab = pathname.split('/')[1] || 'dashboard';
 
-  // Toggle sidebar minimization
-  const toggleSidebar = () => {
-    setIsMinimized(!isMinimized);
-  };
+  const { isMinimized, toggleSidebar } = useSidebar();
 
   return (
     // Full-height sidebar with dark background and flexible layout
