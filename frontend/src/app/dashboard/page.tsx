@@ -1,6 +1,7 @@
 "use client";
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Link from 'next/link';
 
 // Mock data for sales chart
 const salesData = [
@@ -12,12 +13,48 @@ const salesData = [
   { month: 'Jun', sales: 5500 },
 ];
 
-// Mock data for recent orders table
-const recentOrders = [
-  { id: 1, customer: 'John Doe', product: 'Gaming Mouse', amount: 89.99, status: 'Completed' },
-  { id: 2, customer: 'Jane Smith', product: 'Mechanical Keyboard', amount: 159.99, status: 'Pending' },
-  { id: 3, customer: 'Bob Johnson', product: 'Monitor', amount: 299.99, status: 'Processing' },
-  { id: 4, customer: 'Alice Brown', product: 'Headphones', amount: 129.99, status: 'Completed' },
+// Mock data for recent orders
+const mockOrders = [
+  {
+    _id: '1',
+    customer: { name: 'John Doe' },
+    orderNumber: 'ORD-001',
+    date: '2023-12-10',
+    status: 'PENDING',
+    total: 129.99,
+  },
+  {
+    _id: '2',
+    customer: { name: 'Jane Smith' },
+    orderNumber: 'ORD-002',
+    date: '2023-12-09',
+    status: 'COMPLETED',
+    total: 259.99,
+  },
+  {
+    _id: '3',
+    customer: { name: 'Mike Johnson' },
+    orderNumber: 'ORD-003',
+    date: '2023-12-08',
+    status: 'PROCESSING',
+    total: 89.99,
+  },
+  {
+    _id: '4',
+    customer: { name: 'Sarah Williams' },
+    orderNumber: 'ORD-004',
+    date: '2023-12-08',
+    status: 'COMPLETED',
+    total: 199.99,
+  },
+  {
+    _id: '5',
+    customer: { name: 'Robert Brown' },
+    orderNumber: 'ORD-005',
+    date: '2023-12-07',
+    status: 'PENDING',
+    total: 149.99,
+  },
 ];
 
 // Mock data for low stock alerts
@@ -73,28 +110,41 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Orders */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Recent Orders</h2>
+      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-gray-800">Recent Orders</h2>
+          <Link 
+            href="/orders" 
+            className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center"
+          >
+            View More
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead>
+            <thead className="bg-gray-50">
               <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Number</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {recentOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.product}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.amount}</td>
+              {mockOrders.slice(0, 5).map((order) => (
+                <tr key={order._id}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderNumber}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.date}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.total.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                      ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 
-                        order.status === 'Processing' ? 'bg-yellow-100 text-yellow-800' : 
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium 
+                      ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
+                        order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
                         'bg-blue-100 text-blue-800'}`}>
                       {order.status}
                     </span>
