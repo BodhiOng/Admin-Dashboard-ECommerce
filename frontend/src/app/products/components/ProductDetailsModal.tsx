@@ -7,6 +7,8 @@ interface Product {
   price: number;     // Price of the product
   stock: number;     // Current stock quantity
   category: string;  // Product category
+  description: string; // Product description
+  image: string;     // Product image URL or base64 string
 }
 
 // Props interface for the ProductDetailsModal component
@@ -23,7 +25,7 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
     // Full-screen modal overlay with semi-transparent background
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
       {/* Modal container with white background and rounded corners */}
-      <div className="bg-white rounded-lg shadow-xl p-6 w-96">
+      <div className="bg-white rounded-lg shadow-xl p-6 w-[32rem] max-h-[90vh] overflow-y-auto">
         {/* Modal header with title and close button */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold text-gray-800">Product Details</h2>
@@ -33,6 +35,15 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
           >
             ✕
           </button>
+        </div>
+
+        {/* Product Image */}
+        <div className="mb-6 w-full flex justify-center">
+          <img 
+            src={product.image} 
+            alt={`Image of ${product.name}`} 
+            className="max-w-full h-64 object-cover rounded-lg shadow-md"
+          />
         </div>
 
         {/* Detailed product information display */}
@@ -65,6 +76,12 @@ const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ product, onCl
           <div>
             <p className="text-sm font-medium text-gray-600">Stock</p>
             <p className="text-gray-900">{product.stock}</p>
+          </div>
+
+          {/* Product Description */}
+          <div>
+            <p className="text-sm font-medium text-gray-600">Description</p>
+            <p className="text-gray-900 break-words whitespace-pre-wrap">{product.description}</p>
           </div>
         </div>
       </div>

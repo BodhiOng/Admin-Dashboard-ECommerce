@@ -12,21 +12,27 @@ const mockProducts = [
     name: 'Wireless Mouse',
     price: 29.99,
     stock: 45,
-    category: 'Electronics'
+    category: 'Electronics',
+    description: 'A wireless mouse with long battery life',
+    image: 'https://example.com/mouse.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
     name: 'Mechanical Keyboard',
     price: 89.99,
     stock: 30,
-    category: 'Electronics'
+    category: 'Electronics',
+    description: 'A mechanical keyboard with customizable backlight',
+    image: 'https://example.com/keyboard.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440003',
     name: 'Gaming Headset',
     price: 59.99,
     stock: 20,
-    category: 'Electronics'
+    category: 'Electronics',
+    description: 'A gaming headset with 7.1 surround sound',
+    image: 'https://example.com/headset.jpg'
   },
 ];
 
@@ -37,6 +43,8 @@ interface Product {
   price: number;
   stock: number;
   category: string;
+  description: string;
+  image: string;
 }
 
 // StatusPill component to display product stock status with color-coded indicators
@@ -87,38 +95,66 @@ export default function Products() {
     name: '',
     price: 0,
     stock: 0,
-    category: ''
+    category: '',
+    description: '',
+    image: ''
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
   // Handle input changes when adding a new product
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { 
+    target: { 
+      name: string; 
+      value: string | number 
+    } 
+  }) => {
+    // Check if it's a standard event or a custom event
+    const { name, value } = 'target' in e ? e.target : e;
+
     setNewProduct(prev => ({
       ...prev,
       // Convert price and stock to numbers, keep other fields as strings
-      [name]: name === 'price' || name === 'stock' ? Number(value) : value
+      [name]: 
+        name === 'price' || name === 'stock' 
+          ? Number(value) 
+          : value
     }));
   };
 
-  // Add a new product to the products list
+  // Handler to add a new product
   const handleAddProduct = () => {
-    // Generate a unique ID for the new product
-    const newId = uuidv4();
+    // Validate that all required fields are filled
+    if (
+      newProduct.name.trim() === '' ||
+      newProduct.price <= 0 ||
+      newProduct.stock < 0 ||
+      newProduct.category.trim() === '' ||
+      newProduct.description.trim() === '' ||
+      newProduct.image === ''
+    ) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    // Create a new product with a unique ID
     const productToAdd = {
-      id: newId,
-      ...newProduct
+      ...newProduct,
+      id: uuidv4()
     };
-    // Update products state with the new product
-    setProducts([...products, productToAdd]);
-    // Reset modal and new product state
+
+    // Add the new product to the list
+    setProducts(prevProducts => [...prevProducts, productToAdd]);
+
+    // Close the modal and reset the new product state
     setIsModalOpen(false);
     setNewProduct({
       name: '',
       price: 0,
       stock: 0,
-      category: ''
+      category: '',
+      description: '',
+      image: ''
     });
   };
 
