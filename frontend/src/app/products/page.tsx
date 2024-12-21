@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
@@ -102,6 +102,58 @@ export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
+  // New state for sorting
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Product;
+    direction: 'ascending' | 'descending';
+  } | null>(null);
+
+  // Sorting function
+  const sortedProducts = useMemo(() => {
+    let sortableProducts = [...products];
+    
+    if (sortConfig !== null) {
+      sortableProducts.sort((a, b) => {
+        // Handle different types of sorting
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableProducts;
+  }, [products, sortConfig]);
+
+  // Sorting request handler
+  const requestSort = (key: keyof Product) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    // If already sorting by this key, toggle direction
+    if (sortConfig && sortConfig.key === key) {
+      direction = sortConfig.direction === 'ascending' 
+        ? 'descending' 
+        : 'ascending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  // Sorting icon component
+  const SortIcon = ({ isActive, direction }: { 
+    isActive: boolean; 
+    direction?: 'ascending' | 'descending' 
+  }) => {
+    if (!isActive) return <span className="ml-1 text-gray-300">↕</span>;
+    
+    return direction === 'ascending' 
+      ? <span className="ml-1 text-gray-600">▲</span> 
+      : <span className="ml-1 text-gray-600">▼</span>;
+  };
+
   // Handle input changes when adding a new product
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { 
     target: { 
@@ -165,7 +217,7 @@ export default function Products() {
   };
 
   // Filter products based on search query (case-insensitive)
-  const filteredProducts = products.filter(product => 
+  const filteredProducts = sortedProducts.filter(product => 
     product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -178,7 +230,9 @@ export default function Products() {
 
   // Change current page
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   // Change number of products displayed per page
@@ -233,21 +287,69 @@ export default function Products() {
             <thead>
               {/* Table headers */}
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th 
+                  onClick={() => requestSort('id')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  ID 
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'id'} 
+                    direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('name')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Name 
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'name'} 
+                    direction={sortConfig?.key === 'name' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('category')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Category
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'category'} 
+                    direction={sortConfig?.key === 'category' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('price')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Price
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'price'} 
+                    direction={sortConfig?.key === 'price' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('stock')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Status
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'stock'} 
+                    direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {/* Product rows */}
-              {paginatedProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.category}>{product.category}</td>
+              {filteredProducts
+                .slice((currentPage - 1) * pageSize, currentPage * pageSize)
+                .map((product) => (
+                <tr key={product.id}>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
                   <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusPill stock={product.stock} />

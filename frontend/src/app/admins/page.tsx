@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
 
@@ -50,6 +50,73 @@ export default function AdminsPage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(5);
+
+    // New state for sorting
+    const [sortConfig, setSortConfig] = useState<{
+        key: keyof Admin;
+        direction: 'ascending' | 'descending';
+    } | null>(null);
+
+    // Sorting function
+    const sortedAdmins = useMemo(() => {
+        let sortableAdmins = [...admins];
+        
+        if (sortConfig !== null) {
+            sortableAdmins.sort((a, b) => {
+                const aValue = a[sortConfig.key];
+                const bValue = b[sortConfig.key];
+
+                if (aValue < bValue) {
+                    return sortConfig.direction === 'ascending' ? -1 : 1;
+                }
+                if (aValue > bValue) {
+                    return sortConfig.direction === 'ascending' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+        
+        return sortableAdmins;
+    }, [admins, sortConfig]);
+
+    // Sorting request handler
+    const requestSort = (key: keyof Admin) => {
+        let direction: 'ascending' | 'descending' = 'ascending';
+        
+        // If already sorting by this key, toggle direction
+        if (sortConfig && sortConfig.key === key) {
+            direction = sortConfig.direction === 'ascending' 
+                ? 'descending' 
+                : 'ascending';
+        }
+        
+        setSortConfig({ key, direction });
+    };
+
+    // Sorting icon component
+    const SortIcon = ({ isActive, direction }: { 
+        isActive: boolean; 
+        direction?: 'ascending' | 'descending' 
+    }) => {
+        if (!isActive) return <span className="ml-1 text-gray-300">↕</span>;
+        
+        return direction === 'ascending' 
+            ? <span className="ml-1 text-gray-600">▲</span> 
+            : <span className="ml-1 text-gray-600">▼</span>;
+    };
+
+    // Filter admins based on search query
+    const filteredAdmins = sortedAdmins.filter(admin => 
+        admin.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        admin.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        admin.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        admin.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    // Pagination calculations
+    const totalPages = Math.ceil(filteredAdmins.length / pageSize);
+    const startIndex = (currentPage - 1) * pageSize;
+    const paginatedAdmins = filteredAdmins.slice(startIndex, startIndex + pageSize);
 
     // Create new admin
     const handleCreateAdmin = (formData: Admin) => {
@@ -161,19 +228,6 @@ export default function AdminsPage() {
         handleUpdateAdmin();
     };
 
-    // Filter admins based on search query
-    const filteredAdmins = admins.filter(admin => 
-        admin.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
-    // Pagination calculations
-    const totalPages = Math.ceil(filteredAdmins.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const paginatedAdmins = filteredAdmins.slice(startIndex, startIndex + pageSize);
-
     // Change current page
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -233,12 +287,59 @@ export default function AdminsPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="bg-gray-50">
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone Number</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th 
+                                    onClick={() => requestSort('id')}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                >
+                                    ID
+                                    <SortIcon 
+                                        isActive={sortConfig?.key === 'id'} 
+                                        direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
+                                    />
+                                </th>
+                                <th 
+                                    onClick={() => requestSort('username')}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                >
+                                    Username
+                                    <SortIcon 
+                                        isActive={sortConfig?.key === 'username'} 
+                                        direction={sortConfig?.key === 'username' ? sortConfig.direction : undefined} 
+                                    />
+                                </th>
+                                <th 
+                                    onClick={() => requestSort('email')}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                >
+                                    Email
+                                    <SortIcon 
+                                        isActive={sortConfig?.key === 'email'} 
+                                        direction={sortConfig?.key === 'email' ? sortConfig.direction : undefined} 
+                                    />
+                                </th>
+                                <th 
+                                    onClick={() => requestSort('phoneNumber')}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                >
+                                    Phone Number
+                                    <SortIcon 
+                                        isActive={sortConfig?.key === 'phoneNumber'} 
+                                        direction={sortConfig?.key === 'phoneNumber' ? sortConfig.direction : undefined} 
+                                    />
+                                </th>
+                                <th 
+                                    onClick={() => requestSort('role')}
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                                >
+                                    Role
+                                    <SortIcon 
+                                        isActive={sortConfig?.key === 'role'} 
+                                        direction={sortConfig?.key === 'role' ? sortConfig.direction : undefined} 
+                                    />
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">

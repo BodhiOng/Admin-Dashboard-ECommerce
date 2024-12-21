@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import OrderDetailsModal from './components/OrderDetailsModal';
 
 // Mock data
@@ -87,7 +87,66 @@ export default function Orders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
-  const filteredOrders = orders.filter(order => 
+  // New state for sorting
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof Order;
+    direction: 'ascending' | 'descending';
+  } | null>(null);
+
+  // Sorting function
+  const sortedOrders = useMemo(() => {
+    let sortableOrders = [...orders];
+    
+    if (sortConfig !== null) {
+      sortableOrders.sort((a, b) => {
+        // Special handling for nested customer.name
+        const aValue = sortConfig.key === 'customer.name' 
+          ? a.customer.name 
+          : a[sortConfig.key as keyof Order];
+        const bValue = sortConfig.key === 'customer.name' 
+          ? b.customer.name 
+          : b[sortConfig.key as keyof Order];
+
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableOrders;
+  }, [orders, sortConfig]);
+
+  // Sorting request handler
+  const requestSort = (key: keyof Order) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    // If already sorting by this key, toggle direction
+    if (sortConfig && sortConfig.key === key) {
+      direction = sortConfig.direction === 'ascending' 
+        ? 'descending' 
+        : 'ascending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  // Sorting icon component
+  const SortIcon = ({ isActive, direction }: { 
+    isActive: boolean; 
+    direction?: 'ascending' | 'descending' 
+  }) => {
+    if (!isActive) return <span className="ml-1 text-gray-300">↕</span>;
+    
+    return direction === 'ascending' 
+      ? <span className="ml-1 text-gray-600">▲</span> 
+      : <span className="ml-1 text-gray-600">▼</span>;
+  };
+
+  const filteredOrders = sortedOrders.filter(order => 
     order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
     order.status.toLowerCase().includes(searchQuery.toLowerCase())
@@ -166,12 +225,59 @@ export default function Orders() {
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50">
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th 
+                  onClick={() => requestSort('orderNumber')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  ID
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'orderNumber'} 
+                    direction={sortConfig?.key === 'orderNumber' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('customer.name')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Customer
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'customer.name'} 
+                    direction={sortConfig?.key === 'customer.name' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('date')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Date
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'date'} 
+                    direction={sortConfig?.key === 'date' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('total')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Total
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'total'} 
+                    direction={sortConfig?.key === 'total' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th 
+                  onClick={() => requestSort('status')}
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                >
+                  Status
+                  <SortIcon 
+                    isActive={sortConfig?.key === 'status'} 
+                    direction={sortConfig?.key === 'status' ? sortConfig.direction : undefined} 
+                  />
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
