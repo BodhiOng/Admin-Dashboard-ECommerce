@@ -89,7 +89,7 @@ export default function Orders() {
 
   // New state for sorting
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof Order;
+    key: keyof Order | 'customer.name';
     direction: 'ascending' | 'descending';
   } | null>(null);
 
@@ -99,18 +99,22 @@ export default function Orders() {
     
     if (sortConfig !== null) {
       sortableOrders.sort((a, b) => {
-        // Special handling for nested customer.name
+        // Handle nested customer.name sorting
         const aValue = sortConfig.key === 'customer.name' 
           ? a.customer.name 
-          : a[sortConfig.key as keyof Order];
+          : a[sortConfig.key as keyof Order] ?? '';
         const bValue = sortConfig.key === 'customer.name' 
           ? b.customer.name 
-          : b[sortConfig.key as keyof Order];
+          : b[sortConfig.key as keyof Order] ?? '';
 
-        if (aValue < bValue) {
+        // Compare values as strings to ensure consistent sorting
+        const aString = String(aValue).toLowerCase();
+        const bString = String(bValue).toLowerCase();
+
+        if (aString < bString) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
-        if (aValue > bValue) {
+        if (aString > bString) {
           return sortConfig.direction === 'ascending' ? 1 : -1;
         }
         return 0;
@@ -121,7 +125,7 @@ export default function Orders() {
   }, [orders, sortConfig]);
 
   // Sorting request handler
-  const requestSort = (key: keyof Order) => {
+  const requestSort = (key: keyof Order | 'customer.name') => {
     let direction: 'ascending' | 'descending' = 'ascending';
     
     // If already sorting by this key, toggle direction

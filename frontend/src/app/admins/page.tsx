@@ -63,13 +63,18 @@ export default function AdminsPage() {
         
         if (sortConfig !== null) {
             sortableAdmins.sort((a, b) => {
-                const aValue = a[sortConfig.key];
-                const bValue = b[sortConfig.key];
+                // Safely get values with type coercion and default
+                const aValue = a[sortConfig.key] ?? '';
+                const bValue = b[sortConfig.key] ?? '';
 
-                if (aValue < bValue) {
+                // Compare values as strings to ensure consistent sorting
+                const aString = String(aValue).toLowerCase();
+                const bString = String(bValue).toLowerCase();
+
+                if (aString < bString) {
                     return sortConfig.direction === 'ascending' ? -1 : 1;
                 }
-                if (aValue > bValue) {
+                if (aString > bString) {
                     return sortConfig.direction === 'ascending' ? 1 : -1;
                 }
                 return 0;
