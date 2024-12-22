@@ -359,8 +359,8 @@ export default function AdminsPage() {
                                             {admin.role}
                                         </span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="flex justify-end space-x-2">
+                                    <td className="px-6 py-4 whitespace-nowrap text-left">
+                                        <div className="flex justify-start space-x-2">
                                             <button
                                                 onClick={() => openEditModal(admin)}
                                                 className="text-indigo-600 hover:text-indigo-900"
