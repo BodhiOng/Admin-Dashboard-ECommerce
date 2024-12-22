@@ -3,7 +3,8 @@
 import { useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
-import AddOrEditProductModal from './components/AddOrEditProductModal';
+import AddProductModal from './components/AddProductModal';
+import EditProductModal from './components/EditProductModal';
 
 // Mock data
 const mockProducts = [
@@ -89,6 +90,7 @@ export default function Products() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
   // Initial state for a new product with empty values
   const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
@@ -101,7 +103,6 @@ export default function Products() {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // New state for sorting
   const [sortConfig, setSortConfig] = useState<{
@@ -165,14 +166,27 @@ export default function Products() {
     // Check if it's a standard event or a custom event
     const { name, value } = 'target' in e ? e.target : e;
 
-    setNewProduct(prev => ({
-      ...prev,
-      // Convert price and stock to numbers, keep other fields as strings
-      [name]: 
-        name === 'price' || name === 'stock' 
-          ? Number(value) 
-          : value
-    }));
+    // Determine which state to update based on whether a product is selected
+    if (selectedProduct) {
+      setSelectedProduct(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          [name]: 
+            name === 'price' || name === 'stock' 
+              ? Number(value) 
+              : value
+        };
+      });
+    } else {
+      setNewProduct(prev => ({
+        ...prev,
+        [name]: 
+          name === 'price' || name === 'stock' 
+            ? Number(value) 
+            : value
+      }));
+    }
   };
 
   // Handler to add a new product
@@ -219,14 +233,14 @@ export default function Products() {
     setProducts(products.map(product =>
       product.id === selectedProduct.id
         ? {
-            ...newProduct,
+            ...selectedProduct,
             id: selectedProduct.id  // Preserve the original ID
           }
         : product
     ));
 
     // Reset states
-    setIsModalOpen(false);
+    setIsEditModalOpen(false);
     setSelectedProduct(null);
     setNewProduct({
       name: '',
@@ -247,8 +261,7 @@ export default function Products() {
   // Open edit modal
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
-    setNewProduct(product);
-    setIsModalOpen(true);
+    setIsEditModalOpen(true);
   };
 
   // Delete product
@@ -499,13 +512,26 @@ export default function Products() {
 
       {/* Add Product Modal */}
       {isModalOpen && (
-        <AddOrEditProductModal 
+        <AddProductModal 
           newProduct={newProduct}
-          selectedProduct={selectedProduct}
           onInputChange={handleInputChange}
-          onAddProduct={selectedProduct ? handleUpdateProduct : handleAddProduct}
+          onAddProduct={handleAddProduct}
           onClose={() => {
             setIsModalOpen(false);
+            setSelectedProduct(null);
+          }}
+        />
+      )}
+
+      {/* Edit Product Modal */}
+      {isEditModalOpen && selectedProduct && (
+        <EditProductModal 
+          selectedProduct={selectedProduct}
+          originalProduct={products.find(p => p.id === selectedProduct.id)!}
+          onInputChange={handleInputChange}
+          onUpdateProduct={handleUpdateProduct}
+          onClose={() => {
+            setIsEditModalOpen(false);
             setSelectedProduct(null);
           }}
         />

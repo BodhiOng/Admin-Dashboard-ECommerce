@@ -5,20 +5,20 @@ import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
 
 // Mock initial admin data
-const mockAdmins = [
+const mockAdmins: Admin[] = [
     {
         id: 'ADM-0001',
         username: 'johndoe',
         email: 'john.doe@gmail.com',
         phoneNumber: '+6011351561561',
-        role: 'Admin'
+        role: 'Current Admin'
     },
     {
         id: 'ADM-0002',
         username: 'janesmith',
         email: 'jane.smith@gmail.com',
         phoneNumber: '+6056153156161',
-        role: 'Admin'
+        role: 'Admin Applicant'
     }
 ];
 
@@ -28,7 +28,7 @@ interface Admin {
     username: string;
     email: string;
     phoneNumber: string;
-    role: string;
+    role: 'Current Admin' | 'Admin Applicant';
     password?: string;
 }
 
@@ -42,7 +42,7 @@ export default function AdminsPage() {
         username: '',
         email: '',
         phoneNumber: '',
-        role: 'Admin',
+        role: 'Current Admin',
         password: ''
     });
 
@@ -143,7 +143,7 @@ export default function AdminsPage() {
         const admin: Admin = {
             ...formData,
             id: `ADM-${String(admins.length + 1).padStart(4, '0')}`,
-            role: 'Admin'
+            role: 'Current Admin'
         };
         
         // Add new admin to the list
@@ -155,7 +155,7 @@ export default function AdminsPage() {
             username: '',
             email: '',
             phoneNumber: '',
-            role: 'Admin',
+            role: 'Current Admin',
             password: ''
         });
         setIsAddModalOpen(false);
@@ -171,7 +171,7 @@ export default function AdminsPage() {
                     ...admin,
                     username: formData.username,
                     phoneNumber: formData.phoneNumber,
-                    role: 'Admin'
+                    role: 'Current Admin'
                 }
                 : admin
         ));
@@ -182,7 +182,7 @@ export default function AdminsPage() {
             username: '',
             email: '',
             phoneNumber: '',
-            role: 'Admin',
+            role: 'Current Admin',
             password: ''
         });
     };
@@ -201,7 +201,7 @@ export default function AdminsPage() {
             username: '',
             email: '',
             phoneNumber: '',
-            role: 'Admin',
+            role: 'Current Admin',
             password: ''
         });
         setIsAddModalOpen(true);
@@ -355,7 +355,11 @@ export default function AdminsPage() {
                                     <td className="px-6 py-4 whitespace-nowrap max-w-[250px] truncate" title={admin.email}>{admin.email}</td>
                                     <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={admin.phoneNumber}>{admin.phoneNumber}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                            admin.role === 'Current Admin' 
+                                                ? 'bg-green-100 text-green-800' 
+                                                : 'bg-yellow-100 text-yellow-800'
+                                        }`}>
                                             {admin.role}
                                         </span>
                                     </td>
