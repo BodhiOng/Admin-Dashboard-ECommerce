@@ -196,11 +196,13 @@ export default function Orders() {
 
   return (
     <div className="p-6">
+      {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
       </div>
 
-      <div className="mb-6">
+      {/* Search input */}
+      <div className="mb-4">
         <div className="relative">
           <input
             type="text"
@@ -222,11 +224,16 @@ export default function Orders() {
             />
           </svg>
         </div>
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4 text-blue-700">
+          <p>💡 Click on the status pill to update the order status directly.</p>
+        </div>
       </div>
 
+      {/* Table */}
       <div className="bg-white rounded-lg shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
+            {/* Table header */}
             <thead>
               <tr className="bg-gray-50">
                 <th 
@@ -284,6 +291,7 @@ export default function Orders() {
                 </th>
               </tr>
             </thead>
+            {/* Table body */}
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedOrders.map((order) => (
                 <tr 
@@ -316,7 +324,9 @@ export default function Orders() {
           </table>
         </div>
 
+        {/* Pagination controls */}
         <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
+          {/* Show entries dropdown */}
           <div className="flex items-center">
             <span className="mr-2 text-sm text-gray-700">Show</span>
             <select
@@ -332,6 +342,7 @@ export default function Orders() {
             <span className="ml-2 text-sm text-gray-700">entries</span>
           </div>
 
+          {/* Previous button */}
           <div className="flex items-center space-x-2">
             <button
               onClick={() => handlePageChange(currentPage - 1)}
@@ -359,6 +370,7 @@ export default function Orders() {
               </button>
             ))}
 
+            {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={currentPage === totalPages}
@@ -374,6 +386,7 @@ export default function Orders() {
         </div>
       </div>
 
+      {/* Order details modal */}
       {isDetailsModalOpen && selectedOrder && (
         <OrderDetailsModal 
           order={selectedOrder} 
