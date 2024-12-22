@@ -171,7 +171,7 @@ export default function AdminsPage() {
                     ...admin,
                     username: formData.username,
                     phoneNumber: formData.phoneNumber,
-                    role: 'Current Admin'
+                    role: formData.role  // Use the selected role from the form
                 }
                 : admin
         ));
