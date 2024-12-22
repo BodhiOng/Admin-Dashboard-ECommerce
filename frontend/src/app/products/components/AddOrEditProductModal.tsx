@@ -11,9 +11,11 @@ interface Product {
 }
 
 // Props interface for the AddProductModal component
-interface AddProductModalProps {
+interface AddOrEditProductModalProps {
   // The new product being created
   newProduct: Product;
+  // The selected product being added or edited
+  selectedProduct?: Product | null;
   // Handler for input changes in the form
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { 
     target: { 
@@ -28,8 +30,9 @@ interface AddProductModalProps {
 }
 
 // AddProductModal component for creating new products
-const AddProductModal: React.FC<AddProductModalProps> = ({ 
+const AddOrEditProductModal: React.FC<AddOrEditProductModalProps> = ({ 
   newProduct, 
+  selectedProduct, 
   onInputChange, 
   onAddProduct, 
   onClose 
@@ -74,7 +77,9 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
       <div className="bg-white rounded-lg p-6 w-full max-w-md">
         {/* Modal header with title and close button */}
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold">Add New Product</h2>
+          <h2 className="text-xl font-semibold">
+            {selectedProduct ? 'Edit Product' : 'Add New Product'}
+          </h2>
           {/* Close button */}
           <button 
             onClick={onClose}
@@ -200,13 +205,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             <button
               onClick={onAddProduct}
               disabled={!isFormValid}
-              className={`px-4 py-2 rounded-md ${
-                isFormValid 
-                  ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              className={`px-4 py-2 rounded-md text-white ${
+                isFormValid
+                  ? 'bg-indigo-600 hover:bg-indigo-700'
+                  : 'bg-gray-400 cursor-not-allowed'
               }`}
             >
-              Add Product
+              {selectedProduct ? 'Update Product' : 'Add Product'}
             </button>
           </div>
         </div>
@@ -215,4 +220,4 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   );
 };
 
-export default AddProductModal;
+export default AddOrEditProductModal;

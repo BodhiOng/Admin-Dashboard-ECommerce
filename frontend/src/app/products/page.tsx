@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
-import AddProductModal from './components/AddProductModal';
+import AddOrEditProductModal from './components/AddOrEditProductModal';
 
 // Mock data
 const mockProducts = [
@@ -101,6 +101,7 @@ export default function Products() {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   // New state for sorting
   const [sortConfig, setSortConfig] = useState<{
@@ -200,6 +201,33 @@ export default function Products() {
 
     // Close the modal and reset the new product state
     setIsModalOpen(false);
+    setSelectedProduct(null);
+    setNewProduct({
+      name: '',
+      price: 0,
+      stock: 0,
+      category: '',
+      description: '',
+      image: ''
+    });
+  };
+
+  // Update existing product
+  const handleUpdateProduct = () => {
+    if (!selectedProduct) return;
+
+    setProducts(products.map(product =>
+      product.id === selectedProduct.id
+        ? {
+            ...newProduct,
+            id: selectedProduct.id  // Preserve the original ID
+          }
+        : product
+    ));
+
+    // Reset states
+    setIsModalOpen(false);
+    setSelectedProduct(null);
     setNewProduct({
       name: '',
       price: 0,
@@ -214,6 +242,35 @@ export default function Products() {
   const handleViewDetails = (product: Product) => {
     setSelectedProduct(product);
     setIsDetailsModalOpen(true);
+  };
+
+  // Open edit modal
+  const handleEditProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setNewProduct(product);
+    setIsModalOpen(true);
+  };
+
+  // Delete product
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(products.filter(product => product.id !== productId));
+  };
+
+  // Open add product modal
+  const openAddProductModal = () => {
+    // Reset to completely empty product
+    setNewProduct({
+      name: '',
+      price: 0,
+      stock: 0,
+      category: '',
+      description: '',
+      image: ''
+    });
+    // Clear any selected product
+    setSelectedProduct(null);
+    // Open the modal
+    setIsModalOpen(true);
   };
 
   // Filter products based on search query (case-insensitive)
@@ -248,7 +305,7 @@ export default function Products() {
         <h1 className="text-2xl font-bold text-gray-800">Products</h1>
         {/* Add Product button */}
         <button 
-          onClick={() => setIsModalOpen(true)}
+          onClick={openAddProductModal}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
         >
           Add Product
@@ -343,9 +400,7 @@ export default function Products() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts
-                .slice((currentPage - 1) * pageSize, currentPage * pageSize)
-                .map((product) => (
+              {paginatedProducts.map((product) => (
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
@@ -354,12 +409,24 @@ export default function Products() {
                   <td className="px-6 py-4 whitespace-nowrap">
                     <StatusPill stock={product.stock} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap space-x-2">
                     <button 
                       onClick={() => handleViewDetails(product)}
                       className="text-indigo-600 hover:text-indigo-900 hover:underline"
                     >
-                      View Details
+                      View
+                    </button>
+                    <button 
+                      onClick={() => handleEditProduct(product)}
+                      className="text-green-600 hover:text-green-900 hover:underline"
+                    >
+                      Edit
+                    </button>
+                    <button 
+                      onClick={() => handleDeleteProduct(product.id)}
+                      className="text-red-600 hover:text-red-900 hover:underline"
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -432,11 +499,15 @@ export default function Products() {
 
       {/* Add Product Modal */}
       {isModalOpen && (
-        <AddProductModal 
+        <AddOrEditProductModal 
           newProduct={newProduct}
+          selectedProduct={selectedProduct}
           onInputChange={handleInputChange}
-          onAddProduct={handleAddProduct}
-          onClose={() => setIsModalOpen(false)}
+          onAddProduct={selectedProduct ? handleUpdateProduct : handleAddProduct}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedProduct(null);
+          }}
         />
       )}
 
