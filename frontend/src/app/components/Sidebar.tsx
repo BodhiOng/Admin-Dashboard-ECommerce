@@ -110,7 +110,10 @@ export default function Sidebar() {
       {/* User actions section */}
       <div className={`flex flex-col gap-3 ${isMinimized ? 'items-center' : ''}`}>
         {/* Profile button */}
-        <button className={`p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}>
+        <Link 
+          href="/profile"
+          className={`p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             className="h-5 w-5"
@@ -126,7 +129,7 @@ export default function Sidebar() {
             />
           </svg>
           {!isMinimized && <span>Profile</span>}
-        </button>
+        </Link>
 
         {/* Logout button */}
         <button className={`p-2 rounded-lg border border-red-400 text-red-400 hover:bg-red-500/10 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}>

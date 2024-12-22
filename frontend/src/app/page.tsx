@@ -14,13 +14,6 @@ export default function Home() {
             streamlined product and order management, 
             and essential analytics — all in one place.
           </p>
-          <p className="text-lg leading-relaxed">
-            Get started by selecting an option from the sidebar, or check out our{' '}
-            <span className="text-indigo-600 hover:text-indigo-700 cursor-pointer font-medium border-b-2 border-indigo-200 hover:border-indigo-600 transition-colors">
-              quick start guide
-            </span>{' '}
-            to learn more about the dashboard features.
-          </p>
         </div>
       </div>
     </div>

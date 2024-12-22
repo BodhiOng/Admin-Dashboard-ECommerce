@@ -1,6 +1,7 @@
 'use client'
 
 import Sidebar from './components/Sidebar'
+import AttributionPopup from './components/AttributionPopup'
 import './globals.css'
 import { SidebarProvider, useSidebar } from './contexts/SidebarContext'
 
@@ -19,6 +20,7 @@ function MainContent({ children }: { children: React.ReactNode }) {
       `}
     >
       {children}
+      <AttributionPopup />
     </main>
   )
 }
