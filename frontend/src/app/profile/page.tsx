@@ -18,7 +18,7 @@ interface UserProfile {
 const initialUserProfile: UserProfile = {
   id: 'USR-0001',
   username: 'bodhiong',
-  email: 'bodhiong@example.com',
+  email: 'bodhiong@gmail.com',
   firstName: 'Bodhi',
   lastName: 'Ong',
   phoneNumber: '+603515156156',
@@ -26,41 +26,158 @@ const initialUserProfile: UserProfile = {
   address: 'Bukit Jalil'
 };
 
-export default function Profile() {
+export default function ProfilePage() {
   // State for user profile
   const [profile, setProfile] = useState<UserProfile>(initialUserProfile);
   
   // State for form data
   const [formData, setFormData] = useState<UserProfile>(initialUserProfile);
 
-  // Handle form cancellation
-  const handleCancel = () => {
-    // Reset form data to original profile
-    setFormData(profile);
+  // State for password change
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  // State for password-related errors
+  const [passwordErrors, setPasswordErrors] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmNewPassword: ''
+  });
+
+  // State for form errors
+  const [formErrors, setFormErrors] = useState<{
+    [key: string]: string;
+  }>({});
+
+  // Validate entire form including password
+  const validateForm = () => {
+    const errors: { [key: string]: string } = {};
+
+    // Password validation (only if password fields are filled)
+    if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmNewPassword) {
+      // Current password validation
+      if (!passwordData.currentPassword) {
+        errors.currentPassword = 'Current password is required';
+      }
+
+      // New password validation
+      if (!passwordData.newPassword) {
+        errors.newPassword = 'New password is required';
+      } else {
+        // Password length check
+        if (passwordData.newPassword.length < 8) {
+          errors.newPassword = 'Password must be at least 8 characters long';
+        }
+      }
+
+      // Confirm password validation
+      if (!passwordData.confirmNewPassword) {
+        errors.confirmNewPassword = 'Please confirm your new password';
+      } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+        errors.confirmNewPassword = 'Passwords do not match';
+      }
+    }
+
+    return errors;
   };
 
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validate form data
-    const updatedProfile = { ...formData };
-    
-    // Perform any validation here
-    if (!updatedProfile.firstName || !updatedProfile.lastName || !updatedProfile.username) {
-      alert('First Name, Last Name, and Username are required');
-      return;
-    }
 
-    // Update profile
-    setProfile(updatedProfile);
+    // Prepare update payload
+    const updatePayload = {
+      ...formData,
+      // Only include password fields if they are filled
+      ...(passwordData.currentPassword && passwordData.newPassword ? {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      } : {})
+    };
+
+    // TODO: Implement actual profile and password update logic
+    console.log('Profile update submitted', updatePayload);
+
+    // Reset form and password fields
+    setProfile(formData);
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
+    });
+    setPasswordErrors({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
+    });
   };
 
-  // Handle input changes
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle input changes for profile fields
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+
+    // Clear specific error when user starts typing
+    if (formErrors[name]) {
+      setFormErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  // Handle password input changes
+  const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    // Update password data
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Perform real-time validation
+    let errorMessage = '';
+    switch (name) {
+      case 'currentPassword':
+        // Validate current password as user types
+        if (!value) {
+          errorMessage = 'Current password is required';
+        } 
+        // TODO: Implement backend password verification
+        // This should be replaced with an actual API call to verify the current password
+        break;
+      
+      case 'newPassword':
+        // Validate new password
+        if (!value) {
+          errorMessage = 'New password is required';
+        } else if (value.length < 8) {
+          errorMessage = 'Password must be at least 8 characters long';
+        }
+        break;
+      
+      case 'confirmNewPassword':
+        // Validate confirm password
+        if (!value) {
+          errorMessage = 'Please confirm your new password';
+        } else if (value !== passwordData.newPassword) {
+          errorMessage = 'Passwords do not match';
+        }
+        break;
+    }
+
+    // Update specific error
+    setPasswordErrors(prev => ({
+      ...prev,
+      [name]: errorMessage
     }));
   };
 
@@ -77,6 +194,17 @@ export default function Profile() {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Handle form cancellation
+  const handleCancel = () => {
+    // Reset form data to original profile
+    setFormData(profile);
+    setPasswordData({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
+    });
   };
 
   return (
@@ -192,7 +320,7 @@ export default function Profile() {
               value={formData.phoneNumber || ''}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              placeholder="Optional"
+              required
             />
           </div>
 
@@ -208,8 +336,68 @@ export default function Profile() {
               value={formData.address || ''}
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-              placeholder="Optional"
+              required
             />
+          </div>
+        </div>
+
+        {/* Password Change Section */}
+        <div>
+          <h2 className="text-lg font-semibold text-gray-700 mb-4">Password Change</h2>
+          <div>
+            {/* Current Password */}
+            <div className="mb-4">
+              <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
+                Current Password
+              </label>
+              <input
+                type="password"
+                id="currentPassword"
+                name="currentPassword"
+                value={passwordData.currentPassword}
+                onChange={handlePasswordInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              />
+              {passwordErrors.currentPassword && (
+                <p className="text-sm text-red-600">{passwordErrors.currentPassword}</p>
+              )}
+            </div>
+
+            {/* New Password */}
+            <div className="mb-4">
+              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
+                New Password
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                name="newPassword"
+                value={passwordData.newPassword}
+                onChange={handlePasswordInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              />
+              {passwordErrors.newPassword && (
+                <p className="text-sm text-red-600">{passwordErrors.newPassword}</p>
+              )}
+            </div>
+
+            {/* Confirm New Password */}
+            <div className="mb-4">
+              <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700">
+                Confirm New Password
+              </label>
+              <input
+                type="password"
+                id="confirmNewPassword"
+                name="confirmNewPassword"
+                value={passwordData.confirmNewPassword}
+                onChange={handlePasswordInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+              />
+              {passwordErrors.confirmNewPassword && (
+                <p className="text-sm text-red-600">{passwordErrors.confirmNewPassword}</p>
+              )}
+            </div>
           </div>
         </div>
 
@@ -226,11 +414,11 @@ export default function Profile() {
             type="submit"
             disabled={Object.keys(profile).every(
               key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-            )}
+            ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword}
             className={`px-4 py-2 rounded-md transition-colors ${
               Object.keys(profile).every(
                 key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-              )
+              ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700'
             }`}

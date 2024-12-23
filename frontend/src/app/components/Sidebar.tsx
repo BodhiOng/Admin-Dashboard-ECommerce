@@ -45,7 +45,7 @@ export default function Sidebar() {
           className="w-20 h-20 rounded-full mb-2"
         />
         <span className="font-medium">@bodhiong</span>
-        <span className="text-sm text-gray-300">Bodhidharma Ong</span>
+        <span className="text-sm text-gray-300">Bodhi Ong</span>
       </div>
 
       {/* Navigation links */}
