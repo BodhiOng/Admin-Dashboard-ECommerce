@@ -1,7 +1,7 @@
 'use client';
 
-import { SidebarProvider } from './contexts/SidebarContext';
-import Sidebar from './components/Sidebar';
+import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
+import SidebarVertical from './components/SidebarVertical';
 import AttributionPopup from './components/AttributionPopup';
 import './globals.css';
 import { usePathname } from 'next/navigation';
@@ -36,27 +36,43 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-gray-200 min-h-screen h-screen overflow-y-auto">
         <SidebarProvider>
-          <div className="flex h-full">
-            <div className="fixed inset-y-0 z-50">
-              <Sidebar />
-            </div>
-            <main 
-              className="
-                flex-1 
-                transition-all 
-                duration-300 
-                p-8 
-                bg-gray-200 
-                ml-64 
-                w-[calc(100%-16rem)]
-              "
-            >
-              {children}
-              <AttributionPopup />
-            </main>
-          </div>
+          <LayoutContent>{children}</LayoutContent>
         </SidebarProvider>
       </body>
     </html>
+  );
+}
+
+function LayoutContent({ children }: { children: React.ReactNode }) {
+  const { isMinimized } = useSidebar();
+
+  // Determine sidebar width based on minimized state
+  const sidebarWidth = isMinimized ? '5rem' : '16rem';
+
+  return (
+    <div 
+      className="flex h-full" 
+      style={{ 
+        '--sidebar-width': sidebarWidth 
+      } as React.CSSProperties}
+    >
+      <div className="fixed inset-y-0 z-50">
+        <SidebarVertical className="hidden md:block" />
+      </div>
+      <main 
+        className={`
+          flex-1 
+          p-6 
+          transition-all 
+          duration-300 
+          w-full 
+          md:ml-[var(--sidebar-width)] 
+          md:w-[calc(100%-var(--sidebar-width))]
+        `}
+      >
+        {children}
+        <AttributionPopup />
+      </main>
+    </div>
   );
 }

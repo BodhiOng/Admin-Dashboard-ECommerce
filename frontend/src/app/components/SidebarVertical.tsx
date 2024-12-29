@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from '../contexts/SidebarContext';
 
 // Sidebar component for navigation in the admin dashboard
-export default function Sidebar() {
+export default function SidebarVertical({ className = '' }: { className?: string }) {
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
@@ -17,7 +17,7 @@ export default function Sidebar() {
   return (
     // Full-height sidebar with dark background and flexible layout
     <aside className={`h-screen bg-gray-800 text-white p-5 flex flex-col transition-all duration-300 
-      ${isMinimized ? 'w-20' : 'w-64'} relative`}>
+      ${isMinimized ? 'w-20' : 'w-64'} relative ${className}`}>
       {/* Hamburger toggle button */}
       <button
         onClick={toggleSidebar}
@@ -49,7 +49,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation links */}
-      <div className={`flex flex-col ${isMinimized ? 'items-center' : 'items-start'} space-y-4 mt-12 flex-1`}>
+      <div className={`flex flex-col ${isMinimized ? 'items-center' : 'items-start'} space-y-4 mt-12 h-full`}>
         {/* Dashboard navigation link */}
         <Link
           href="/dashboard"
@@ -108,47 +108,52 @@ export default function Sidebar() {
       </div>
 
       {/* User actions section */}
-      <div className={`flex flex-col gap-3 ${isMinimized ? 'items-center' : ''}`}>
-        {/* Profile button */}
-        <Link 
-          href="/profile"
-          className={`p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+      <div className="absolute bottom-5 left-5 right-5">
+        <div className={`flex flex-col gap-3 ${isMinimized ? 'items-center' : ''}`}>
+          {/* Profile button */}
+          <Link 
+            href="/profile"
+            className={`p-2 rounded-lg border border-gray-400 hover:bg-gray-700 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-            />
-          </svg>
-          {!isMinimized && <span>Profile</span>}
-        </Link>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              />
+            </svg>
+            {!isMinimized && <span>Profile</span>}
+          </Link>
 
-        {/* Logout button */}
-        <button className={`p-2 rounded-lg border border-red-400 text-red-400 hover:bg-red-500/10 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
+          {/* Logout button */}
+          <Link 
+            href="/login"
+            className={`p-2 rounded-lg border border-red-400 text-red-400 hover:bg-red-500/10 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-            />
-          </svg>
-          {!isMinimized && <span>Logout</span>}
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+              />
+            </svg>
+            {!isMinimized && <span>Logout</span>}
+          </Link>
+        </div>
       </div>
     </aside>
   );

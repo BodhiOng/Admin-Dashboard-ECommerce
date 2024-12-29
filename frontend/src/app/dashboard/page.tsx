@@ -66,37 +66,37 @@ const lowStockItems = [
 
 export default function Dashboard() {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6 text-gray-800">Dashboard</h1>
+    <div className="p-4 sm:p-6 space-y-6">
+      <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-gray-500 text-sm">Total Sales</h3>
-          <p className="text-2xl font-bold text-gray-800">$24,780</p>
-          <span className="text-green-600 text-sm">+12% from last month</span>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Total Sales</h3>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">$24,780</p>
+          <span className="text-green-600 text-xs sm:text-sm">+12% from last month</span>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-gray-500 text-sm">Orders</h3>
-          <p className="text-2xl font-bold text-gray-800">156</p>
-          <span className="text-green-600 text-sm">+8% from last month</span>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Orders</h3>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">156</p>
+          <span className="text-green-600 text-xs sm:text-sm">+8% from last month</span>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-gray-500 text-sm">Customers</h3>
-          <p className="text-2xl font-bold text-gray-800">892</p>
-          <span className="text-green-600 text-sm">+5% from last month</span>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Customers</h3>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">892</p>
+          <span className="text-green-600 text-xs sm:text-sm">+5% from last month</span>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-gray-500 text-sm">Avg. Order Value</h3>
-          <p className="text-2xl font-bold text-gray-800">$158.90</p>
-          <span className="text-red-600 text-sm">-2% from last month</span>
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
+          <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Avg. Order Value</h3>
+          <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">$158.90</p>
+          <span className="text-red-600 text-xs sm:text-sm">-2% from last month</span>
         </div>
       </div>
 
       {/* Sales Graph */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Sales Overview</h2>
-        <div className="h-[300px]">
+      <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Sales Overview</h2>
+        <div className="h-[200px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -110,12 +110,12 @@ export default function Dashboard() {
       </div>
 
       {/* Recent Orders */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200 relative">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">Recent Orders</h2>
+      <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 relative">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Recent Orders</h2>
           <Link 
             href="/orders" 
-            className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center"
+            className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center"
           >
             View More
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -127,22 +127,22 @@ export default function Dashboard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order Number</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Order Number</th>
+                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Date</th>
+                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {mockOrders.slice(0, 5).map((order) => (
                 <tr key={order._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{order.orderNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{order.customer.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{order.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.total.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium 
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm font-medium text-gray-900 hidden sm:table-cell">{order.orderNumber}</td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">{order.customer.name}</td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-500 hidden sm:table-cell">{order.date}</td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">${order.total.toFixed(2)}</td>
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-sm font-medium 
                       ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
                         order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
                         'bg-blue-100 text-blue-800'}`}>
@@ -157,16 +157,16 @@ export default function Dashboard() {
       </div>
 
       {/* Low Stock Alerts */}
-      <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Low Stock Alerts</h2>
+      <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
+        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Low Stock Alerts</h2>
         <div className="space-y-4">
           {lowStockItems.map((item) => (
             <div key={item.id} className="flex items-center justify-between border-b border-gray-200 pb-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-900">{item.product}</h3>
-                <p className="text-sm text-gray-500">Current Stock: {item.stock}</p>
+                <h3 className="text-xs sm:text-sm font-medium text-gray-900">{item.product}</h3>
+                <p className="text-[10px] sm:text-sm text-gray-500">Current Stock: {item.stock}</p>
               </div>
-              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+              <span className="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-full bg-red-100 text-red-800">
                 Low Stock
               </span>
             </div>
