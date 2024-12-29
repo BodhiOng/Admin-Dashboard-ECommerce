@@ -1,48 +1,11 @@
 'use client';
 
-import { SidebarProvider, useSidebar } from './contexts/SidebarContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 import Sidebar from './components/Sidebar';
 import AttributionPopup from './components/AttributionPopup';
 import './globals.css';
 import { usePathname } from 'next/navigation';
-
-function MainContent({ children }: { children: React.ReactNode }) {
-  const { isMinimized } = useSidebar();
-  const pathname = usePathname();
-  const isLoginPage = pathname.startsWith('/login');
-
-  // If it's a login page, use full width without sidebar margins
-  if (isLoginPage) {
-    return (
-      <main 
-        className={`
-          flex-1 
-          w-full 
-          h-full
-        `}
-      >
-        {children}
-      </main>
-    )
-  }
-
-  // Regular layout with sidebar margins
-  return (
-    <main 
-      className={`
-        flex-1 
-        transition-all 
-        duration-300 
-        p-8 
-        bg-gray-200 
-        ${isMinimized ? 'ml-20 w-[calc(100%-5rem)]' : 'ml-64 w-[calc(100%-16rem)]'}
-      `}
-    >
-      {children}
-      <AttributionPopup />
-    </main>
-  )
-}
+import { useMemo } from 'react';
 
 export default function RootLayout({
   children,
@@ -50,32 +13,48 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
-  const isLoginPage = pathname.startsWith('/login');
+  const isLoginOrSignupPage = useMemo(() => 
+    pathname.startsWith('/login') || pathname.startsWith('/signup'), 
+    [pathname]
+  );
+
+  if (isLoginOrSignupPage) {
+    return (
+      <html lang="en">
+        <body className="login-layout">
+          <div className="h-screen w-screen absolute inset-0 flex items-center justify-center">
+            {children}
+          </div>
+        </body>
+      </html>
+    );
+  }
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body 
-        className={`
-          ${isLoginPage ? 'bg-white' : 'bg-gray-200'} 
-          min-h-screen 
-          h-screen 
-          overflow-hidden
-        `} 
-        suppressHydrationWarning
-      >
+    <html lang="en">
+      <body className="bg-gray-200 min-h-screen h-screen overflow-y-auto">
         <SidebarProvider>
-          <div className='flex h-full'>
-            {!isLoginPage && (
-              <div className='fixed inset-y-0'>
-                <Sidebar />
-              </div>
-            )}
-            <MainContent>
+          <div className="flex h-full">
+            <div className="fixed inset-y-0 z-50">
+              <Sidebar />
+            </div>
+            <main 
+              className="
+                flex-1 
+                transition-all 
+                duration-300 
+                p-8 
+                bg-gray-200 
+                ml-64 
+                w-[calc(100%-16rem)]
+              "
+            >
               {children}
-            </MainContent>
+              <AttributionPopup />
+            </main>
           </div>
         </SidebarProvider>
       </body>
     </html>
-  )
+  );
 }
