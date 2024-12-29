@@ -13,12 +13,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
-  const isLoginOrSignupPage = useMemo(() => 
-    pathname.startsWith('/login') || pathname.startsWith('/signup'), 
+  const isFullscreenPage = useMemo(() => 
+    pathname.startsWith('/login') || 
+    pathname.startsWith('/signup') || 
+    pathname.startsWith('/pendingapproval'), 
     [pathname]
   );
 
-  if (isLoginOrSignupPage) {
+  if (isFullscreenPage) {
     return (
       <html lang="en">
         <body className="login-layout">

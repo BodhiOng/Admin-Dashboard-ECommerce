@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
@@ -9,6 +9,22 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    if (error) {
+      timeoutId = setTimeout(() => {
+        setError('');
+      }, 5000);
+    }
+
+    // Cleanup function to clear timeout if component unmounts
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [error]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +87,12 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="text-red-500 text-sm text-left">
+              {error}
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <input
@@ -92,12 +114,6 @@ export default function LoginPage() {
               </a>
             </div>
           </div>
-
-          {error && (
-            <div className="text-red-500 text-sm text-center">
-              {error}
-            </div>
-          )}
 
           <div>
             <button
