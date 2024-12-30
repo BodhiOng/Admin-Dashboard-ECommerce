@@ -11,6 +11,12 @@ const salesData = [
   { month: 'Apr', sales: 4500 },
   { month: 'May', sales: 6000 },
   { month: 'Jun', sales: 5500 },
+  { month: 'Jul', sales: 5000 },
+  { month: 'Aug', sales: 5800 },
+  { month: 'Sep', sales: 6200 },
+  { month: 'Oct', sales: 6500 },
+  { month: 'Nov', sales: 6800 },
+  { month: 'Dec', sales: 7000 },
 ];
 
 // Mock data for recent orders
@@ -70,7 +76,7 @@ export default function Dashboard() {
       <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
           <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Total Sales</h3>
           <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">$24,780</p>
@@ -96,7 +102,7 @@ export default function Dashboard() {
       {/* Sales Graph */}
       <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
         <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Sales Overview</h2>
-        <div className="h-[200px] sm:h-[300px]">
+        <div className="h-[180px] sm:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -127,22 +133,28 @@ export default function Dashboard() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Order Number</th>
-                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Date</th>
-                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                <th className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
+                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                  Date
+                </th>
+                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Total
+                </th>
+                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider sm:table-cell">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {mockOrders.slice(0, 5).map((order) => (
-                <tr key={order._id}>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm font-medium text-gray-900 hidden sm:table-cell">{order.orderNumber}</td>
+                <tr key={order._id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">{order.customer.name}</td>
                   <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-500 hidden sm:table-cell">{order.date}</td>
                   <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">${order.total.toFixed(2)}</td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap hidden sm:table-cell">
-                    <span className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-sm font-medium 
+                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
+                    <span className={`inline-block px-2 py-1 rounded-full text-[10px] sm:text-sm font-medium 
                       ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
                         order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
                         'bg-blue-100 text-blue-800'}`}>
@@ -163,10 +175,10 @@ export default function Dashboard() {
           {lowStockItems.map((item) => (
             <div key={item.id} className="flex items-center justify-between border-b border-gray-200 pb-4">
               <div>
-                <h3 className="text-xs sm:text-sm font-medium text-gray-900">{item.product}</h3>
-                <p className="text-[10px] sm:text-sm text-gray-500">Current Stock: {item.stock}</p>
+                <h3 className="text-sm font-medium text-gray-900">{item.product}</h3>
+                <p className="text-xs text-gray-500">Current Stock: {item.stock}</p>
               </div>
-              <span className="px-2 py-1 text-[10px] sm:text-xs font-semibold rounded-full bg-red-100 text-red-800">
+              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                 Low Stock
               </span>
             </div>

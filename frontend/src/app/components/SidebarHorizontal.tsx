@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useSidebar } from '../contexts/SidebarContext';
 
 // Horizontal Sidebar component for mobile navigation in the admin dashboard
-export default function SidebarHorizontal() {
+export default function SidebarHorizontal({ className }: { className?: string }) {
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
@@ -16,7 +16,7 @@ export default function SidebarHorizontal() {
 
   return (
     // Horizontal mobile sidebar with dark background and flexible layout
-    <aside className="fixed bottom-0 left-0 w-full bg-gray-800 text-white flex justify-between items-center p-2 z-50 md:hidden">
+    <aside className={`fixed bottom-0 left-0 w-full bg-gray-800 text-white flex justify-between items-center p-2 z-50 md:hidden ${className || ''}`}>
       {/* Navigation links */}
       <div className="flex justify-between w-full">
         {/* Dashboard navigation link */}
@@ -75,12 +75,12 @@ export default function SidebarHorizontal() {
           <span className="text-[10px] mt-1">Admins</span>
         </Link>
 
-        {/* Profile navigation link */}
-        <Link 
-          href="/profile"
-          className={`flex flex-col items-center justify-center w-full p-2 rounded-lg transition-colors ${activeTab === 'profile'
-              ? 'bg-gray-900 text-white'
-              : 'text-gray-300 hover:bg-gray-700'
+        {/* Logout navigation link */}
+        <Link
+          href="/login"
+          className={`flex flex-col items-center justify-center w-full p-2 rounded-lg transition-colors text-red-400 hover:bg-red-500/10 ${activeTab === 'logout'
+              ? 'bg-gray-900 text-red-300'
+              : 'hover:bg-gray-700'
             }`}
         >
           <svg
@@ -94,10 +94,10 @@ export default function SidebarHorizontal() {
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth="2"
-              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
             />
           </svg>
-          <span className="text-[10px] mt-1">Profile</span>
+          <span className="text-[10px] mt-1">Logout</span>
         </Link>
       </div>
     </aside>
