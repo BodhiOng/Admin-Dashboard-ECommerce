@@ -1,18 +1,13 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSidebar } from '../contexts/SidebarContext';
 
 // Horizontal Sidebar component for mobile navigation in the admin dashboard
 export default function SidebarHorizontal({ className }: { className?: string }) {
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
-  // Extracts the first path segment or defaults to 'dashboard'
-  // This helps highlight the current active navigation item
-  const activeTab = pathname.split('/')[1] || 'dashboard';
-
-  const { isMinimized, toggleSidebar } = useSidebar();
+  const activeTab = pathname.split('/')[1] || '';
 
   return (
     // Horizontal mobile sidebar with dark background and flexible layout

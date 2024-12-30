@@ -352,14 +352,14 @@ export default function Products() {
 
       {/* Products table and pagination */}
       <div className="bg-white rounded-lg shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div className="overflow-x-auto max-w-full">
+          <table className="w-full min-w-full table-auto">
             <thead>
               {/* Table headers */}
               <tr className="bg-gray-50">
                 <th 
                   onClick={() => requestSort('id')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
                 >
                   ID 
                   <SortIcon 
@@ -369,7 +369,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('name')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[200px]"
                 >
                   Name 
                   <SortIcon 
@@ -379,7 +379,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('category')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[150px]"
                 >
                   Category
                   <SortIcon 
@@ -389,7 +389,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('price')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
                 >
                   Price
                   <SortIcon 
@@ -399,48 +399,50 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('stock')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
                 >
-                  Status
+                  Stock
                   <SortIcon 
                     isActive={sortConfig?.key === 'stock'} 
                     direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedProducts.map((product) => (
-                <tr key={product.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">${product.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                <tr key={product.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">{product.id}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[200px]">{product.name}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]">{product.category}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">${product.price.toFixed(2)}</td>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm">
                     <StatusPill stock={product.stock} />
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap space-x-2">
-                    <button 
-                      onClick={() => handleViewDetails(product)}
-                      className="text-indigo-600 hover:text-indigo-900 hover:underline"
-                    >
-                      View
-                    </button>
-                    <button 
-                      onClick={() => handleEditProduct(product)}
-                      className="text-green-600 hover:text-green-900 hover:underline"
-                    >
-                      Edit
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteProduct(product.id)}
-                      className="text-red-600 hover:text-red-900 hover:underline"
-                    >
-                      Delete
-                    </button>
+                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex space-x-2">
+                      <button 
+                        onClick={() => handleViewDetails(product)}
+                        className="text-indigo-600 hover:text-indigo-900"
+                      >
+                        View
+                      </button>
+                      <button 
+                        onClick={() => handleEditProduct(product)}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        Edit
+                      </button>
+                      <button 
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

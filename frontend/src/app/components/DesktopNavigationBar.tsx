@@ -8,9 +8,8 @@ export default function SidebarVertical({ className = '' }: { className?: string
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
-  // Extracts the first path segment or defaults to 'dashboard'
-  // This helps highlight the current active navigation item
-  const activeTab = pathname.split('/')[1] || 'dashboard';
+  // Extracts the first path segment or defaults to an empty string
+  const activeTab = pathname.split('/')[1] || '';
 
   const { isMinimized, toggleSidebar } = useSidebar();
 
