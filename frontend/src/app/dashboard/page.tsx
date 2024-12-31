@@ -76,7 +76,7 @@ export default function Dashboard() {
       <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
 
       {/* Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2">
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col">
           <h3 className="text-gray-500 text-xs sm:text-sm mb-2">Total Sales</h3>
           <p className="text-xl sm:text-2xl font-bold text-gray-800 mb-1">$24,780</p>

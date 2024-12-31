@@ -15,7 +15,7 @@ const mockProducts = [
     stock: 45,
     category: 'Electronics',
     description: 'A wireless mouse with long battery life',
-    image: 'https://example.com/mouse.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440002',
@@ -35,6 +35,159 @@ const mockProducts = [
     description: 'A gaming headset with 7.1 surround sound',
     image: 'https://example.com/headset.jpg'
   },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440004',
+    name: 'Smart Watch',
+    price: 199.99,
+    stock: 15,
+    category: 'Wearables',
+    description: 'Advanced fitness tracking smartwatch',
+    image: 'https://example.com/smartwatch.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440005',
+    name: 'Noise Cancelling Headphones',
+    price: 249.99,
+    stock: 25,
+    category: 'Electronics',
+    description: 'Premium wireless noise cancelling headphones',
+    image: 'https://example.com/headphones.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440006',
+    name: 'Portable Bluetooth Speaker',
+    price: 79.99,
+    stock: 40,
+    category: 'Audio',
+    description: 'Waterproof portable bluetooth speaker',
+    image: 'https://example.com/speaker.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440007',
+    name: '4K Ultra HD Monitor',
+    price: 349.99,
+    stock: 10,
+    category: 'Electronics',
+    description: '27-inch 4K monitor with HDR support',
+    image: 'https://example.com/monitor.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440008',
+    name: 'Ergonomic Office Chair',
+    price: 249.99,
+    stock: 20,
+    category: 'Furniture',
+    description: 'Adjustable ergonomic office chair with lumbar support',
+    image: 'https://example.com/chair.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440009',
+    name: 'Wireless Charger Pad',
+    price: 39.99,
+    stock: 50,
+    category: 'Accessories',
+    description: 'Fast wireless charging pad for smartphones',
+    image: 'https://example.com/charger.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440010',
+    name: 'External SSD',
+    price: 129.99,
+    stock: 35,
+    category: 'Storage',
+    description: '1TB portable external solid state drive',
+    image: 'https://example.com/ssd.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440011',
+    name: 'Mechanical Gaming Mouse',
+    price: 69.99,
+    stock: 30,
+    category: 'Gaming',
+    description: 'High-precision gaming mouse with customizable weights',
+    image: 'https://example.com/gaming-mouse.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440012',
+    name: 'Laptop Stand',
+    price: 49.99,
+    stock: 45,
+    category: 'Accessories',
+    description: 'Adjustable aluminum laptop stand for ergonomic working',
+    image: 'https://example.com/laptop-stand.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440013',
+    name: 'Wireless Earbuds',
+    price: 99.99,
+    stock: 40,
+    category: 'Audio',
+    description: 'True wireless earbuds with noise cancellation',
+    image: 'https://example.com/earbuds.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440014',
+    name: 'Smart Home Hub',
+    price: 129.99,
+    stock: 25,
+    category: 'Smart Home',
+    description: 'Central control hub for smart home devices',
+    image: 'https://example.com/smart-hub.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440015',
+    name: 'Mechanical Desk Lamp',
+    price: 79.99,
+    stock: 30,
+    category: 'Lighting',
+    description: 'LED desk lamp with adjustable color temperature',
+    image: 'https://example.com/desk-lamp.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440016',
+    name: 'Graphic Tablet',
+    price: 199.99,
+    stock: 15,
+    category: 'Electronics',
+    description: 'Digital drawing tablet with pressure sensitivity',
+    image: 'https://example.com/graphic-tablet.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440017',
+    name: 'Wireless Router',
+    price: 89.99,
+    stock: 35,
+    category: 'Networking',
+    description: 'Dual-band WiFi 6 wireless router',
+    image: 'https://example.com/router.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440018',
+    name: 'Portable Power Bank',
+    price: 49.99,
+    stock: 50,
+    category: 'Accessories',
+    description: '20000mAh power bank with fast charging',
+    image: 'https://example.com/powerbank.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440019',
+    name: 'Webcam',
+    price: 79.99,
+    stock: 40,
+    category: 'Electronics',
+    description: '4K webcam with built-in noise-cancelling microphone',
+    image: 'https://example.com/webcam.jpg'
+  },
+  {
+    id: '550e8400-e29b-41d4-a716-446655440020',
+    name: 'Smart Thermostat',
+    price: 249.99,
+    stock: 20,
+    category: 'Smart Home',
+    description: 'WiFi-enabled smart thermostat with mobile app control',
+    image: 'https://example.com/thermostat.jpg'
+  }
 ];
 
 // Product interface defining the structure of a product
@@ -359,7 +512,7 @@ export default function Products() {
               <tr className="bg-gray-50">
                 <th 
                   onClick={() => requestSort('id')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   ID 
                   <SortIcon 
@@ -369,7 +522,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('name')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[200px]"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   Name 
                   <SortIcon 
@@ -379,7 +532,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('category')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[150px]"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   Category
                   <SortIcon 
@@ -389,7 +542,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('price')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   Price
                   <SortIcon 
@@ -399,7 +552,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('stock')}
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 truncate max-w-[100px]"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   Stock
                   <SortIcon 
@@ -407,7 +560,7 @@ export default function Products() {
                     direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
                   />
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -415,30 +568,30 @@ export default function Products() {
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">{product.id}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 truncate max-w-[200px]">{product.name}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[150px]">{product.category}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 truncate max-w-[100px]">${product.price.toFixed(2)}</td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.category}>{product.category}</td>
+                  <td className="px-6 py-4 whitespace-nowrap max-w-[100px] truncate" title={`$${product.price.toFixed(2)}`}>${product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <StatusPill stock={product.stock} />
                   </td>
-                  <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                  <td className="px-6 py-4 whitespace-nowrap text-left">
+                    <div className="flex justify-start space-x-2">
                       <button 
                         onClick={() => handleViewDetails(product)}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="text-indigo-600"
                       >
                         View
                       </button>
                       <button 
                         onClick={() => handleEditProduct(product)}
-                        className="text-green-600 hover:text-green-900"
+                        className="text-green-600"
                       >
                         Edit
                       </button>
                       <button 
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="text-red-600 hover:text-red-900"
+                        className="text-red-600"
                       >
                         Delete
                       </button>
@@ -475,7 +628,7 @@ export default function Products() {
               className={`px-3 py-1 rounded-md text-sm ${
                 currentPage === 1
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  : 'bg-white text-gray-700 border border-gray-300'
               }`}
             >
               Previous
@@ -489,7 +642,7 @@ export default function Products() {
                 className={`px-3 py-1 rounded-md text-sm ${
                   currentPage === page
                     ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                    : 'bg-white text-gray-700 border border-gray-300'
                 }`}
               >
                 {page}
@@ -503,7 +656,7 @@ export default function Products() {
               className={`px-3 py-1 rounded-md text-sm ${
                 currentPage === totalPages
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                  : 'bg-white text-gray-700 border border-gray-300'
               }`}
             >
               Next
@@ -542,19 +695,19 @@ export default function Products() {
             <div className="flex justify-between items-center pt-3 mt-2 space-x-2">
               <button 
                 onClick={() => handleViewDetails(product)}
-                className="flex-1 px-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-indigo-600 rounded-lg text-center text-sm font-semibold"
               >
                 View
               </button>
               <button 
                 onClick={() => handleEditProduct(product)}
-                className="flex-1 px-3 py-2 border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-green-600 rounded-lg text-center text-sm font-semibold"
               >
                 Edit
               </button>
               <button 
                 onClick={() => handleDeleteProduct(product.id)}
-                className="flex-1 px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-red-600 rounded-lg text-center text-sm font-semibold"
               >
                 Delete
               </button>
@@ -563,30 +716,30 @@ export default function Products() {
         ))}
 
         {/* Mobile Pagination */}
-        <div className="flex justify-between items-center mt-4">
+        <div className="flex justify-between items-center mt-4 space-x-4">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className={`px-4 py-2 rounded-md text-sm ${
+            className={`w-24 px-4 py-2 rounded-md text-sm ${
               currentPage === 1
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                : 'bg-white text-gray-700 border border-gray-300'
             }`}
           >
             Previous
           </button>
           
-          <span className="text-sm text-gray-700">
+          <span className="text-sm text-gray-700 min-w-[100px] text-center">
             Page {currentPage} of {totalPages}
           </span>
           
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className={`px-4 py-2 rounded-md text-sm ${
+            className={`w-24 px-4 py-2 rounded-md text-sm ${
               currentPage === totalPages
                 ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                : 'bg-white text-gray-700 border border-gray-300'
             }`}
           >
             Next
