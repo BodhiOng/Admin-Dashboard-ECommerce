@@ -72,7 +72,7 @@ const lowStockItems = [
 
 export default function Dashboard() {
   return (
-    <div className="p-4 sm:p-6 space-y-6">
+    <div className="p-0 sm:p-6 space-y-6">
       <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
 
       {/* Metrics Cards */}
@@ -117,11 +117,11 @@ export default function Dashboard() {
 
       {/* Recent Orders */}
       <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 relative">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-0">Recent Orders</h2>
+        <div className="flex flex-row justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">Recent Orders</h2>
           <Link 
             href="/orders" 
-            className="text-indigo-600 hover:text-indigo-800 text-xs sm:text-sm flex items-center"
+            className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center"
           >
             View More
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">

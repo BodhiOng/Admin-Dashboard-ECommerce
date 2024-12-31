@@ -313,7 +313,7 @@ export default function Products() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 md:p-6 max-md:p-0">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Products</h1>
         {/* Add Product button */}
@@ -350,8 +350,8 @@ export default function Products() {
         </div>
       </div>
 
-      {/* Products table and pagination */}
-      <div className="bg-white rounded-lg shadow-sm">
+      {/* Desktop Table View */}
+      <div className="bg-white rounded-lg shadow-sm hidden md:block">
         <div className="overflow-x-auto max-w-full">
           <table className="w-full min-w-full table-auto">
             <thead>
@@ -509,6 +509,88 @@ export default function Products() {
               Next
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {paginatedProducts.map((product) => (
+          <div 
+            key={product.id} 
+            className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
+          >
+            <div className="flex flex-col">
+              <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
+              <span className="text-sm text-gray-500 mt-1 truncate max-w-full overflow-hidden">#{product.id}</span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-sm text-gray-600 mr-2">Category:</span>
+              <span className="text-sm font-medium">{product.category}</span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-sm text-gray-600 mr-2">Price:</span>
+              <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-sm text-gray-600 mr-2">Stock:</span>
+              <StatusPill stock={product.stock} />
+            </div>
+            
+            <div className="flex justify-between items-center pt-3 mt-2 space-x-2">
+              <button 
+                onClick={() => handleViewDetails(product)}
+                className="flex-1 px-3 py-2 border border-indigo-200 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors text-center text-sm font-semibold"
+              >
+                View
+              </button>
+              <button 
+                onClick={() => handleEditProduct(product)}
+                className="flex-1 px-3 py-2 border border-green-200 text-green-600 rounded-lg hover:bg-green-50 transition-colors text-center text-sm font-semibold"
+              >
+                Edit
+              </button>
+              <button 
+                onClick={() => handleDeleteProduct(product.id)}
+                className="flex-1 px-3 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-center text-sm font-semibold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Mobile Pagination */}
+        <div className="flex justify-between items-center mt-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`px-4 py-2 rounded-md text-sm ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            Previous
+          </button>
+          
+          <span className="text-sm text-gray-700">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`px-4 py-2 rounded-md text-sm ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+            }`}
+          >
+            Next
+          </button>
         </div>
       </div>
 
