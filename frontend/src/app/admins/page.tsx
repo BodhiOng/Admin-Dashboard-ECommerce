@@ -417,21 +417,35 @@ export default function AdminsPage() {
                             Previous
                         </button>
                         
-                        {/* Page numbers */}
-                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                        {(() => {
+                          const windowSize = 5; // Number of page buttons to show
+                          const halfWindow = Math.floor(windowSize / 2);
+                          
+                          // Calculate the start and end of the page number window
+                          let startPage = Math.max(1, currentPage - halfWindow);
+                          let endPage = Math.min(totalPages, startPage + windowSize - 1);
+                          
+                          // Adjust if we're near the end or start of total pages
+                          if (endPage - startPage + 1 < windowSize) {
+                            startPage = Math.max(1, endPage - windowSize + 1);
+                          }
+                          
+                          // Generate page number buttons
+                          return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
                             <button
-                                key={page}
-                                onClick={() => handlePageChange(page)}
-                                className={`px-3 py-1 rounded-md text-sm ${
-                                    currentPage === page
-                                        ? 'bg-indigo-600 text-white'
-                                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
-                                }`}
+                              key={page}
+                              onClick={() => handlePageChange(page)}
+                              className={`px-3 py-1 rounded-md text-sm ${
+                                currentPage === page
+                                  ? 'bg-indigo-600 text-white'
+                                  : 'bg-white text-gray-700 border border-gray-300'
+                              }`}
                             >
-                                {page}
+                              {page}
                             </button>
-                        ))}
-
+                          ));
+                        })()}
+                        
                         {/* Next button */}
                         <button
                             onClick={() => handlePageChange(currentPage + 1)}
