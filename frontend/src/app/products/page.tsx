@@ -24,7 +24,7 @@ const mockProducts = [
     stock: 30,
     category: 'Electronics',
     description: 'A mechanical keyboard with customizable backlight',
-    image: 'https://example.com/keyboard.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440003',
@@ -33,7 +33,7 @@ const mockProducts = [
     stock: 20,
     category: 'Electronics',
     description: 'A gaming headset with 7.1 surround sound',
-    image: 'https://example.com/headset.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440004',
@@ -42,7 +42,7 @@ const mockProducts = [
     stock: 15,
     category: 'Wearables',
     description: 'Advanced fitness tracking smartwatch',
-    image: 'https://example.com/smartwatch.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440005',
@@ -51,7 +51,7 @@ const mockProducts = [
     stock: 25,
     category: 'Electronics',
     description: 'Premium wireless noise cancelling headphones',
-    image: 'https://example.com/headphones.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440006',
@@ -60,7 +60,7 @@ const mockProducts = [
     stock: 40,
     category: 'Audio',
     description: 'Waterproof portable bluetooth speaker',
-    image: 'https://example.com/speaker.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440007',
@@ -69,7 +69,7 @@ const mockProducts = [
     stock: 10,
     category: 'Electronics',
     description: '27-inch 4K monitor with HDR support',
-    image: 'https://example.com/monitor.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440008',
@@ -78,7 +78,7 @@ const mockProducts = [
     stock: 20,
     category: 'Furniture',
     description: 'Adjustable ergonomic office chair with lumbar support',
-    image: 'https://example.com/chair.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440009',
@@ -87,7 +87,7 @@ const mockProducts = [
     stock: 50,
     category: 'Accessories',
     description: 'Fast wireless charging pad for smartphones',
-    image: 'https://example.com/charger.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440010',
@@ -96,7 +96,7 @@ const mockProducts = [
     stock: 35,
     category: 'Storage',
     description: '1TB portable external solid state drive',
-    image: 'https://example.com/ssd.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440011',
@@ -105,7 +105,7 @@ const mockProducts = [
     stock: 30,
     category: 'Gaming',
     description: 'High-precision gaming mouse with customizable weights',
-    image: 'https://example.com/gaming-mouse.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440012',
@@ -114,7 +114,7 @@ const mockProducts = [
     stock: 45,
     category: 'Accessories',
     description: 'Adjustable aluminum laptop stand for ergonomic working',
-    image: 'https://example.com/laptop-stand.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440013',
@@ -123,7 +123,7 @@ const mockProducts = [
     stock: 40,
     category: 'Audio',
     description: 'True wireless earbuds with noise cancellation',
-    image: 'https://example.com/earbuds.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440014',
@@ -132,7 +132,7 @@ const mockProducts = [
     stock: 25,
     category: 'Smart Home',
     description: 'Central control hub for smart home devices',
-    image: 'https://example.com/smart-hub.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440015',
@@ -141,7 +141,7 @@ const mockProducts = [
     stock: 30,
     category: 'Lighting',
     description: 'LED desk lamp with adjustable color temperature',
-    image: 'https://example.com/desk-lamp.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440016',
@@ -150,7 +150,7 @@ const mockProducts = [
     stock: 15,
     category: 'Electronics',
     description: 'Digital drawing tablet with pressure sensitivity',
-    image: 'https://example.com/graphic-tablet.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440017',
@@ -159,7 +159,7 @@ const mockProducts = [
     stock: 35,
     category: 'Networking',
     description: 'Dual-band WiFi 6 wireless router',
-    image: 'https://example.com/router.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440018',
@@ -168,7 +168,7 @@ const mockProducts = [
     stock: 50,
     category: 'Accessories',
     description: '20000mAh power bank with fast charging',
-    image: 'https://example.com/powerbank.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440019',
@@ -177,7 +177,7 @@ const mockProducts = [
     stock: 40,
     category: 'Electronics',
     description: '4K webcam with built-in noise-cancelling microphone',
-    image: 'https://example.com/webcam.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   },
   {
     id: '550e8400-e29b-41d4-a716-446655440020',
@@ -186,7 +186,7 @@ const mockProducts = [
     stock: 20,
     category: 'Smart Home',
     description: 'WiFi-enabled smart thermostat with mobile app control',
-    image: 'https://example.com/thermostat.jpg'
+    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
   }
 ];
 
@@ -230,7 +230,7 @@ const StatusPill = ({ stock }: { stock: number }) => {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${colorClass()}`}>
+    <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium ${colorClass()}`}>
       {status}
     </span>
   );
@@ -241,7 +241,7 @@ export default function Products() {
   const [products, setProducts] = useState<Product[]>(mockProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   
@@ -472,7 +472,7 @@ export default function Products() {
         {/* Add Product button */}
         <button 
           onClick={openAddProductModal}
-          className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+          className="px-3 py-2 md:px-4 md:py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs md:text-base"
         >
           Add Product
         </button>
@@ -486,7 +486,7 @@ export default function Products() {
             placeholder="Search products..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm md:text-base"
           />
           <svg
             className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
@@ -579,19 +579,19 @@ export default function Products() {
                     <div className="flex justify-start space-x-2">
                       <button 
                         onClick={() => handleViewDetails(product)}
-                        className="text-indigo-600"
+                        className="text-indigo-600 text-base"
                       >
                         View
                       </button>
                       <button 
                         onClick={() => handleEditProduct(product)}
-                        className="text-green-600"
+                        className="text-green-600 text-base"
                       >
                         Edit
                       </button>
                       <button 
                         onClick={() => handleDeleteProduct(product.id)}
-                        className="text-red-600"
+                        className="text-red-600 text-base"
                       >
                         Delete
                       </button>
@@ -612,7 +612,6 @@ export default function Products() {
               onChange={handlePageSizeChange}
               className="border border-gray-300 rounded-md text-sm px-2 py-1"
             >
-              <option value={5}>5</option>
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
@@ -634,20 +633,34 @@ export default function Products() {
               Previous
             </button>
             
-            {/* Page numbers */}
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button
-                key={page}
-                onClick={() => handlePageChange(page)}
-                className={`px-3 py-1 rounded-md text-sm ${
-                  currentPage === page
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+            {(() => {
+              const windowSize = 5; // Number of page buttons to show
+              const halfWindow = Math.floor(windowSize / 2);
+              
+              // Calculate the start and end of the page number window
+              let startPage = Math.max(1, currentPage - halfWindow);
+              let endPage = Math.min(totalPages, startPage + windowSize - 1);
+              
+              // Adjust if we're near the end or start of total pages
+              if (endPage - startPage + 1 < windowSize) {
+                startPage = Math.max(1, endPage - windowSize + 1);
+              }
+              
+              // Generate page number buttons
+              return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-3 py-1 rounded-md text-sm ${
+                    currentPage === page
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300'
+                  }`}
+                >
+                  {page}
+                </button>
+              ));
+            })()}
 
             {/* Next button */}
             <button
@@ -673,41 +686,41 @@ export default function Products() {
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
           >
             <div className="flex flex-col">
-              <h3 className="text-lg font-semibold text-gray-900">{product.name}</h3>
-              <span className="text-sm text-gray-500 mt-1 truncate max-w-full overflow-hidden">#{product.id}</span>
+              <h3 className="text-base font-semibold text-gray-900">{product.name}</h3>
+              <span className="text-xs text-gray-500 mt-1 truncate max-w-full overflow-hidden">#{product.id}</span>
             </div>
             
             <div className="flex justify-start items-center mt-2">
-              <span className="text-sm text-gray-600 mr-2">Category:</span>
-              <span className="text-sm font-medium">{product.category}</span>
+              <span className="text-xs text-gray-600 mr-2">Category:</span>
+              <span className="text-xs font-medium">{product.category}</span>
             </div>
             
             <div className="flex justify-start items-center mt-2">
-              <span className="text-sm text-gray-600 mr-2">Price:</span>
-              <span className="text-sm font-medium">${product.price.toFixed(2)}</span>
+              <span className="text-xs text-gray-600 mr-2">Price:</span>
+              <span className="text-xs font-medium">${product.price.toFixed(2)}</span>
             </div>
             
             <div className="flex justify-start items-center mt-2">
-              <span className="text-sm text-gray-600 mr-2">Stock:</span>
+              <span className="text-xs text-gray-600 mr-2">Stock:</span>
               <StatusPill stock={product.stock} />
             </div>
             
-            <div className="flex justify-between items-center pt-3 mt-2 space-x-2">
+            <div className="flex justify-between items-center pt-0 mt-2 space-x-2">
               <button 
                 onClick={() => handleViewDetails(product)}
-                className="flex-1 px-3 py-2 border-2 text-indigo-600 rounded-lg text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-indigo-600 rounded-lg text-center text-xs font-semibold"
               >
                 View
               </button>
               <button 
                 onClick={() => handleEditProduct(product)}
-                className="flex-1 px-3 py-2 border-2 text-green-600 rounded-lg text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-green-600 rounded-lg text-center text-xs font-semibold"
               >
                 Edit
               </button>
               <button 
                 onClick={() => handleDeleteProduct(product.id)}
-                className="flex-1 px-3 py-2 border-2 text-red-600 rounded-lg text-center text-sm font-semibold"
+                className="flex-1 px-3 py-2 border-2 text-red-600 rounded-lg text-center text-xs font-semibold"
               >
                 Delete
               </button>

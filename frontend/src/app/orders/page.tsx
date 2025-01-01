@@ -45,6 +45,126 @@ const mockOrders = [
     status: 'PENDING',
     total: 149.99,
   },
+  {
+    _id: '6',
+    customer: { name: 'Emily Davis' },
+    orderNumber: 'ORD-006',
+    date: '2023-12-11',
+    status: 'PROCESSING',
+    total: 349.50,
+  },
+  {
+    _id: '7',
+    customer: { name: 'David Wilson' },
+    orderNumber: 'ORD-007',
+    date: '2023-12-06',
+    status: 'COMPLETED',
+    total: 79.99,
+  },
+  {
+    _id: '8',
+    customer: { name: 'Lisa Martinez' },
+    orderNumber: 'ORD-008',
+    date: '2023-12-12',
+    status: 'PROCESSING',
+    total: 219.75,
+  },
+  {
+    _id: '9',
+    customer: { name: 'Chris Taylor' },
+    orderNumber: 'ORD-009',
+    date: '2023-12-05',
+    status: 'COMPLETED',
+    total: 189.50,
+  },
+  {
+    _id: '10',
+    customer: { name: 'Amanda Anderson' },
+    orderNumber: 'ORD-010',
+    date: '2023-12-13',
+    status: 'PENDING',
+    total: 99.99,
+  },
+  {
+    _id: '11',
+    customer: { name: 'Michael Thompson' },
+    orderNumber: 'ORD-011',
+    date: '2023-12-04',
+    status: 'PROCESSING',
+    total: 279.99,
+  },
+  {
+    _id: '12',
+    customer: { name: 'Jessica Rodriguez' },
+    orderNumber: 'ORD-012',
+    date: '2023-12-14',
+    status: 'PENDING',
+    total: 159.50,
+  },
+  {
+    _id: '13',
+    customer: { name: 'Kevin Lee' },
+    orderNumber: 'ORD-013',
+    date: '2023-12-03',
+    status: 'COMPLETED',
+    total: 299.75,
+  },
+  {
+    _id: '14',
+    customer: { name: 'Nicole Garcia' },
+    orderNumber: 'ORD-014',
+    date: '2023-12-15',
+    status: 'PROCESSING',
+    total: 129.50,
+  },
+  {
+    _id: '15',
+    customer: { name: 'Ryan Martinez' },
+    orderNumber: 'ORD-015',
+    date: '2023-12-02',
+    status: 'COMPLETED',
+    total: 249.99,
+  },
+  {
+    _id: '16',
+    customer: { name: 'Sophia Clark' },
+    orderNumber: 'ORD-016',
+    date: '2023-12-16',
+    status: 'PENDING',
+    total: 179.50,
+  },
+  {
+    _id: '17',
+    customer: { name: 'Daniel Rodriguez' },
+    orderNumber: 'ORD-017',
+    date: '2023-12-01',
+    status: 'PROCESSING',
+    total: 399.75,
+  },
+  {
+    _id: '18',
+    customer: { name: 'Olivia White' },
+    orderNumber: 'ORD-018',
+    date: '2023-12-17',
+    status: 'COMPLETED',
+    total: 109.99,
+  },
+  {
+    _id: '19',
+    customer: { name: 'Ethan Harris' },
+    orderNumber: 'ORD-019',
+    date: '2023-11-30',
+    status: 'PENDING',
+    total: 269.50,
+  },
+  {
+    _id: '20',
+    customer: { name: 'Isabella Martin' },
+    orderNumber: 'ORD-020',
+    date: '2023-12-18',
+    status: 'PROCESSING',
+    total: 189.75,
+  }
 ];
 
 interface Order {
@@ -83,7 +203,7 @@ export default function Orders() {
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
 
@@ -334,7 +454,6 @@ export default function Orders() {
               onChange={handlePageSizeChange}
               className="border border-gray-300 rounded-md text-sm px-2 py-1"
             >
-              <option value={5}>5</option>
               <option value={10}>10</option>
               <option value={20}>20</option>
               <option value={50}>50</option>
