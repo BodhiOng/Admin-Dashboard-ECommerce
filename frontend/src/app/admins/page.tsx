@@ -49,7 +49,7 @@ export default function AdminsPage() {
     // Search and Pagination states
     const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(5);
+    const [pageSize, setPageSize] = useState(10);
 
     // New state for sorting
     const [sortConfig, setSortConfig] = useState<{
@@ -395,7 +395,6 @@ export default function AdminsPage() {
                             onChange={handlePageSizeChange}
                             className="border border-gray-300 rounded-md text-sm px-2 py-1"
                         >
-                            <option value={5}>5</option>
                             <option value={10}>10</option>
                             <option value={20}>20</option>
                             <option value={50}>50</option>
