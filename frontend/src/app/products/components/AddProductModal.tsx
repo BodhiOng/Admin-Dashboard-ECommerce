@@ -155,23 +155,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700">Product Image</label>
-              <div className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div 
+                className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+                onClick={() => {
+                  const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+                  fileInput.click();
+                }}
+              >
+                <input
+                  id="file-upload"
+                  name="image"
+                  type="file"
+                  className="hidden"
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
                 <div className="space-y-1 text-center">
                   <div className="flex text-sm text-gray-600">
-                    <label
-                      htmlFor="file-upload"
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                    >
+                    <div className="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
                       <span>Upload a file</span>
-                      <input
-                        id="file-upload"
-                        name="image"
-                        type="file"
-                        className="sr-only"
-                        onChange={handleImageChange}
-                        accept="image/*"
-                      />
-                    </label>
+                    </div>
                   </div>
                   <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                   {imagePreview && (
@@ -296,23 +299,27 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div 
+              className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+                fileInput.click();
+              }}
+            >
+              <input
+                id="file-upload"
+                name="image"
+                type="file"
+                className="hidden"
+                onChange={handleImageChange}
+                accept="image/*"
+              />
               <div className="space-y-1 text-center">
                 <div className="flex text-sm text-gray-600">
-                  <label
-                    htmlFor="file-upload"
-                    className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                  >
+                  <div className="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
                     <span>Upload a file</span>
-                    <input
-                      id="file-upload"
-                      name="image"
-                      type="file"
-                      className="sr-only"
-                      onChange={handleImageChange}
-                      accept="image/*"
-                    />
-                  </label>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                 {imagePreview && (

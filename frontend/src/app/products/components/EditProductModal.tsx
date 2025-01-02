@@ -40,6 +40,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   // State to manage image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
+  // State to manage exit animation
+  const [isClosing, setIsClosing] = useState(false);
+
+  // Modified close handler to trigger animation
+  const handleClose = () => {
+    setIsClosing(true);
+    // Wait for animation to complete before calling actual close
+    setTimeout(onClose, 300);
+  };
+
   // Set initial image preview when component mounts or selectedProduct changes
   useEffect(() => {
     if (selectedProduct.image) {
@@ -70,7 +80,172 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
+      {/* Mobile View - Full Screen */}
+      <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-50 
+        ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}
+        flex items-end sm:items-center justify-center`}
+      >
+        <div className={`
+          w-full bg-white rounded-t-xl sm:rounded-lg 
+          ${isClosing ? 'animate-slide-down' : 'animate-slide-up'}
+          sm:max-w-lg 
+          max-h-[90vh]
+          overflow-hidden`}
+        >
+          <div className="p-4 border-b relative">
+            <h2 className="text-lg font-semibold text-gray-800 text-center">Edit Product</h2>
+          </div>
+          <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20">
+            {/* Product Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Product Name</label>
+              <input
+                type="text"
+                name="name"
+                value={selectedProduct.name}
+                onChange={onInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            {/* Price */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Price</label>
+              <input
+                type="number"
+                name="price"
+                value={selectedProduct.price}
+                onChange={onInputChange}
+                step="0.01"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            {/* Stock */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Stock</label>
+              <input
+                type="number"
+                name="stock"
+                value={selectedProduct.stock}
+                onChange={onInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            {/* Category */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <input
+                type="text"
+                name="category"
+                value={selectedProduct.category}
+                onChange={onInputChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            {/* Description */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <textarea
+                name="description"
+                value={selectedProduct.description}
+                onChange={onInputChange}
+                rows={3}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                required
+              />
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Product Image</label>
+              <div className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                <div 
+                  className="space-y-1 text-center cursor-pointer"
+                  onClick={() => document.getElementById('file-upload')?.click()}
+                >
+                  <input
+                    id="file-upload"
+                    name="image"
+                    type="file"
+                    className="hidden"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
+                  {!imagePreview && (
+                    <>
+                      <div className="flex text-sm text-gray-600">
+                        <div className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                          <span>Upload a file</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                    </>
+                  )}
+                  {imagePreview && (
+                    <div className="mt-4">
+                      <img
+                        src={imagePreview}
+                        alt="Product Preview"
+                        className="mx-auto h-48 w-full object-contain"
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Spacer to ensure buttons don't cover content */}
+            <div className="h-20"></div>
+          </form>
+
+          {/* Submit Buttons - Fixed at bottom */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={onUpdateProduct}
+                disabled={
+                  selectedProduct.name === originalProduct.name &&
+                  selectedProduct.price === originalProduct.price &&
+                  selectedProduct.stock === originalProduct.stock &&
+                  selectedProduct.category === originalProduct.category &&
+                  selectedProduct.description === originalProduct.description &&
+                  selectedProduct.image === originalProduct.image
+                }
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md ${
+                  selectedProduct.name === originalProduct.name &&
+                  selectedProduct.price === originalProduct.price &&
+                  selectedProduct.stock === originalProduct.stock &&
+                  selectedProduct.category === originalProduct.category &&
+                  selectedProduct.description === originalProduct.description &&
+                  selectedProduct.image === originalProduct.image
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                }`}
+              >
+                Update Product
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop View - Hidden on mobile screens */}
+      <div className="hidden md:block w-full max-w-2xl bg-white rounded-lg shadow-xl">
         <div className="p-6 border-b relative">
           <h2 className="text-xl font-semibold text-gray-800">Edit Product</h2>
           <button 
@@ -152,53 +327,40 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
-            {!imagePreview && (
-              <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                  <div className="flex text-sm text-gray-600">
-                    <label 
-                      htmlFor="file-upload" 
-                      className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                    >
-                      <span>Upload a file</span>
-                      <input 
-                        id="file-upload" 
-                        name="image" 
-                        type="file" 
-                        className="sr-only" 
-                        onChange={handleImageChange}
-                        accept="image/*"
-                      />
-                    </label>
-                  </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                </div>
-              </div>
-            )}
-            {imagePreview && (
-              <div className="mt-4 relative">
-                <img 
-                  src={imagePreview} 
-                  alt="Product Preview" 
-                  className="mx-auto h-32 object-contain"
+            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <div 
+                className="space-y-1 text-center cursor-pointer"
+                onClick={() => document.getElementById('file-upload')?.click()}
+              >
+                <input 
+                  id="file-upload" 
+                  name="image" 
+                  type="file" 
+                  className="hidden" 
+                  onChange={handleImageChange}
+                  accept="image/*"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImagePreview(null);
-                    onInputChange({ 
-                      target: { 
-                        name: 'image', 
-                        value: '' 
-                      } 
-                    });
-                  }}
-                  className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                >
-                  ✕
-                </button>
+                {!imagePreview && (
+                  <>
+                    <div className="flex text-sm text-gray-600">
+                      <div className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                        <span>Upload a file</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  </>
+                )}
+                {imagePreview && (
+                  <div className="mt-4">
+                    <img
+                      src={imagePreview}
+                      alt="Product Preview"
+                      className="mx-auto h-48 w-full object-contain"
+                    />
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
           {/* Submit Buttons */}
@@ -206,7 +368,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Cancel
             </button>
@@ -221,7 +383,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 selectedProduct.description === originalProduct.description &&
                 selectedProduct.image === originalProduct.image
               }
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md ${
                 selectedProduct.name === originalProduct.name &&
                 selectedProduct.price === originalProduct.price &&
                 selectedProduct.stock === originalProduct.stock &&
@@ -229,7 +391,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 selectedProduct.description === originalProduct.description &&
                 selectedProduct.image === originalProduct.image
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700'
               }`}
             >
               Update Product
