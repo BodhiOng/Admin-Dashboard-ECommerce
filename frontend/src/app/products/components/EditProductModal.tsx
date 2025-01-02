@@ -98,7 +98,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
           <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20">
             {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Product Name</label>
+              <label className="block text-xs font-medium text-gray-700">Product Name</label>
               <input
                 type="text"
                 name="name"
@@ -111,7 +111,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
             {/* Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Price</label>
+              <label className="block text-xs font-medium text-gray-700">Price</label>
               <input
                 type="number"
                 name="price"
@@ -125,7 +125,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
             {/* Stock */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Stock</label>
+              <label className="block text-xs font-medium text-gray-700">Stock</label>
               <input
                 type="number"
                 name="stock"
@@ -138,7 +138,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-xs font-medium text-gray-700">Category</label>
               <input
                 type="text"
                 name="category"
@@ -151,7 +151,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <label className="block text-xs font-medium text-gray-700">Description</label>
               <textarea
                 name="description"
                 value={selectedProduct.description}
@@ -164,11 +164,16 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Product Image</label>
-              <div className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+              <label className="block text-xs font-medium text-gray-700">Product Image</label>
+              <div 
+                className="mt-1 flex justify-center px-4 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+                onClick={() => {
+                  const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+                  fileInput.click();
+                }}
+              >
                 <div 
-                  className="space-y-1 text-center cursor-pointer"
-                  onClick={() => document.getElementById('file-upload')?.click()}
+                  className="space-y-1 text-center"
                 >
                   <input
                     id="file-upload"
@@ -181,11 +186,11 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   {!imagePreview && (
                     <>
                       <div className="flex text-sm text-gray-600">
-                        <div className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                        <div className="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
                           <span>Upload a file</span>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
                     </>
                   )}
                   {imagePreview && (
@@ -327,10 +332,15 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
           {/* Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+            <div 
+              className="mt-1 flex justify-center px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+              onClick={() => {
+                const fileInput = document.getElementById('file-upload') as HTMLInputElement;
+                fileInput.click();
+              }}
+            >
               <div 
                 className="space-y-1 text-center cursor-pointer"
-                onClick={() => document.getElementById('file-upload')?.click()}
               >
                 <input 
                   id="file-upload" 

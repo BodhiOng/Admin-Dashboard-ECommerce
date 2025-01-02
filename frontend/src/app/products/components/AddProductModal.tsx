@@ -88,7 +88,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20">
             {/* Product Name */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Product Name</label>
+              <label className="block text-xs font-medium text-gray-700">Product Name</label>
               <input
                 type="text"
                 name="name"
@@ -101,7 +101,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Price */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Price</label>
+              <label className="block text-xs font-medium text-gray-700">Price</label>
               <input
                 type="number"
                 name="price"
@@ -115,7 +115,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Stock */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Stock</label>
+              <label className="block text-xs font-medium text-gray-700">Stock</label>
               <input
                 type="number"
                 name="stock"
@@ -128,7 +128,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Category */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-xs font-medium text-gray-700">Category</label>
               <input
                 type="text"
                 name="category"
@@ -141,7 +141,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Description */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <label className="block text-xs font-medium text-gray-700">Description</label>
               <textarea
                 name="description"
                 value={newProduct.description}
@@ -154,7 +154,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Product Image</label>
+              <label className="block text-xs font-medium text-gray-700">Product Image</label>
               <div 
                 className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
                 onClick={() => {
@@ -176,7 +176,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                       <span>Upload a file</span>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
                   {imagePreview && (
                     <div className="mt-4">
                       <img
