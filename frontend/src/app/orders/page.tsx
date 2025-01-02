@@ -270,11 +270,17 @@ export default function Orders() {
       : <span className="ml-1 text-gray-600">▼</span>;
   };
 
-  const filteredOrders = sortedOrders.filter(order => 
-    order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    order.status.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery) return sortedOrders;
+
+    return sortedOrders.filter(order => 
+      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.total.toString().includes(searchQuery.toLowerCase()) ||
+      order.date.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [sortedOrders, searchQuery]);
 
   const totalPages = Math.ceil(filteredOrders.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
@@ -314,6 +320,12 @@ export default function Orders() {
     setIsDetailsModalOpen(true);
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page on search
+  };
+
   return (
     <div className="p-6">
       {/* Header */}
@@ -328,24 +340,45 @@ export default function Orders() {
             type="text"
             placeholder="Search orders..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            onChange={handleSearchChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm md:text-base"
           />
-          <svg
-            className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4 text-blue-700">
-          <p>💡 Click on the status pill to update the order status directly.</p>
+          {searchQuery ? (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setCurrentPage(1);
+              }}
+              className="absolute right-3 top-2.5 h-5 w-5 text-gray-400 hover:text-gray-600"
+            >
+              {/* Clear search icon */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path 
+                  fillRule="evenodd" 
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" 
+                  clipRule="evenodd" 
+                />
+              </svg>
+            </button>
+          ) : (
+            // Search icon
+            <svg
+              className="absolute right-3 top-2.5 h-5 w-5 text-gray-400"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fillRule="evenodd"
+                d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z"
+                clipRule="evenodd"
+              />
+            </svg>
+          )}
         </div>
       </div>
 

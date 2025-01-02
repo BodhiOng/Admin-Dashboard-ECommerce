@@ -270,10 +270,17 @@ export default function Products() {
     if (sortConfig !== null) {
       sortableProducts.sort((a, b) => {
         // Handle different types of sorting
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        const aValue = a[sortConfig.key] ?? '';
+        const bValue = b[sortConfig.key] ?? '';
+
+        // Compare values as strings to ensure consistent sorting
+        const aString = String(aValue).toLowerCase();
+        const bString = String(bValue).toLowerCase();
+
+        if (aString < bString) {
           return sortConfig.direction === 'ascending' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aString > bString) {
           return sortConfig.direction === 'ascending' ? 1 : -1;
         }
         return 0;
