@@ -385,7 +385,7 @@ export default function AdminsPage() {
                 <h1 className="text-2xl font-bold text-gray-800">Admin Management</h1>
                 <button
                     onClick={openAddModal}
-                    className="bg-indigo-600 text-white px-0 py-2 md:px-4 md:py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="bg-indigo-600 text-white px-0 py-2 md:px-4 md:py-2 text-sm rounded-lg hover:bg-indigo-700 transition-colors"
                 >
                     Add New Admin
                 </button>
