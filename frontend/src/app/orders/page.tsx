@@ -193,7 +193,7 @@ const StatusPill = ({ status }: { status: string }) => {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusStyle(status)}`}>
+    <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusStyle(status)}`}>
       {status}
     </span>
   );
@@ -286,14 +286,18 @@ export default function Orders() {
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
 
+  // Change current page
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
+  // Change number of orders displayed per page
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   // Function to handle status change
@@ -327,7 +331,7 @@ export default function Orders() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 md:p-6 max-md:p-0">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Orders</h1>
@@ -382,8 +386,82 @@ export default function Orders() {
         </div>
       </div>
 
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {paginatedOrders.map((order) => (
+          <div 
+            key={order._id} 
+            className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
+          >
+            <div className="flex flex-col">
+              <h3 className="text-base font-semibold text-gray-900">{order.orderNumber}</h3>
+              <span className="text-xs text-gray-500 mt-1 truncate max-w-full overflow-hidden">
+                {order.customer.name}
+              </span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-xs text-gray-600 mr-2">Date:</span>
+              <span className="text-xs font-medium">{order.date}</span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-xs text-gray-600 mr-2">Total:</span>
+              <span className="text-xs font-medium">${order.total.toFixed(2)}</span>
+            </div>
+            
+            <div className="flex justify-start items-center mt-2">
+              <span className="text-xs text-gray-600 mr-2">Status:</span>
+              <div onClick={() => handleStatusChange(order._id)} className="cursor-pointer inline-block">
+                <StatusPill status={order.status} />
+              </div>
+            </div>
+            
+            <div className="flex justify-between items-center pt-0 mt-2 space-x-2">
+              <button 
+                onClick={() => handleViewDetails(order)}
+                className="flex-1 px-3 py-2 border-2 text-indigo-600 rounded-lg text-center text-xs font-semibold"
+              >
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
+
+        {/* Mobile Pagination */}
+        <div className="flex justify-between items-center mt-4 space-x-4">
+          <button
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={`w-24 px-4 py-2 rounded-md text-sm ${
+              currentPage === 1
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+          >
+            Previous
+          </button>
+          
+          <span className="text-sm text-gray-700 min-w-[100px] text-center">
+            Page {currentPage} of {totalPages}
+          </span>
+          
+          <button
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={`w-24 px-4 py-2 rounded-md text-sm ${
+              currentPage === totalPages
+                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                : 'bg-white text-gray-700 border border-gray-300'
+            }`}
+          >
+            Next
+          </button>
+        </div>
+      </div>
+
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-sm">
+      <div className="hidden md:block bg-white rounded-lg shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full">
             {/* Table header */}
@@ -536,7 +614,7 @@ export default function Orders() {
                 </button>
               ));
             })()}
-
+            
             {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
@@ -553,7 +631,7 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Order details modal */}
+      {/* Order Details Modal */}
       {isDetailsModalOpen && selectedOrder && (
         <OrderDetailsModal 
           order={selectedOrder} 

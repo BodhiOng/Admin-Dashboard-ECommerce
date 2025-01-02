@@ -235,7 +235,9 @@ export default function AdminsPage() {
 
     // Change current page
     const handlePageChange = (page: number) => {
-        setCurrentPage(page);
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
     };
 
     // Change number of admins displayed per page
