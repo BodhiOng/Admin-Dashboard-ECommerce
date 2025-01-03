@@ -10,6 +10,11 @@ interface Order {
   date: string;
   status: string;
   total: number;
+  products: {
+    productId: string;
+    name: string;
+    quantity: number;
+  }[];
 }
 
 // Props interface for OrderDetailsModal
@@ -68,6 +73,24 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
               <p className="text-sm font-medium text-gray-600">Status</p>
               <p className="text-gray-900">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</p>
             </div>
+
+            {/* Products Section */}
+            <div>
+              <p className="text-sm font-medium text-gray-600">Products</p>
+              <div className="space-y-2">
+                {order.products.map((product, index) => (
+                  <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                    <div>
+                      <p className="text-gray-900">{product.name}</p>
+                      <p className="text-xs text-gray-500">Product ID: {product.productId}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-900">Qty: {product.quantity}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -118,6 +141,24 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
             <div>
               <p className="text-xs font-medium text-gray-600">Status</p>
               <p className="text-sm text-gray-900">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</p>
+            </div>
+
+            {/* Mobile Products Section */}
+            <div>
+              <p className="text-xs font-medium text-gray-600">Products</p>
+              <div className="space-y-2">
+                {order.products.map((product, index) => (
+                  <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                    <div>
+                      <p className="text-sm text-gray-900">{product.name}</p>
+                      <p className="text-xs text-gray-500">Product ID: {product.productId}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-900">Qty: {product.quantity}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

@@ -12,6 +12,7 @@ const mockOrders = [
     date: '2023-12-10',
     status: 'PENDING',
     total: 129.99,
+    products: [{ productId: 'PROD-001', name: 'Wireless Headphones', quantity: 1 }]
   },
   {
     _id: '2',
@@ -20,6 +21,7 @@ const mockOrders = [
     date: '2023-12-09',
     status: 'COMPLETED',
     total: 259.99,
+    products: [{ productId: 'PROD-002', name: 'Smart Watch', quantity: 2 }]
   },
   {
     _id: '3',
@@ -28,6 +30,7 @@ const mockOrders = [
     date: '2023-12-08',
     status: 'PROCESSING',
     total: 89.99,
+    products: [{ productId: 'PROD-003', name: 'Bluetooth Speaker', quantity: 1 }]
   },
   {
     _id: '4',
@@ -36,6 +39,7 @@ const mockOrders = [
     date: '2023-12-08',
     status: 'COMPLETED',
     total: 199.99,
+    products: [{ productId: 'PROD-004', name: 'Noise Cancelling Earbuds', quantity: 1 }]
   },
   {
     _id: '5',
@@ -44,6 +48,7 @@ const mockOrders = [
     date: '2023-12-07',
     status: 'PENDING',
     total: 149.99,
+    products: [{ productId: 'PROD-005', name: 'Portable Power Bank', quantity: 1 }]
   },
   {
     _id: '6',
@@ -52,6 +57,7 @@ const mockOrders = [
     date: '2023-12-11',
     status: 'PROCESSING',
     total: 349.50,
+    products: [{ productId: 'PROD-006', name: 'Gaming Laptop', quantity: 1 }]
   },
   {
     _id: '7',
@@ -60,6 +66,7 @@ const mockOrders = [
     date: '2023-12-06',
     status: 'COMPLETED',
     total: 79.99,
+    products: [{ productId: 'PROD-007', name: 'Wireless Mouse', quantity: 1 }]
   },
   {
     _id: '8',
@@ -68,6 +75,7 @@ const mockOrders = [
     date: '2023-12-12',
     status: 'PROCESSING',
     total: 219.75,
+    products: [{ productId: 'PROD-008', name: 'External SSD', quantity: 1 }]
   },
   {
     _id: '9',
@@ -76,6 +84,7 @@ const mockOrders = [
     date: '2023-12-05',
     status: 'COMPLETED',
     total: 189.50,
+    products: [{ productId: 'PROD-009', name: 'Smart Home Camera', quantity: 1 }]
   },
   {
     _id: '10',
@@ -84,6 +93,7 @@ const mockOrders = [
     date: '2023-12-13',
     status: 'PENDING',
     total: 99.99,
+    products: [{ productId: 'PROD-010', name: 'Fitness Tracker', quantity: 1 }]
   },
   {
     _id: '11',
@@ -92,6 +102,7 @@ const mockOrders = [
     date: '2023-12-04',
     status: 'PROCESSING',
     total: 279.99,
+    products: [{ productId: 'PROD-011', name: 'Wireless Keyboard', quantity: 1 }]
   },
   {
     _id: '12',
@@ -100,6 +111,7 @@ const mockOrders = [
     date: '2023-12-14',
     status: 'PENDING',
     total: 159.50,
+    products: [{ productId: 'PROD-012', name: 'Portable Bluetooth Speaker', quantity: 1 }]
   },
   {
     _id: '13',
@@ -108,6 +120,7 @@ const mockOrders = [
     date: '2023-12-03',
     status: 'COMPLETED',
     total: 299.75,
+    products: [{ productId: 'PROD-013', name: 'Wireless Charging Pad', quantity: 1 }]
   },
   {
     _id: '14',
@@ -116,6 +129,7 @@ const mockOrders = [
     date: '2023-12-15',
     status: 'PROCESSING',
     total: 129.50,
+    products: [{ productId: 'PROD-014', name: 'Smart Thermostat', quantity: 1 }]
   },
   {
     _id: '15',
@@ -124,6 +138,7 @@ const mockOrders = [
     date: '2023-12-02',
     status: 'COMPLETED',
     total: 249.99,
+    products: [{ productId: 'PROD-015', name: 'Wireless Router', quantity: 1 }]
   },
   {
     _id: '16',
@@ -132,6 +147,7 @@ const mockOrders = [
     date: '2023-12-16',
     status: 'PENDING',
     total: 179.50,
+    products: [{ productId: 'PROD-016', name: 'Smart Display', quantity: 1 }]
   },
   {
     _id: '17',
@@ -140,6 +156,7 @@ const mockOrders = [
     date: '2023-12-01',
     status: 'PROCESSING',
     total: 399.75,
+    products: [{ productId: 'PROD-017', name: '4K Monitor', quantity: 1 }]
   },
   {
     _id: '18',
@@ -148,6 +165,7 @@ const mockOrders = [
     date: '2023-12-17',
     status: 'COMPLETED',
     total: 109.99,
+    products: [{ productId: 'PROD-018', name: 'Wireless Earphones', quantity: 1 }]
   },
   {
     _id: '19',
@@ -156,6 +174,7 @@ const mockOrders = [
     date: '2023-11-30',
     status: 'PENDING',
     total: 269.50,
+    products: [{ productId: 'PROD-019', name: 'Smart Home Hub', quantity: 1 }]
   },
   {
     _id: '20',
@@ -164,6 +183,7 @@ const mockOrders = [
     date: '2023-12-18',
     status: 'PROCESSING',
     total: 189.75,
+    products: [{ productId: 'PROD-020', name: 'Wireless Charging Stand', quantity: 1 }]
   }
 ];
 
@@ -176,6 +196,11 @@ interface Order {
   date: string;
   status: string;
   total: number;
+  products: {
+    productId: string;
+    name: string;
+    quantity: number;
+  }[];
 }
 
 const StatusPill = ({ status }: { status: string }) => {

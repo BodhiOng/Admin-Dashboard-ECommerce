@@ -175,7 +175,7 @@ export default function Dashboard() {
           {lowStockItems.map((item) => (
             <div key={item.id} className="flex items-center justify-between border-b border-gray-200 pb-4">
               <div>
-                <h3 className="text-sm font-medium text-gray-900">{item.product}</h3>
+                <h3 className="text-xs font-medium text-gray-900">{item.product}</h3>
                 <p className="text-xs text-gray-500">Current Stock: {item.stock}</p>
               </div>
               <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">

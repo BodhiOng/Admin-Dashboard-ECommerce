@@ -52,6 +52,9 @@ export default function ProfilePage() {
     [key: string]: string;
   }>({});
 
+  // Mock current password for testing
+  const MOCK_CURRENT_PASSWORD = 'currentpassword123';
+
   // Validate entire form including password
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -61,6 +64,8 @@ export default function ProfilePage() {
       // Current password validation
       if (!passwordData.currentPassword) {
         errors.currentPassword = 'Current password is required';
+      } else if (passwordData.currentPassword !== MOCK_CURRENT_PASSWORD) {
+        errors.currentPassword = 'Current password is incorrect';
       }
 
       // New password validation
@@ -70,6 +75,8 @@ export default function ProfilePage() {
         // Password length check
         if (passwordData.newPassword.length < 8) {
           errors.newPassword = 'Password must be at least 8 characters long';
+        } else if (passwordData.newPassword === passwordData.currentPassword) {
+          errors.newPassword = 'New password cannot be the same as current password';
         }
       }
 
@@ -150,9 +157,9 @@ export default function ProfilePage() {
         // Validate current password as user types
         if (!value) {
           errorMessage = 'Current password is required';
-        } 
-        // TODO: Implement backend password verification
-        // This should be replaced with an actual API call to verify the current password
+        } else if (value !== MOCK_CURRENT_PASSWORD) {
+          errorMessage = 'Current password is incorrect';
+        }
         break;
       
       case 'newPassword':
@@ -161,6 +168,8 @@ export default function ProfilePage() {
           errorMessage = 'New password is required';
         } else if (value.length < 8) {
           errorMessage = 'Password must be at least 8 characters long';
+        } else if (value === passwordData.currentPassword) {
+          errorMessage = 'New password cannot be the same as current password';
         }
         break;
       
@@ -604,13 +613,20 @@ export default function ProfilePage() {
             </div>
 
             {/* Mobile Action Buttons */}
-            <div className="flex flex-col space-y-4">
+            <div className="flex space-x-2">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
                 disabled={Object.keys(profile).every(
                   key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
                 ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword}
-                className={`w-full py-3 rounded-md transition-colors ${
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   Object.keys(profile).every(
                     key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
                   ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword
@@ -619,13 +635,6 @@ export default function ProfilePage() {
                 }`}
               >
                 Save Profile
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="w-full py-3 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-              >
-                Cancel
               </button>
             </div>
           </form>
