@@ -1,0 +1,61 @@
+# Virtual Environment
+venv/
+*.venv
+.env
+.venv
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment Files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Logs
+*.log
+
+# IDE and Editor directories
+.idea/
+.vscode/
+
+# Python bytecode
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.bak
+
+# Backup files
+*.backup
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Mongo database files (if any local database files are generated)
+*.mongo
+*.mongodb
+
+# Specific to this project
+data/
+temp/
