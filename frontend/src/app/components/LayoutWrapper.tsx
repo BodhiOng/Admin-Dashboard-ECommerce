@@ -18,7 +18,8 @@ export default function LayoutWrapper({
   const isFullscreenPage = useMemo(() => 
     pathname.startsWith('/login') || 
     pathname.startsWith('/signup') || 
-    pathname.startsWith('/pendingapproval'), 
+    pathname.startsWith('/pending-approval') ||
+    pathname.startsWith('/forgot-password'), 
     [pathname]
   );
 

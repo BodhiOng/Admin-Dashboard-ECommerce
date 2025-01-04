@@ -30,11 +30,15 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
+    // Mock credentials
+    const MOCK_EMAIL = 'bodhiong@gmail.com';
+    const MOCK_PASSWORD = 'password';
+
     try {
-      // TODO: Replace with actual authentication logic
-      if (email === 'admin@example.com' && password === 'password123') {
+      // Check against mock credentials
+      if (email === MOCK_EMAIL && password === MOCK_PASSWORD) {
         // Successful login
-        router.push('/dashboard');
+        router.push('/');
       } else {
         setError('Invalid email or password');
       }
@@ -49,7 +53,7 @@ export default function LoginPage() {
       <div className="md:hidden h-screen w-screen absolute inset-0 bg-gray-50 flex flex-col">
         <div className="flex-grow flex flex-col justify-center px-2 py-8">
           <div className="sm:mx-auto sm:w-full sm:max-w-md">
-            <h2 className="mt-6 text-center text-4xl font-bold text-gray-900">
+            <h2 className="mt-6 text-center text-2xl font-bold text-gray-900">
               Sign in to your account
             </h2>
           </div>
@@ -113,7 +117,7 @@ export default function LoginPage() {
                   </div>
 
                   <div className="text-sm">
-                    <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                    <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
                       Forgot password?
                     </a>
                   </div>
@@ -208,7 +212,7 @@ export default function LoginPage() {
               </div>
 
               <div className="text-sm">
-                <a href="#" className="font-medium text-indigo-600 hover:text-indigo-500">
+                <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
                 </a>
               </div>

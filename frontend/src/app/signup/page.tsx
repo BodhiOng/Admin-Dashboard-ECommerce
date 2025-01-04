@@ -379,8 +379,7 @@ export default function SignupPage() {
               </div>
             </div>
           </form>
-
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white">
+          <div className="p-4 mt-auto">
             <p className="text-center text-sm text-gray-600">
               Already have an account?{' '}
               <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
