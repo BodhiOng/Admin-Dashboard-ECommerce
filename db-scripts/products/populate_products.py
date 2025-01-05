@@ -68,14 +68,17 @@ def generate_products(num_products=500):
         else:
             stock = random.randint(101, 250)
         
+        product_id = "PRODUCT-" + str(uuid.uuid4())
+        
         product = {
-            '_id': "PRODUCT-" + str(uuid.uuid4()),
+            '_id': product_id,
+            'id': product_id,
             'name': product_type,
             'category': category,
             'price': round(random.betavariate(2, 5) * 50, 2),
             'stock': stock,
             'description': description,
-            'image': default_image  # Use the default "No Image" image
+            'image': default_image or NO_IMAGE_URL
         }
         products.append(product)
     

@@ -120,8 +120,11 @@ def generate_orders(num_orders=500, products=None):
                 'product_quantity': quantity
             }]
             
+            order_id = "ORDER-" + str(uuid.uuid4())
+            
             order = {
-                'id': "ORDER-" + str(uuid.uuid4()),
+                '_id': order_id,
+                'id': order_id,
                 'customer': generate_customer_name(),
                 'date': order_date,
                 'total': round(total_price, 2),
