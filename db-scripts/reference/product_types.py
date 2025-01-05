@@ -1,4 +1,4 @@
-# Comprehensive Product Types Dictionary
+# Product Types Dictionary
 
 PRODUCT_TYPES = {
     'Electronics': [

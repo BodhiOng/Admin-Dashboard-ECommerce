@@ -4,7 +4,12 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
-from customer_names import FIRST_NAMES, LAST_NAMES
+import sys
+
+# Add the parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from reference.people_names import FIRST_NAMES, LAST_NAMES
 
 # Explicitly set the project root and .env path
 PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'

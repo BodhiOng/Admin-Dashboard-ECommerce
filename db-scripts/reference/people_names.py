@@ -1,4 +1,4 @@
-# Customer Names Database
+# Names dictionary
 
 FIRST_NAMES = [
     'Emma', 'Liam', 'Olivia', 'Noah', 'Ava', 'Ethan', 'Sophia', 'Mason', 'Isabella', 

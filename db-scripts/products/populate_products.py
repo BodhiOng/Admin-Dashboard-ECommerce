@@ -3,9 +3,14 @@ from pymongo import MongoClient
 import random
 import uuid
 from dotenv import load_dotenv
-from product_types import PRODUCT_TYPES
+import sys
 import requests
 import base64
+
+# Add the parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from reference.product_types import PRODUCT_TYPES
 
 # Explicitly set the project root and .env path
 PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'
