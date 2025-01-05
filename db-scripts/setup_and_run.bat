@@ -20,9 +20,7 @@ pip install -r "%PROJECT_ROOT%\db-scripts\requirements.txt"
 
 :: Run the populate products script
 python "%PROJECT_ROOT%\db-scripts\products\populate_products.py"
+python "%PROJECT_ROOT%\db-scripts\orders\populate_orders.py"
 
 :: Deactivate virtual environment
 deactivate
-
-:: Pause to see output (optional)
-pause
