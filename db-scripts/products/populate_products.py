@@ -22,7 +22,7 @@ load_dotenv(dotenv_path)
 # MongoDB connection details
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
 DB_NAME = os.getenv('MONGO_DB_NAME', 'ecommerce_admin_dashboard')
-COLLECTION_NAME = 'products'
+PRODUCTS_COLLECTION = 'products'
 
 # Default "No Image" URL
 NO_IMAGE_URL = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
@@ -94,7 +94,7 @@ def populate_products():
         # Connect to MongoDB
         client = MongoClient(MONGO_URI)
         db = client[DB_NAME]
-        collection = db[COLLECTION_NAME]
+        collection = db[PRODUCTS_COLLECTION]
         
         # Generate products
         products = generate_products()

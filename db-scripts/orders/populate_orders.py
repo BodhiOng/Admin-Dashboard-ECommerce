@@ -9,7 +9,7 @@ import sys
 # Add the parent directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from reference.people_names import FIRST_NAMES, LAST_NAMES
+from reference.malaysian_names import FIRST_NAMES, LAST_NAMES
 
 # Explicitly set the project root and .env path
 PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'
@@ -113,11 +113,11 @@ def generate_orders(num_orders=500, products=None):
         order_date = generate_date()
         
         # Ensure at least 20 orders per month
-        month_key = order_date[:7]  # YYYY-MM format
+        month_key = order_date[:7]  # Takes "YYYY-MM"
         if month_key not in orders_per_month:
             orders_per_month[month_key] = 0
         
-        # Increase the threshold for months with fewer orders
+        # Ensure minimum order count per month (30 orders) and total order required (500 orders)
         if orders_per_month[month_key] < 30 or len(orders) < num_orders:
             order_products = [{
                 'product_name': product['name'],

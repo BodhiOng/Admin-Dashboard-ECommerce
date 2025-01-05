@@ -40,7 +40,7 @@ export default function EditAdminModal({
   return (
     <>
       {/* Desktop View - Hidden on mobile screens */}
-      <div className="hidden md:block fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="hidden md:fixed md:inset-0 md:bg-black md:bg-opacity-50 md:flex md:items-center md:justify-center md:z-50">
         <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
           <div className="p-6 border-b relative">
             <h2 className="text-xl font-semibold text-gray-800">
