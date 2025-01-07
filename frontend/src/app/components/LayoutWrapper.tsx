@@ -64,6 +64,11 @@ export default function LayoutWrapper({
       <nav className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-lg z-40">
         <MobileNavbar />
       </nav>
+
+      {/* Tablet Navigation */}
+      <nav className="hidden md:block lg:hidden fixed bottom-0 left-0 w-full bg-white shadow-lg z-40">
+        <MobileNavbar />
+      </nav>
     </div>
   );
 }
