@@ -15,6 +15,11 @@ export interface IProduct extends Document {
 
 const ProductSchema = new mongoose.Schema<IProduct>(
   {
+    _id: { 
+      type: String,
+      default: uuidv4,
+      required: true
+    },
     id: { 
       type: String,
       default: uuidv4,
@@ -53,18 +58,9 @@ const ProductSchema = new mongoose.Schema<IProduct>(
   }, 
   {
     timestamps: true,
-    versionKey: '__v'  // Explicitly enable version key
+    versionKey: '__v'
   }
 );
-
-// Ensure _id is used as the primary key
-ProductSchema.set('toJSON', {
-  transform: function(doc, ret) {
-    // Keep both _id and id with the same value
-    ret.id = ret._id;
-    return ret;
-  }
-});
 
 const Product = mongoose.model<IProduct>('Product', ProductSchema);
 

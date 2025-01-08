@@ -1,23 +1,49 @@
 import { Request, Response } from 'express';
-import Product, { IProduct } from '../models/Product';
+import Product from '../models/Product';
 
-
+// Example usages on client-side:
+// GET products?page=2&limit=20
+// GET products?search=electronics
+// GET products?sortBy=price&sortOrder=asc
+// GET products?search=phone&sortBy=stock&sortOrder=desc&page=1&limit=10
 export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    // Validate and set allowed page sizes
-    const allowedPageSizes = [10, 20, 50];
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    // Define allowed page sizes
+    const allowedPageSizes = [10, 20, 50, 100];
 
-    // Ensure limit is one of the allowed sizes
+    // Parse query parameters with type safety and defaults
+    const page = req.query.page ? parseInt(req.query.page as string) : 1;
+    const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+    const search = req.query.search ? (req.query.search as string).trim() : '';
+    
+    // Define allowed sort fields
+    const allowedSortFields = ['id', 'name', 'category', 'price', 'stock', 'createdAt'];
+    const sortBy = req.query.sortBy && allowedSortFields.includes(req.query.sortBy as string) 
+      ? (req.query.sortBy as string).trim() 
+      : 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+    // Validate page and limit
+    const validPage = page > 0 ? page : 1;
     const validLimit = allowedPageSizes.includes(limit) ? limit : 10;
-    const skipIndex = (page - 1) * validLimit;
+    const skipIndex = (validPage - 1) * validLimit;
 
-    // Fetch total products count
-    const totalProducts = await Product.countDocuments();
+    // Build dynamic query
+    const query: any = {};
+    if (search) {
+      query.$or = [
+        { id: { $regex: search, $options: 'i' } },
+        { name: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+      ];
+    }
 
-    // Fetch paginated products
-    const products = await Product.find()
+    // Fetch total products count based on query
+    const totalProducts = await Product.countDocuments(query);
+
+    // Fetch paginated and sorted products
+    const products = await Product.find(query)
+      .sort({ [sortBy]: sortOrder })
       .limit(validLimit)
       .skip(skipIndex)
       .exec();
@@ -25,14 +51,23 @@ export const getAllProducts = async (req: Request, res: Response) => {
     res.status(200).json({
       products,
       pagination: {
-        currentPage: page,
+        currentPage: validPage,
         pageSize: validLimit,
         totalPages: Math.ceil(totalProducts / validLimit),
-        totalProducts
+        totalProducts,
+        hasNextPage: validPage * validLimit < totalProducts,
+        hasPreviousPage: validPage > 1
       },
-      allowedPageSizes
+      query: {
+        search,
+        sortBy,
+        sortOrder: sortOrder === 1 ? 'asc' : 'desc'
+      },
+      allowedPageSizes,
+      allowedSortFields
     });
   } catch (error) {
+    console.error('Error fetching products:', error);
     res.status(500).json({ 
       message: 'Error fetching products', 
       error: error instanceof Error ? error.message : 'Unknown error' 
