@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import Product from '../models/Product';
 
 // Example usages on client-side:
@@ -6,7 +7,7 @@ import Product from '../models/Product';
 // GET products?search=electronics
 // GET products?sortBy=price&sortOrder=asc
 // GET products?search=phone&sortBy=stock&sortOrder=desc&page=1&limit=10
-export const getAllProducts = async (req: Request, res: Response) => {
+export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Define allowed page sizes
     const allowedPageSizes = [10, 20, 50, 100];
@@ -67,25 +68,71 @@ export const getAllProducts = async (req: Request, res: Response) => {
       allowedSortFields
     });
   } catch (error) {
-    console.error('Error fetching products:', error);
-    res.status(500).json({ 
-      message: 'Error fetching products', 
-      error: error instanceof Error ? error.message : 'Unknown error' 
-    });
+    next(error);
   }
 };
 
-export const createProduct = async (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const newProduct = new Product(req.body);
+    // Validate required fields
+    const { 
+      name, 
+      description, 
+      price, 
+      category, 
+      stock, 
+      image 
+    } = req.body;
+
+    // Validate input data
+    if (!name || !description || price === undefined || !category || stock === undefined) {
+      return res.status(400).json({ 
+        message: 'Missing required fields', 
+        requiredFields: ['name', 'description', 'price', 'category', 'stock'] 
+      });
+    }
+
+    // Additional validations
+    if (price < 0) {
+      return res.status(400).json({ message: 'Price must be non-negative' });
+    }
+
+    if (stock < 0) {
+      return res.status(400).json({ message: 'Stock must be non-negative' });
+    }
+
+    // Generate UUID for both id and _id
+    const productId = uuidv4();
+
+    // Create new product
+    const newProduct = new Product({
+      _id: productId,
+      id: productId,
+      name: name.trim(),
+      description: description.trim(),
+      price: parseFloat(price),
+      category: category.trim(),
+      stock: parseInt(stock),
+      image: image ? image.trim() : undefined
+    });
+
+    // Save product
     await newProduct.save();
-    res.status(201).json(newProduct);
+    
+    // Transform product to include id
+    const transformedProduct = {
+      ...newProduct.toObject(),
+      id: productId,
+      _id: productId
+    };
+    
+    res.status(201).json(transformedProduct);
   } catch (error) {
-    res.status(400).json({ message: 'Error creating product', error });
+    next(error);
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
@@ -96,11 +143,11 @@ export const updateProduct = async (req: Request, res: Response) => {
     
     res.status(200).json(updatedProduct);
   } catch (error) {
-    res.status(400).json({ message: 'Error updating product', error });
+    next(error);
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id);
@@ -111,6 +158,6 @@ export const deleteProduct = async (req: Request, res: Response) => {
     
     res.status(200).json(deletedProduct);
   } catch (error) {
-    res.status(400).json({ message: 'Error deleting product', error });
+    next(error);
   }
 };

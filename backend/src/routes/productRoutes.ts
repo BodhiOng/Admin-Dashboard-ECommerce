@@ -1,4 +1,4 @@
-import express from 'express';
+import { Router } from 'express';
 import { 
   getAllProducts, 
   createProduct, 
@@ -6,11 +6,19 @@ import {
   deleteProduct 
 } from '../controllers/productController';
 
-const router = express.Router();
+const router = Router();
 
-router.get('/', getAllProducts);
-router.post('/', createProduct);
-// router.put('/:id', updateProduct);
-// router.delete('/:id', deleteProduct);
+// Wrap async handlers
+const asyncHandler = (fn: Function) => (req: any, res: any, next: any) => {
+  return Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+router.route('/')
+  .get(asyncHandler(getAllProducts))
+  .post(asyncHandler(createProduct));
+
+// router.route('/:id')
+//   .put(asyncHandler(updateProduct))
+//   .delete(asyncHandler(deleteProduct));
 
 export default router;
