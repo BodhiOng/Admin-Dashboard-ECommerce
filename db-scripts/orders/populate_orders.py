@@ -1,6 +1,6 @@
 import random
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pymongo import MongoClient
 from dotenv import load_dotenv
 import os
@@ -126,6 +126,7 @@ def generate_orders(num_orders=500, products=None):
             }]
             
             order_id = "ORDER-" + str(uuid.uuid4())
+            current_time = datetime.now(timezone.utc)
             
             order = {
                 '_id': order_id,
@@ -134,7 +135,10 @@ def generate_orders(num_orders=500, products=None):
                 'date': order_date,
                 'total': round(total_price, 2),
                 'status': random.choice(ORDER_STATUSES),
-                'products': order_products
+                'products': order_products,
+                'createdAt': current_time,
+                'updatedAt': current_time,
+                '__v': 0
             }
             
             orders.append(order)

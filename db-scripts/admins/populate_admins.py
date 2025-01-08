@@ -7,6 +7,7 @@ import requests
 import base64
 from pymongo import MongoClient
 from dotenv import load_dotenv
+from datetime import datetime, timezone
 
 # Add parent directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -94,7 +95,10 @@ def generate_admins(num_admins=50):
         'last_name': "None", 
         'address': "None", 
         'password': hash_password('AdminPassword123!'),
-        'profile_picture': generate_profile_picture("Master", "Admin")
+        'profile_picture': generate_profile_picture("Master", "Admin"),
+        'createdAt': datetime.now(timezone.utc),
+        'updatedAt': datetime.now(timezone.utc),
+        '__v': 0
     }
     admins.append(master_admin)
     
@@ -104,6 +108,7 @@ def generate_admins(num_admins=50):
         last_name = random.choice(LAST_NAMES)
         
         admin_id = "ADMIN-" + str(uuid.uuid4())
+        current_time = datetime.now(timezone.utc)
         
         admin = {
             '_id': admin_id,
@@ -116,7 +121,10 @@ def generate_admins(num_admins=50):
             'last_name': last_name,
             'address': generate_address(),
             'password': hash_password('AdminPassword123!'),  # Default secure password
-            'profile_picture': generate_profile_picture(first_name, last_name)
+            'profile_picture': generate_profile_picture(first_name, last_name),
+            'createdAt': current_time,
+            'updatedAt': current_time,
+            '__v': 0
         }
         
         admins.append(admin)

@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 import sys
 import requests
 import base64
+from datetime import datetime, timezone
 
 # Add the parent directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -74,6 +75,7 @@ def generate_products(num_products=500):
             stock = random.randint(101, 250)
         
         product_id = "PRODUCT-" + str(uuid.uuid4())
+        current_time = datetime.now(timezone.utc)
         
         product = {
             '_id': product_id,
@@ -83,7 +85,10 @@ def generate_products(num_products=500):
             'price': round(random.betavariate(2, 5) * 50, 2),
             'stock': stock,
             'description': description,
-            'image': default_image or NO_IMAGE_URL
+            'image': default_image or NO_IMAGE_URL,
+            'createdAt': current_time,
+            'updatedAt': current_time,
+            '__v': 0
         }
         products.append(product)
     
