@@ -2,6 +2,7 @@ import mongoose, { Document } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 
 export interface IProduct extends Document {
+  _id: string;  
   id: string;
   name: string;
   description: string;
@@ -17,12 +18,12 @@ const ProductSchema = new mongoose.Schema<IProduct>(
   {
     _id: { 
       type: String,
-      default: uuidv4,
+      default: () => `PRODUCT-${uuidv4()}`,
       required: true
     },
     id: { 
       type: String,
-      default: uuidv4,
+      default: () => `PRODUCT-${uuidv4()}`,
       required: true
     },
     name: { 

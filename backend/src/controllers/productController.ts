@@ -94,7 +94,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     if (stock < 0) return res.status(400).json({ message: 'Stock must be non-negative' });
 
     // Generate UUID for both id and _id
-    const productId = uuidv4();
+    const productId = "PRODUCT-" + uuidv4();
 
     // Create new product
     const newProduct = new Product({
