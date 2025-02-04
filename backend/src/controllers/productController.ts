@@ -2,11 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import Product from '../models/Product';
 
-// Example usages on client-side:
-// GET products?page=2&limit=20
-// GET products?search=electronics
-// GET products?sortBy=price&sortOrder=asc
-// GET products?search=phone&sortBy=stock&sortOrder=desc&page=1&limit=10
+// GET /api/products
 export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Define allowed page sizes
@@ -72,6 +68,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+// POST /api/products
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Validate required fields
@@ -132,6 +129,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// PUT /api/products/:id
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
@@ -147,6 +145,7 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// DELETE /api/products/:id
 export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;

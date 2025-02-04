@@ -17,8 +17,8 @@ router.route('/')
   .get(asyncHandler(getAllProducts))
   .post(asyncHandler(createProduct));
 
-// router.route('/:id')
-//   .put(asyncHandler(updateProduct))
-//   .delete(asyncHandler(deleteProduct));
+router.route('/:id')
+  .put(asyncHandler(updateProduct))
+  .delete(asyncHandler(deleteProduct));
 
 export default router;
