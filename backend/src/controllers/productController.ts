@@ -89,14 +89,9 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       });
     }
 
-    // Additional validations
-    if (price < 0) {
-      return res.status(400).json({ message: 'Price must be non-negative' });
-    }
-
-    if (stock < 0) {
-      return res.status(400).json({ message: 'Stock must be non-negative' });
-    }
+    // Additional validations (for stock and price)
+    if (price < 0) return res.status(400).json({ message: 'Price must be non-negative' });
+    if (stock < 0) return res.status(400).json({ message: 'Stock must be non-negative' });
 
     // Generate UUID for both id and _id
     const productId = uuidv4();
@@ -132,13 +127,16 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 // PUT /api/products/:id
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Get the ID from the request parameters
     const { id } = req.params;
+
+    // Find and update the product by its ID
     const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
     
-    if (!updatedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    // If the product is not found
+    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
     
+    // Return the updated product
     res.status(200).json(updatedProduct);
   } catch (error) {
     next(error);
@@ -148,13 +146,18 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 // DELETE /api/products/:id
 export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Get the ID from the request parameters
     const { id } = req.params;
+    
+    // Find and delete the product by its ID
     const deletedProduct = await Product.findByIdAndDelete(id);
     
+    // If the product is not found
     if (!deletedProduct) {
       return res.status(404).json({ message: 'Product not found' });
     }
     
+    // Return the deleted product
     res.status(200).json(deletedProduct);
   } catch (error) {
     next(error);
