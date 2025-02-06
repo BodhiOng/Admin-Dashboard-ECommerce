@@ -6,7 +6,7 @@ import OrderDetailsModal from './components/OrderDetailsModal';
 // Mock data
 const mockOrders = [
   {
-    _id: '1',
+    id: '1',
     customer: { name: 'John Doe' },
     orderNumber: 'ORD-001',
     date: '2023-12-10',
@@ -15,7 +15,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-001', name: 'Wireless Headphones', quantity: 1 }]
   },
   {
-    _id: '2',
+    id: '2',
     customer: { name: 'Jane Smith' },
     orderNumber: 'ORD-002',
     date: '2023-12-09',
@@ -24,7 +24,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-002', name: 'Smart Watch', quantity: 2 }]
   },
   {
-    _id: '3',
+    id: '3',
     customer: { name: 'Mike Johnson' },
     orderNumber: 'ORD-003',
     date: '2023-12-08',
@@ -33,7 +33,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-003', name: 'Bluetooth Speaker', quantity: 1 }]
   },
   {
-    _id: '4',
+    id: '4',
     customer: { name: 'Sarah Williams' },
     orderNumber: 'ORD-004',
     date: '2023-12-08',
@@ -42,7 +42,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-004', name: 'Noise Cancelling Earbuds', quantity: 1 }]
   },
   {
-    _id: '5',
+    id: '5',
     customer: { name: 'Robert Brown' },
     orderNumber: 'ORD-005',
     date: '2023-12-07',
@@ -51,7 +51,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-005', name: 'Portable Power Bank', quantity: 1 }]
   },
   {
-    _id: '6',
+    id: '6',
     customer: { name: 'Emily Davis' },
     orderNumber: 'ORD-006',
     date: '2023-12-11',
@@ -60,7 +60,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-006', name: 'Gaming Laptop', quantity: 1 }]
   },
   {
-    _id: '7',
+    id: '7',
     customer: { name: 'David Wilson' },
     orderNumber: 'ORD-007',
     date: '2023-12-06',
@@ -69,7 +69,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-007', name: 'Wireless Mouse', quantity: 1 }]
   },
   {
-    _id: '8',
+    id: '8',
     customer: { name: 'Lisa Martinez' },
     orderNumber: 'ORD-008',
     date: '2023-12-12',
@@ -78,7 +78,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-008', name: 'External SSD', quantity: 1 }]
   },
   {
-    _id: '9',
+    id: '9',
     customer: { name: 'Chris Taylor' },
     orderNumber: 'ORD-009',
     date: '2023-12-05',
@@ -87,7 +87,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-009', name: 'Smart Home Camera', quantity: 1 }]
   },
   {
-    _id: '10',
+    id: '10',
     customer: { name: 'Amanda Anderson' },
     orderNumber: 'ORD-010',
     date: '2023-12-13',
@@ -96,7 +96,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-010', name: 'Fitness Tracker', quantity: 1 }]
   },
   {
-    _id: '11',
+    id: '11',
     customer: { name: 'Michael Thompson' },
     orderNumber: 'ORD-011',
     date: '2023-12-04',
@@ -105,7 +105,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-011', name: 'Wireless Keyboard', quantity: 1 }]
   },
   {
-    _id: '12',
+    id: '12',
     customer: { name: 'Jessica Rodriguez' },
     orderNumber: 'ORD-012',
     date: '2023-12-14',
@@ -114,7 +114,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-012', name: 'Portable Bluetooth Speaker', quantity: 1 }]
   },
   {
-    _id: '13',
+    id: '13',
     customer: { name: 'Kevin Lee' },
     orderNumber: 'ORD-013',
     date: '2023-12-03',
@@ -123,7 +123,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-013', name: 'Wireless Charging Pad', quantity: 1 }]
   },
   {
-    _id: '14',
+    id: '14',
     customer: { name: 'Nicole Garcia' },
     orderNumber: 'ORD-014',
     date: '2023-12-15',
@@ -132,7 +132,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-014', name: 'Smart Thermostat', quantity: 1 }]
   },
   {
-    _id: '15',
+    id: '15',
     customer: { name: 'Ryan Martinez' },
     orderNumber: 'ORD-015',
     date: '2023-12-02',
@@ -141,7 +141,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-015', name: 'Wireless Router', quantity: 1 }]
   },
   {
-    _id: '16',
+    id: '16',
     customer: { name: 'Sophia Clark' },
     orderNumber: 'ORD-016',
     date: '2023-12-16',
@@ -150,7 +150,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-016', name: 'Smart Display', quantity: 1 }]
   },
   {
-    _id: '17',
+    id: '17',
     customer: { name: 'Daniel Rodriguez' },
     orderNumber: 'ORD-017',
     date: '2023-12-01',
@@ -159,7 +159,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-017', name: '4K Monitor', quantity: 1 }]
   },
   {
-    _id: '18',
+    id: '18',
     customer: { name: 'Olivia White' },
     orderNumber: 'ORD-018',
     date: '2023-12-17',
@@ -168,7 +168,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-018', name: 'Wireless Earphones', quantity: 1 }]
   },
   {
-    _id: '19',
+    id: '19',
     customer: { name: 'Ethan Harris' },
     orderNumber: 'ORD-019',
     date: '2023-11-30',
@@ -177,7 +177,7 @@ const mockOrders = [
     products: [{ productId: 'PROD-019', name: 'Smart Home Hub', quantity: 1 }]
   },
   {
-    _id: '20',
+    id: '20',
     customer: { name: 'Isabella Martin' },
     orderNumber: 'ORD-020',
     date: '2023-12-18',
@@ -188,7 +188,7 @@ const mockOrders = [
 ];
 
 interface Order {
-  _id: string;
+  id: string;
   customer: {
     name: string;
   };
@@ -301,9 +301,7 @@ export default function Orders() {
     return sortedOrders.filter(order => 
       order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.total.toString().includes(searchQuery.toLowerCase()) ||
-      order.date.toLowerCase().includes(searchQuery.toLowerCase())
+      order.status.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [sortedOrders, searchQuery]);
 
@@ -327,7 +325,7 @@ export default function Orders() {
 
   // Function to handle status change
   const handleStatusChange = (orderId: string) => {
-    const currentOrder = orders.find(order => order._id === orderId);
+    const currentOrder = orders.find(order => order.id === orderId);
     if (!currentOrder) return;
 
     const statusCycle = ['PENDING', 'PROCESSING', 'COMPLETED'];
@@ -335,7 +333,7 @@ export default function Orders() {
     const nextIndex = (currentIndex + 1) % statusCycle.length;
 
     const updatedOrders = orders.map(order => 
-      order._id === orderId 
+      order.id === orderId 
         ? { ...order, status: statusCycle[nextIndex] } 
         : order
     );
@@ -415,7 +413,7 @@ export default function Orders() {
       <div className="md:hidden space-y-4">
         {paginatedOrders.map((order) => (
           <div 
-            key={order._id} 
+            key={order.id} 
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
           >
             <div className="flex flex-col">
@@ -437,7 +435,7 @@ export default function Orders() {
             
             <div className="flex justify-start items-center mt-2">
               <span className="text-xs text-gray-600 mr-2">Status:</span>
-              <div onClick={() => handleStatusChange(order._id)} className="cursor-pointer inline-block">
+              <div onClick={() => handleStatusChange(order.id)} className="cursor-pointer inline-block">
                 <StatusPill status={order.status} />
               </div>
             </div>
@@ -551,7 +549,7 @@ export default function Orders() {
             <tbody className="bg-white divide-y divide-gray-200">
               {paginatedOrders.map((order) => (
                 <tr 
-                  key={order._id} 
+                  key={order.id} 
                   className="hover:bg-gray-50"
                 >
                   <td className="px-6 py-4 whitespace-nowrap">{order.orderNumber}</td>
@@ -560,7 +558,7 @@ export default function Orders() {
                   <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div 
-                      onClick={() => handleStatusChange(order._id)}
+                      onClick={() => handleStatusChange(order.id)}
                       className="cursor-pointer inline-block"
                     >
                       <StatusPill status={order.status} />

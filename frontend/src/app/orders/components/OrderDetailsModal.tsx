@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 // Order interface to match the one in page.tsx
 interface Order {
-  _id: string;
+  id: string;
   customer: {
     name: string;
   };

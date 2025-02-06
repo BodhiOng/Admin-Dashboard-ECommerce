@@ -6,7 +6,7 @@ import Product from '../models/Product';
 export const getAllProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Define allowed page sizes
-    const allowedPageSizes = [10, 20, 50, 100];
+    const allowedPageSizes = [10, 20, 50];
 
     // Parse query parameters with type safety and defaults
     const page = req.query.page ? parseInt(req.query.page as string) : 1;
@@ -71,7 +71,7 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
 // POST /api/products
 export const createProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Validate required fields
+    // Retrieve required fields from request body
     const { 
       name, 
       description, 
@@ -124,10 +124,32 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
+// GET /api/products/:id
+export const getProduct = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    // Retrieve the ID from the request parameters
+    const { id } = req.params;
+
+    // Find product by its unique ID
+    const product = await Product.findOne({ id });
+
+    // If the product is not found
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    res.status(200).json({
+      product
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // PUT /api/products/:id
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Get the ID from the request parameters
+    // Retrieve the ID from the request parameters
     const { id } = req.params;
 
     // Find and update the product by its ID
@@ -136,7 +158,6 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
     // If the product is not found
     if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
     
-    // Return the updated product
     res.status(200).json(updatedProduct);
   } catch (error) {
     next(error);
@@ -146,18 +167,15 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
 // DELETE /api/products/:id
 export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    // Get the ID from the request parameters
+    // Retrieve the ID from the request parameters
     const { id } = req.params;
     
     // Find and delete the product by its ID
     const deletedProduct = await Product.findByIdAndDelete(id);
     
     // If the product is not found
-    if (!deletedProduct) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
+    if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
     
-    // Return the deleted product
     res.status(200).json(deletedProduct);
   } catch (error) {
     next(error);

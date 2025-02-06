@@ -120,8 +120,9 @@ def generate_orders(num_orders=500, products=None):
         # Ensure minimum order count per month (30 orders) and total order required (500 orders)
         if orders_per_month[month_key] < 30 or len(orders) < num_orders:
             order_products = [{
-                'product_name': product['name'],
+                '_id': product['_id'],
                 'product_id': product['_id'],
+                'product_name': product['name'],
                 'product_quantity': quantity
             }]
             
