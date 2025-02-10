@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { 
   getAllProducts, 
   createProduct, 
-  getProduct,
+  getProductById, 
   updateProduct, 
   deleteProduct
 } from '../controllers/productController';
@@ -19,7 +19,7 @@ router.route('/')
   .post(asyncHandler(createProduct));
 
 router.route('/:id')
-  .get(asyncHandler(getProduct))
+  .get(asyncHandler(getProductById))
   .put(asyncHandler(updateProduct))
   .delete(asyncHandler(deleteProduct));
 

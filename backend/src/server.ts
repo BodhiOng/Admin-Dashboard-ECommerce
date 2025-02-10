@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import productRoutes from './routes/productRoutes';
 import orderRoutes from './routes/orderRoutes';
+import adminRoutes from './routes/adminRoutes';
 import connectDB from './config/database';
 
 // Load environment variables from project root
@@ -23,6 +24,7 @@ app.use(express.json());
 // Routes
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/admins', adminRoutes);
 
 // Basic health check route
 app.get('/api/health', (req, res) => {

@@ -125,7 +125,7 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
 };
 
 // GET /api/products/:id
-export const getProduct = async (req: Request, res: Response, next: NextFunction) => {
+export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Retrieve the ID from the request parameters
     const { id } = req.params;
