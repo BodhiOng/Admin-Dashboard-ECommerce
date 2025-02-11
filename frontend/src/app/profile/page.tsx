@@ -29,7 +29,6 @@ const initialUserProfile: UserProfile = {
 export default function ProfilePage() {
   // State for user profile
   const [profile, setProfile] = useState<UserProfile>(initialUserProfile);
-  
   // State for form data
   const [formData, setFormData] = useState<UserProfile>(initialUserProfile);
 
@@ -55,45 +54,16 @@ export default function ProfilePage() {
   // Mock current password for testing
   const MOCK_CURRENT_PASSWORD = 'currentpassword123';
 
-  // Validate entire form including password
-  const validateForm = () => {
-    const errors: { [key: string]: string } = {};
-
-    // Password validation (only if password fields are filled)
-    if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmNewPassword) {
-      // Current password validation
-      if (!passwordData.currentPassword) {
-        errors.currentPassword = 'Current password is required';
-      } else if (passwordData.currentPassword !== MOCK_CURRENT_PASSWORD) {
-        errors.currentPassword = 'Current password is incorrect';
-      }
-
-      // New password validation
-      if (!passwordData.newPassword) {
-        errors.newPassword = 'New password is required';
-      } else {
-        // Password length check
-        if (passwordData.newPassword.length < 8) {
-          errors.newPassword = 'Password must be at least 8 characters long';
-        } else if (passwordData.newPassword === passwordData.currentPassword) {
-          errors.newPassword = 'New password cannot be the same as current password';
-        }
-      }
-
-      // Confirm password validation
-      if (!passwordData.confirmNewPassword) {
-        errors.confirmNewPassword = 'Please confirm your new password';
-      } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-        errors.confirmNewPassword = 'Passwords do not match';
-      }
-    }
-
-    return errors;
-  };
-
   // Handle form submission
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Reset previous password errors
+    setPasswordErrors({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
+    });
 
     // Prepare update payload
     const updatePayload = {
@@ -104,6 +74,46 @@ export default function ProfilePage() {
         newPassword: passwordData.newPassword
       } : {})
     };
+
+    // Validate entire form including password (only if password fields are filled)
+    const passwordValidationErrors: Partial<typeof passwordErrors> = {};
+
+    if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmNewPassword) {
+      // Current password validation
+      if (!passwordData.currentPassword) {
+        passwordValidationErrors.currentPassword = 'Current password is required';
+      } else if (passwordData.currentPassword !== MOCK_CURRENT_PASSWORD) {
+        passwordValidationErrors.currentPassword = 'Current password is incorrect';
+      }
+
+      // New password validation
+      if (!passwordData.newPassword) {
+        passwordValidationErrors.newPassword = 'New password is required';
+      } else {
+        // Password length check
+        if (passwordData.newPassword.length < 8) {
+          passwordValidationErrors.newPassword = 'Password must be at least 8 characters long';
+        } else if (passwordData.newPassword === passwordData.currentPassword) {
+          passwordValidationErrors.newPassword = 'New password cannot be the same as current password';
+        }
+      }
+
+      // Confirm password validation
+      if (!passwordData.confirmNewPassword) {
+        passwordValidationErrors.confirmNewPassword = 'Please confirm your new password';
+      } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+        passwordValidationErrors.confirmNewPassword = 'Passwords do not match';
+      }
+    }
+
+    // If there are password validation errors, set them and stop submission
+    if (Object.keys(passwordValidationErrors).length > 0) {
+      setPasswordErrors(prevErrors => ({
+        ...prevErrors,
+        ...passwordValidationErrors
+      }));
+      return;
+    }
 
     // TODO: Implement actual profile and password update logic
     console.log('Profile update submitted', updatePayload);
@@ -143,50 +153,17 @@ export default function ProfilePage() {
   // Handle password input changes
   const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     // Update password data
-    setPasswordData(prev => ({
-      ...prev,
+    setPasswordData(prevData => ({
+      ...prevData,
       [name]: value
     }));
 
-    // Perform real-time validation
-    let errorMessage = '';
-    switch (name) {
-      case 'currentPassword':
-        // Validate current password as user types
-        if (!value) {
-          errorMessage = 'Current password is required';
-        } else if (value !== MOCK_CURRENT_PASSWORD) {
-          errorMessage = 'Current password is incorrect';
-        }
-        break;
-      
-      case 'newPassword':
-        // Validate new password
-        if (!value) {
-          errorMessage = 'New password is required';
-        } else if (value.length < 8) {
-          errorMessage = 'Password must be at least 8 characters long';
-        } else if (value === passwordData.currentPassword) {
-          errorMessage = 'New password cannot be the same as current password';
-        }
-        break;
-      
-      case 'confirmNewPassword':
-        // Validate confirm password
-        if (!value) {
-          errorMessage = 'Please confirm your new password';
-        } else if (value !== passwordData.newPassword) {
-          errorMessage = 'Passwords do not match';
-        }
-        break;
-    }
-
-    // Update specific error
-    setPasswordErrors(prev => ({
-      ...prev,
-      [name]: errorMessage
+    // Clear the specific error for this field
+    setPasswordErrors(prevErrors => ({
+      ...prevErrors,
+      [name]: ''
     }));
   };
 
