@@ -1,0 +1,132 @@
+// src/middleware/errorHandler.ts
+import { ErrorRequestHandler } from 'express';
+
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  console.error('Error:', err);
+
+  // Handle Mongoose validation errors
+  if (err.name === 'ValidationError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Validation Error',
+        type: 'ValidationError',
+        details: err.message
+      },
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
+
+  // Handle duplicate key errors
+  if (err.code === 11000) {
+    const duplicateField = Object.keys(err.keyPattern)[0];
+    res.status(409).json({
+      success: false,
+      error: {
+        message: 'Duplicate Entry',
+        type: 'DuplicateEntryError',
+        details: `${duplicateField} already exists`
+      },
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
+
+  // Handle cast errors (invalid ID format)
+  if (err.name === 'CastError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Invalid ID format',
+        type: 'CastError',
+        details: `Invalid format for field: ${err.path}`
+      },
+      timestamp: new Date().toISOString()
+    });
+    return;
+  }
+
+  // Pagination-related errors
+  if (err.name === 'PaginationError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Invalid Pagination Parameters',
+        type: 'PaginationError',
+        details: 'Page number or limit is out of acceptable range',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Sorting-related errors
+  if (err.name === 'SortingError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Invalid Sorting Parameters',
+        type: 'SortingError',
+        details: 'Requested sort field or order is not allowed',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Query parsing errors
+  if (err.name === 'QueryParsingError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Invalid Query Parameters',
+        type: 'QueryParsingError',
+        details: 'Unable to parse search or filter parameters',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Search-related errors
+  if (err.name === 'SearchError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Invalid Search Parameters',
+        type: 'SearchError',
+        details: 'Search query is too long or contains invalid characters',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Product query-related errors
+  if (err.name === 'ProductQueryError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'Product Query Error',
+        type: 'ProductQueryError',
+        details: 'Unable to process product search or filter',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Default error response
+  res.status(500).json({
+    success: false,
+    error: {
+      message: 'Internal Server Error',
+      type: 'ServerError',
+      details: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    },
+    timestamp: new Date().toISOString()
+  });
+};
+
+export default errorHandler;

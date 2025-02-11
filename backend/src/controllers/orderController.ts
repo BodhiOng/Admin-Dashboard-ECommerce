@@ -51,7 +51,11 @@ export const getAllOrders = async (req: Request, res: Response, next: NextFuncti
         totalPages: Math.ceil(totalOrders / validLimit),
         totalOrders,
         pageSize: validLimit
-      }
+      }, 
+      
+      success: true,
+      data: orders,
+      error: null
     });
   } catch (error) {
     next(error);

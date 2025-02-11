@@ -2,6 +2,7 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 
 // Mock data for sales chart
 const salesData = [
@@ -19,58 +20,126 @@ const salesData = [
   { month: 'Dec', sales: 7000 },
 ];
 
-// Mock data for recent orders
-const mockOrders = [
-  {
-    _id: '1',
-    customer: { name: 'John Doe' },
-    orderNumber: 'ORD-001',
-    date: '2023-12-10',
-    status: 'PENDING',
-    total: 129.99,
-  },
-  {
-    _id: '2',
-    customer: { name: 'Jane Smith' },
-    orderNumber: 'ORD-002',
-    date: '2023-12-09',
-    status: 'COMPLETED',
-    total: 259.99,
-  },
-  {
-    _id: '3',
-    customer: { name: 'Mike Johnson' },
-    orderNumber: 'ORD-003',
-    date: '2023-12-08',
-    status: 'PROCESSING',
-    total: 89.99,
-  },
-  {
-    _id: '4',
-    customer: { name: 'Sarah Williams' },
-    orderNumber: 'ORD-004',
-    date: '2023-12-08',
-    status: 'COMPLETED',
-    total: 199.99,
-  },
-  {
-    _id: '5',
-    customer: { name: 'Robert Brown' },
-    orderNumber: 'ORD-005',
-    date: '2023-12-07',
-    status: 'PENDING',
-    total: 149.99,
-  },
-];
+interface Order {
+  _id: string;
+  customer: string;
+  date: string;
+  total: number;
+  status: 'Completed' | 'Pending' | 'Processing';
+}
 
-// Mock data for low stock alerts
-const lowStockItems = [
-  { id: 1, product: 'Wireless Mouse', stock: 5 },
-  { id: 2, product: 'USB-C Cable', stock: 3 },
-  { id: 3,  product: 'Power Bank', stock: 7 },
-];
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
+interface LowStockItem {
+  _id: string;
+  name: string;
+  stock: number;
+}
 
 export default function Dashboard() {
+  // State management with explicit types
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // New state for low stock items
+  const [lowStockItems, setLowStockItems] = useState<LowStockItem[]>([]);
+  const [lowStockLoading, setLowStockLoading] = useState<boolean>(true);
+  const [lowStockError, setLowStockError] = useState<string | null>(null);
+
+  // Fetch recent orders
+  const fetchRecentOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders?sortBy=date&sortOrder=desc`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+
+      const result: ApiResponse<Order[]> = await response.json();
+
+      if (result.success && result.data) {
+        setOrders(result.data);
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // New function to fetch low stock items
+  const fetchLowStockItems = async () => {
+    try {
+      setLowStockLoading(true);
+      setLowStockError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?sortBy=stock&sortOrder=asc`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch low stock items');
+      }
+
+      const result: ApiResponse<LowStockItem[]> = await response.json();
+      console.log(result);
+
+      if (result.success && result.data) {
+        setLowStockItems(result.data);
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setLowStockError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLowStockLoading(false);
+    }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchRecentOrders();
+    fetchLowStockItems();
+  }, []);
+
+  // Loading state component
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading orders...</span>
+      </div>
+    );
+  }
+
+  // Error state component
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">Error: </strong>
+        <span className="block sm:inline">{error}</span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-0 sm:p-6 space-y-6">
       <h1 className="text-xl sm:text-2xl font-bold mb-4 text-gray-800">Dashboard</h1>
@@ -129,61 +198,130 @@ export default function Dashboard() {
             </svg>
           </Link>
         </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Customer
-                </th>
-                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
-                  Date
-                </th>
-                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total
-                </th>
-                <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider sm:table-cell">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {mockOrders.slice(0, 5).map((order) => (
-                <tr key={order._id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">{order.customer.name}</td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-500 hidden sm:table-cell">{order.date}</td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">${order.total.toFixed(2)}</td>
-                  <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-block px-2 py-1 rounded-full text-[10px] sm:text-sm font-medium 
-                      ${order.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 
-                        order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-blue-100 text-blue-800'}`}>
-                      {order.status}
-                    </span>
-                  </td>
+
+        {/* Conditional rendering if no orders */}
+        {orders.length === 0 ? (
+          <div className="text-center text-gray-500 py-4">
+            No recent orders found
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Customer
+                  </th>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell">
+                    Date
+                  </th>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Total
+                  </th>
+                  <th scope="col" className="px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider sm:table-cell">
+                    Status
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {orders.map((order) => (
+                  <tr key={order._id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">
+                      {order.customer}
+                    </td>
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-500 hidden sm:table-cell">
+                      {new Date(order.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">
+                      ${order.total.toFixed(2)}
+                    </td>
+                    <td className="px-2 sm:px-6 py-4 whitespace-nowrap">
+                      <span className={`inline-block px-2 py-1 rounded-full text-[10px] sm:text-sm font-medium 
+                        ${order.status === 'Completed' ? 'bg-green-100 text-green-800' : 
+                          order.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 
+                          'bg-blue-100 text-blue-800'}`}>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Low Stock Alerts */}
-      <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200">
-        <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Low Stock Alerts</h2>
-        <div className="space-y-4">
-          {lowStockItems.map((item) => (
-            <div key={item.id} className="flex items-center justify-between border-b border-gray-200 pb-4">
-              <div>
-                <h3 className="text-xs font-medium text-gray-900">{item.product}</h3>
-                <p className="text-xs text-gray-500">Current Stock: {item.stock}</p>
-              </div>
-              <span className="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                Low Stock
-              </span>
-            </div>
-          ))}
+      <div className="mt-6 bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200 relative">
+        <div className="flex flex-row justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-800">Low Stock Alerts</h2>
+          <Link 
+            href="/products" 
+            className="text-indigo-600 hover:text-indigo-800 text-xs flex items-center"
+          >
+            View More
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
         </div>
+
+        {/* Loading State */}
+        {lowStockLoading && (
+          <div className="flex justify-center items-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {lowStockError && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{lowStockError}</span>
+          </div>
+        )}
+
+        {/* Low Stock Items Table */}
+        {!lowStockLoading && !lowStockError && (
+          <div className="overflow-x-auto">
+            {lowStockItems.length === 0 ? (
+              <div className="text-center text-gray-500 py-4">
+                No low stock items
+              </div>
+            ) : (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="w-1/3 px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product ID
+                    </th>
+                    <th className="w-1/3 px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Product
+                    </th>
+                    <th className="w-1/3 px-2 sm:px-6 py-3 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Current Stock
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {lowStockItems.map((item) => (
+                    <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                      <td className="w-1/3 px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 max-w-[100px] truncate">
+                        {item._id}
+                      </td>
+                      <td className="w-1/3 px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900 max-w-[100px] truncate">
+                        {item.name}
+                      </td>
+                      <td className="w-1/3 px-2 sm:px-6 py-4 whitespace-nowrap text-[10px] sm:text-sm text-gray-900">
+                        {item.stock}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -60,8 +60,9 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
         sortBy,
         sortOrder: sortOrder === 1 ? 'asc' : 'desc'
       },
-      allowedPageSizes,
-      allowedSortFields
+      success: true,
+      data: products,
+      error: null
     });
   } catch (error) {
     next(error);
