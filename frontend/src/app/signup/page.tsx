@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 export default function SignupPage() {
@@ -24,91 +24,104 @@ export default function SignupPage() {
 
   const router = useRouter();
 
-  // Check field availability (temporary implementation)
-  const checkFieldAvailability = useCallback(async (field: string, value: string) => {
-    // Temporary hardcoded values for testing
-    const mockData = {
-      username: value === 'admin',
-      email: value === 'admin@example.com',
-      phoneNumber: value === '1234567890'
-    };
+  // Handle form submission with comprehensive validation
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    switch(field) {
-      case 'username':
-        setUsernameTaken(mockData.username);
-        setUsernameError(mockData.username ? 'Username is already taken' : '');
-        break;
-      case 'email':
-        setEmailTaken(mockData.email);
-        setEmailError(mockData.email ? 'Email is already registered' : '');
-        break;
-      case 'phoneNumber':
-        setPhoneNumberTaken(mockData.phoneNumber);
-        setPhoneNumberError(mockData.phoneNumber ? 'Phone number is already registered' : '');
-        break;
-    }
-  }, []);
+    // Reset all previous errors
+    setEmailError('');
+    setUsernameError('');
+    setPhoneNumberError('');
+    setPasswordError('');
+    setConfirmPasswordError('');
+    setUsernameTaken(false);
+    setEmailTaken(false);
+    setPhoneNumberTaken(false);
 
-  // Validate fields on change
-  useEffect(() => {
+    // Validation object to track all validation errors
+    const validationErrors: {
+      email?: string;
+      username?: string;
+      phoneNumber?: string;
+      password?: string;
+      confirmPassword?: string;
+    } = {};
+
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (email && !emailRegex.test(email)) {
-      setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError('');
-      checkFieldAvailability('email', email);
+    if (!email) {
+      validationErrors.email = 'Email is required';
+    } else if (!emailRegex.test(email)) {
+      validationErrors.email = 'Please enter a valid email address';
     }
 
     // Username validation
-    if (username && username.length < 3) {
-      setUsernameError('Username must be at least 3 characters long');
-    } else {
-      setUsernameError('');
-      checkFieldAvailability('username', username);
+    if (!username) {
+      validationErrors.username = 'Username is required';
+    } else if (username.length < 3) {
+      validationErrors.username = 'Username must be at least 3 characters long';
     }
 
-    // Phone number availability check only
-    if (phoneNumber) {
-      checkFieldAvailability('phoneNumber', phoneNumber);
+    // Phone number validation (optional)
+    if (phoneNumber && phoneNumber.length < 10) {
+      validationErrors.phoneNumber = 'Please enter a valid phone number';
     }
 
     // Password validation
-    if (password && password.length < 8) {
-      setPasswordError('Password must be at least 8 characters long');
-    } else {
-      setPasswordError('');
+    if (!password) {
+      validationErrors.password = 'Password is required';
+    } else if (password.length < 8) {
+      validationErrors.password = 'Password must be at least 8 characters long';
     }
 
     // Confirm password validation
-    if (confirmPassword && password !== confirmPassword) {
-      setConfirmPasswordError('Passwords do not match');
-    } else {
-      setConfirmPasswordError('');
-    }
-  }, [email, username, phoneNumber, password, confirmPassword, checkFieldAvailability]);
-
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Check if there are any errors or taken fields
-    if (
-      emailError || usernameError || phoneNumberError || 
-      passwordError || confirmPasswordError ||
-      emailTaken || usernameTaken || phoneNumberTaken
-    ) {
-      return;
+    if (!confirmPassword) {
+      validationErrors.confirmPassword = 'Please confirm your password';
+    } else if (password !== confirmPassword) {
+      validationErrors.confirmPassword = 'Passwords do not match';
     }
 
+    // Field availability checks (simulated backend validation)
+    // Temporary hardcoded values for testing
+    if (Object.keys(validationErrors).length === 0) {
+      // Simulate backend availability checks
+      if (username === 'admin') {
+        validationErrors.username = 'Username is already taken';
+        setUsernameTaken(true);
+      }
+
+      if (email === 'admin@example.com') {
+        validationErrors.email = 'Email is already registered';
+        setEmailTaken(true);
+      }
+
+      if (phoneNumber === '1234567890') {
+        validationErrors.phoneNumber = 'Phone number is already registered';
+        setPhoneNumberTaken(true);
+      }
+    }
+
+    // If there are any validation errors, set them and stop submission
+    if (Object.keys(validationErrors).length > 0) {
+      // Set individual error states
+      setEmailError(validationErrors.email || '');
+      setUsernameError(validationErrors.username || '');
+      setPhoneNumberError(validationErrors.phoneNumber || '');
+      setPasswordError(validationErrors.password || '');
+      setConfirmPasswordError(validationErrors.confirmPassword || '');
+      
+      return; // Stop form submission
+    }
+
+    // If all validations pass, proceed with form submission
     try {
-      // TODO: Replace with actual signup logic
+      // Actual signup logic here
       if (email && password && username && phoneNumber) {
         // Simulate successful signup
         router.push('/login');
       }
-    } catch (err) {
-      // Handle signup error
-      console.error('Signup error:', err);
+    } catch (error) {
+      console.error('Signup failed', error);
     }
   };
 
@@ -122,7 +135,7 @@ export default function SignupPage() {
               Create your account
             </h2>
           </div>
-          <form className="mt-8 space-y-6" onSubmit={handleSignup}>
+          <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-4">
               <div>
                 <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
@@ -139,11 +152,9 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {emailError && (
-                    <p className="text-red-500 text-xs">{emailError}</p>
-                  )}
-                </div>
+                {emailError && (
+                  <p className="text-red-500 text-xs">{emailError}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
@@ -160,11 +171,9 @@ export default function SignupPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {usernameError && (
-                    <p className="text-red-500 text-xs">{usernameError}</p>
-                  )}
-                </div>
+                {usernameError && (
+                  <p className="text-red-500 text-xs">{usernameError}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="phone-number" className="block text-sm font-medium text-gray-700 mb-1">
@@ -181,11 +190,9 @@ export default function SignupPage() {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {phoneNumberError && (
-                    <p className="text-red-500 text-xs">{phoneNumberError}</p>
-                  )}
-                </div>
+                {phoneNumberError && (
+                  <p className="text-red-500 text-xs">{phoneNumberError}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -202,11 +209,9 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {passwordError && (
-                    <p className="text-red-500 text-xs">{passwordError}</p>
-                  )}
-                </div>
+                {passwordError && (
+                  <p className="text-red-500 text-xs">{passwordError}</p>
+                )}
               </div>
               <div>
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
@@ -223,11 +228,9 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {confirmPasswordError && (
-                    <p className="text-red-500 text-xs">{confirmPasswordError}</p>
-                  )}
-                </div>
+                {confirmPasswordError && (
+                  <p className="text-red-500 text-xs">{confirmPasswordError}</p>
+                )}
               </div>
             </div>
 
@@ -252,12 +255,12 @@ export default function SignupPage() {
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden fixed inset-0 bg-white overflow-y-auto">
-        <div className="p-6">
+      <div className="md:hidden fixed inset-0 bg-white overflow-y-auto flex items-center justify-center">
+        <div className="p-6 w-full max-w-md">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
             Create your account
           </h2>
-          <form className="space-y-6" onSubmit={handleSignup}>
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
                 <label htmlFor="email-address-mobile" className="block text-sm font-medium text-gray-700 mb-1">
@@ -274,11 +277,9 @@ export default function SignupPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {emailError && (
-                    <p className="text-red-500 text-xs">{emailError}</p>
-                  )}
-                </div>
+                {emailError && (
+                  <p className="text-red-500 text-xs">{emailError}</p>
+                )}
               </div>
 
               <div>
@@ -296,11 +297,9 @@ export default function SignupPage() {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {usernameError && (
-                    <p className="text-red-500 text-xs">{usernameError}</p>
-                  )}
-                </div>
+                {usernameError && (
+                  <p className="text-red-500 text-xs">{usernameError}</p>
+                )}
               </div>
 
               <div>
@@ -318,11 +317,9 @@ export default function SignupPage() {
                   value={phoneNumber}
                   onChange={(e) => setPhoneNumber(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {phoneNumberError && (
-                    <p className="text-red-500 text-xs">{phoneNumberError}</p>
-                  )}
-                </div>
+                {phoneNumberError && (
+                  <p className="text-red-500 text-xs">{phoneNumberError}</p>
+                )}
               </div>
 
               <div>
@@ -340,11 +337,9 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {passwordError && (
-                    <p className="text-red-500 text-xs">{passwordError}</p>
-                  )}
-                </div>
+                {passwordError && (
+                  <p className="text-red-500 text-xs">{passwordError}</p>
+                )}
               </div>
 
               <div>
@@ -362,17 +357,15 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-                <div className="h-4 mt-1">
-                  {confirmPasswordError && (
-                    <p className="text-red-500 text-xs">{confirmPasswordError}</p>
-                  )}
-                </div>
+                {confirmPasswordError && (
+                  <p className="text-red-500 text-xs">{confirmPasswordError}</p>
+                )}
               </div>
 
               <div>
                 <button
                   type="submit"
-                  className="w-full py-3 px-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="w-full py-3 px-4 mt-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
                   Sign up
                 </button>

@@ -61,6 +61,7 @@ export default function LoginPage() {
           <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
             <div className="py-8 px-4 sm:rounded-lg sm:px-10">
               <form className="space-y-6" onSubmit={handleLogin}>
+                {/* Email */}
                 <div>
                   <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
                     Email address
@@ -78,8 +79,9 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {/* Password */}
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                     Password
                   </label>
                   <input
@@ -95,6 +97,7 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {/* Error */}
                 {error && (
                   <div className="text-red-500 text-sm text-left">
                     {error}
@@ -102,6 +105,7 @@ export default function LoginPage() {
                 )}
 
                 <div className="flex items-center justify-between">
+                  {/* Remember Me */}
                   <div className="flex items-center">
                     <input
                       id="remember-me"
@@ -116,6 +120,7 @@ export default function LoginPage() {
                     </label>
                   </div>
 
+                  {/* Forgot Password */}
                   <div className="text-sm">
                     <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
                       Forgot password?
@@ -123,6 +128,7 @@ export default function LoginPage() {
                   </div>
                 </div>
 
+                {/* Sign in button */}
                 <div>
                   <button
                     type="submit"
@@ -131,18 +137,19 @@ export default function LoginPage() {
                     Sign in
                   </button>
                 </div>
+
+                {/* Sign up link */}
+                <div className="mt-4 text-center">
+                  <p className="text-sm text-gray-600">
+                    Don&apos;t have an account?{' '}
+                    <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                      Sign up
+                    </a>
+                  </p>
+                </div>
               </form>
             </div>
           </div>
-        </div>
-
-        <div className="bg-gray-50 p-4 text-center">
-          <p className="text-sm text-gray-600">
-            Don&apos;t have an account?{' '}
-            <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-              Sign up
-            </a>
-          </p>
         </div>
       </div>
 
@@ -156,6 +163,7 @@ export default function LoginPage() {
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
             <div className="rounded-md shadow-sm space-y-4">
+              {/* Email address */}
               <div>
                 <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
                   Email address
@@ -172,6 +180,7 @@ export default function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
@@ -190,6 +199,7 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Error */}
             {error && (
               <div className="text-red-500 text-sm text-left">
                 {error}
@@ -197,6 +207,7 @@ export default function LoginPage() {
             )}
 
             <div className="flex items-center justify-between">
+              {/* Remember Me */}
               <div className="flex items-center">
                 <input
                   id="remember-me"
@@ -211,6 +222,7 @@ export default function LoginPage() {
                 </label>
               </div>
 
+              {/* Forgot Password */}
               <div className="text-sm">
                 <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
                   Forgot your password?
@@ -218,6 +230,7 @@ export default function LoginPage() {
               </div>
             </div>
 
+            {/* Sign In Button */}
             <div>
               <button
                 type="submit"
@@ -226,15 +239,17 @@ export default function LoginPage() {
                 Sign in
               </button>
             </div>
+
+            {/* Sign up link */}
+            <div className="mt-4 text-center">
+              <p className="text-sm text-gray-600">
+                Don&apos;t have an account?{' '}
+                <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  Sign up
+                </a>
+              </p>
+            </div>
           </form>
-          <div className="text-center">
-            <p className="mt-2 text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign up
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </>
