@@ -1,194 +1,10 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
 import EditProductModal from './components/EditProductModal';
-
-// Mock data
-const mockProducts = [
-  {
-    id: '550e8400-e29b-41d4-a716-446655440001',
-    name: 'Wireless Mouse',
-    price: 29.99,
-    stock: 45,
-    category: 'Electronics',
-    description: 'A wireless mouse with long battery life',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440002',
-    name: 'Mechanical Keyboard',
-    price: 89.99,
-    stock: 30,
-    category: 'Electronics',
-    description: 'A mechanical keyboard with customizable backlight',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440003',
-    name: 'Gaming Headset',
-    price: 59.99,
-    stock: 20,
-    category: 'Electronics',
-    description: 'A gaming headset with 7.1 surround sound',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440004',
-    name: 'Smart Watch',
-    price: 199.99,
-    stock: 15,
-    category: 'Wearables',
-    description: 'Advanced fitness tracking smartwatch',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440005',
-    name: 'Noise Cancelling Headphones',
-    price: 249.99,
-    stock: 25,
-    category: 'Electronics',
-    description: 'Premium wireless noise cancelling headphones',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440006',
-    name: 'Portable Bluetooth Speaker',
-    price: 79.99,
-    stock: 40,
-    category: 'Audio',
-    description: 'Waterproof portable bluetooth speaker',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440007',
-    name: '4K Ultra HD Monitor',
-    price: 349.99,
-    stock: 10,
-    category: 'Electronics',
-    description: '27-inch 4K monitor with HDR support',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440008',
-    name: 'Ergonomic Office Chair',
-    price: 249.99,
-    stock: 20,
-    category: 'Furniture',
-    description: 'Adjustable ergonomic office chair with lumbar support',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440009',
-    name: 'Wireless Charger Pad',
-    price: 39.99,
-    stock: 50,
-    category: 'Accessories',
-    description: 'Fast wireless charging pad for smartphones',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440010',
-    name: 'External SSD',
-    price: 129.99,
-    stock: 35,
-    category: 'Storage',
-    description: '1TB portable external solid state drive',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440011',
-    name: 'Mechanical Gaming Mouse',
-    price: 69.99,
-    stock: 30,
-    category: 'Gaming',
-    description: 'High-precision gaming mouse with customizable weights',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440012',
-    name: 'Laptop Stand',
-    price: 49.99,
-    stock: 45,
-    category: 'Accessories',
-    description: 'Adjustable aluminum laptop stand for ergonomic working',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440013',
-    name: 'Wireless Earbuds',
-    price: 99.99,
-    stock: 40,
-    category: 'Audio',
-    description: 'True wireless earbuds with noise cancellation',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440014',
-    name: 'Smart Home Hub',
-    price: 129.99,
-    stock: 25,
-    category: 'Smart Home',
-    description: 'Central control hub for smart home devices',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440015',
-    name: 'Mechanical Desk Lamp',
-    price: 79.99,
-    stock: 30,
-    category: 'Lighting',
-    description: 'LED desk lamp with adjustable color temperature',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440016',
-    name: 'Graphic Tablet',
-    price: 199.99,
-    stock: 15,
-    category: 'Electronics',
-    description: 'Digital drawing tablet with pressure sensitivity',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440017',
-    name: 'Wireless Router',
-    price: 89.99,
-    stock: 35,
-    category: 'Networking',
-    description: 'Dual-band WiFi 6 wireless router',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440018',
-    name: 'Portable Power Bank',
-    price: 49.99,
-    stock: 50,
-    category: 'Accessories',
-    description: '20000mAh power bank with fast charging',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440019',
-    name: 'Webcam',
-    price: 79.99,
-    stock: 40,
-    category: 'Electronics',
-    description: '4K webcam with built-in noise-cancelling microphone',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  },
-  {
-    id: '550e8400-e29b-41d4-a716-446655440020',
-    name: 'Smart Thermostat',
-    price: 249.99,
-    stock: 20,
-    category: 'Smart Home',
-    description: 'WiFi-enabled smart thermostat with mobile app control',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
-  }
-];
 
 // Product interface defining the structure of a product
 interface Product {
@@ -199,6 +15,21 @@ interface Product {
   category: string;
   description: string;
   image: string;
+}
+
+// Interface for API response
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  pagination?: {
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    totalProducts: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 // StatusPill component to display product stock status with color-coded indicators
@@ -238,7 +69,7 @@ const StatusPill = ({ stock }: { stock: number }) => {
 
 export default function Products() {
   // State management for products, search, pagination, and modals
-  const [products, setProducts] = useState<Product[]>(mockProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -262,6 +93,16 @@ export default function Products() {
     key: keyof Product;
     direction: 'ascending' | 'descending';
   } | null>(null);
+
+  // State for loading and error
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // State for pagination metadata
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
   // Sorting function
   const sortedProducts = useMemo(() => {
@@ -316,7 +157,7 @@ export default function Products() {
       : <span className="ml-1 text-gray-600">▼</span>;
   };
 
-  // Handle input changes when adding a new product
+  // Handle input changes when adding/editing a product
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { 
     target: { 
       name: string; 
@@ -412,6 +253,11 @@ export default function Products() {
     });
   };
 
+  // Delete product
+  const handleDeleteProduct = (productId: string) => {
+    setProducts(products.filter(product => product.id !== productId));
+  };
+
   // Open product details modal
   const handleViewDetails = (product: Product) => {
     setSelectedProduct(product);
@@ -422,11 +268,6 @@ export default function Products() {
   const handleEditProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsEditModalOpen(true);
-  };
-
-  // Delete product
-  const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(product => product.id !== productId));
   };
 
   // Open add product modal
@@ -446,22 +287,25 @@ export default function Products() {
     setIsModalOpen(true);
   };
 
-  // Filter products based on search query (case-insensitive)
-  const filteredProducts = sortedProducts.filter(product => 
-    product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    product.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filtered products
+  const filteredProducts = useMemo(() => {
+    return sortedProducts.filter(product => 
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.id.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [sortedProducts, searchQuery]);
 
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredProducts.length / pageSize);
+  // Pagination calculations are now handled by the API
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProducts = filteredProducts.slice(startIndex, startIndex + pageSize);
+  const paginatedProducts = products; // Use the products directly from the API
 
-  // Change current page
+  // Pagination handler
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
+    } else {
+      console.log('Page change prevented');
     }
   };
 
@@ -477,6 +321,117 @@ export default function Products() {
     const query = e.target.value;
     setSearchQuery(query);
     setCurrentPage(1);  // Reset to first page when search query changes
+  };
+
+  // New function to fetch products
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?page=${currentPage}&limit=${pageSize}${searchQuery ? `&search=${searchQuery}` : ''}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      const result: ApiResponse<Product[]> = await response.json();
+
+      if (result.success && result.data) {
+        setProducts(result.data);
+
+        // Update pagination metadata
+        if (result.pagination) {
+          setTotalPages(result.pagination.totalPages);
+          setTotalProducts(result.pagination.totalProducts);
+          setHasNextPage(result.pagination.hasNextPage);
+          setHasPreviousPage(result.pagination.hasPreviousPage);
+        }
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch data on component mount and page change
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, pageSize, searchQuery]);
+
+  // Loading state component
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading products...</span>
+      </div>
+    );
+  }
+
+  // Error state component
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">Error: </strong>
+        <span className="block sm:inline">{error}</span>
+      </div>
+    );
+  }
+
+  // Render table rows
+  const renderTableRows = () => {
+    if (paginatedProducts.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center py-4 text-gray-500">
+            No products found
+          </td>
+        </tr>
+      );
+    }
+
+    return paginatedProducts.map((product) => (
+      <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+        <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
+        <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
+        <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.category}>{product.category}</td>
+        <td className="px-6 py-4 whitespace-nowrap max-w-[100px] truncate" title={`${product.price.toFixed(2)}`}>RM {product.price.toFixed(2)}</td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <StatusPill stock={product.stock} />
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => handleViewDetails(product)}
+              className="text-indigo-600 hover:text-indigo-900"
+            >
+              View
+            </button>
+            <button 
+              onClick={() => handleEditProduct(product)}
+              className="text-green-600 hover:text-green-900"
+            >
+              Edit
+            </button>
+            <button 
+              onClick={() => handleDeleteProduct(product.id)}
+              className="text-red-600 hover:text-red-900"
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    ));
   };
 
   return (
@@ -550,7 +505,7 @@ export default function Products() {
               <tr className="bg-gray-50">
                 <th 
                   onClick={() => requestSort('id')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
                   ID 
                   <SortIcon 
@@ -560,7 +515,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('name')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
                   Name 
                   <SortIcon 
@@ -570,7 +525,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('category')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
                   Category
                   <SortIcon 
@@ -580,7 +535,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('price')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
                   Price
                   <SortIcon 
@@ -590,7 +545,7 @@ export default function Products() {
                 </th>
                 <th 
                   onClick={() => requestSort('stock')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
                   Stock
                   <SortIcon 
@@ -598,45 +553,13 @@ export default function Products() {
                     direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
                   />
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider select-none">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.category}>{product.category}</td>
-                  <td className="px-6 py-4 whitespace-nowrap max-w-[100px] truncate" title={`$${product.price.toFixed(2)}`}>${product.price.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <StatusPill stock={product.stock} />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-left">
-                    <div className="flex justify-start space-x-2">
-                      <button 
-                        onClick={() => handleViewDetails(product)}
-                        className="text-indigo-600 text-base"
-                      >
-                        View
-                      </button>
-                      <button 
-                        onClick={() => handleEditProduct(product)}
-                        className="text-green-600 text-base"
-                      >
-                        Edit
-                      </button>
-                      <button 
-                        onClick={() => handleDeleteProduct(product.id)}
-                        className="text-red-600 text-base"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {renderTableRows()}
             </tbody>
           </table>
         </div>
@@ -647,7 +570,10 @@ export default function Products() {
             <span className="mr-2 text-sm text-gray-700">Show</span>
             <select
               value={pageSize}
-              onChange={handlePageSizeChange}
+              onChange={(e) => {
+                setPageSize(parseInt(e.target.value));
+                setCurrentPage(1);
+              }}
               className="border border-gray-300 rounded-md text-sm px-2 py-1"
             >
               <option value={10}>10</option>
@@ -735,7 +661,7 @@ export default function Products() {
             
             <div className="flex justify-start items-center mt-2">
               <span className="text-xs text-gray-600 mr-2">Price:</span>
-              <span className="text-xs font-medium">${product.price.toFixed(2)}</span>
+              <span className="text-xs font-medium">RM {product.price.toFixed(2)}</span>
             </div>
             
             <div className="flex justify-start items-center mt-2">

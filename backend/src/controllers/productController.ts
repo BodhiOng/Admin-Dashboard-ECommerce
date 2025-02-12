@@ -46,7 +46,9 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
       .exec();
 
     res.status(200).json({
-      products,
+      success: true,
+      data: products,
+      error: null,
       pagination: {
         currentPage: validPage,
         pageSize: validLimit,
@@ -60,9 +62,6 @@ export const getAllProducts = async (req: Request, res: Response, next: NextFunc
         sortBy,
         sortOrder: sortOrder === 1 ? 'asc' : 'desc'
       },
-      success: true,
-      data: products,
-      error: null
     });
   } catch (error) {
     next(error);
