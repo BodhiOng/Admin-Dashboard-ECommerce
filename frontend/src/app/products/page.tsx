@@ -270,9 +270,48 @@ export default function Products() {
     await updateProduct(selectedProduct.id, selectedProduct);
   };
 
+  // Function to delete a specific product
+  const deleteProduct = async (productId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete product');
+      }
+
+      const result: ApiResponse<null> = await response.json();
+
+      if (result.success) {
+        // Remove the deleted product from the list
+        setProducts(prevProducts => 
+          prevProducts.filter(product => product.id !== productId)
+        );
+
+        // Adjust pagination if needed
+        if (products.length === 1 && currentPage > 1) {
+          setCurrentPage(currentPage - 1);
+        }
+      } else {
+        throw new Error(result.error || 'Unknown error occurred while deleting product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Delete product
   const handleDeleteProduct = (productId: string) => {
-    setProducts(products.filter(product => product.id !== productId));
+    deleteProduct(productId);
   };
 
   // Open product details modal

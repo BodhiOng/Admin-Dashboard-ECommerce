@@ -117,15 +117,71 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     return;
   }
 
-  // Default error response
+  // Network and database connection errors
+  if (err.name === 'MongoNetworkError') {
+    res.status(503).json({
+      success: false,
+      error: {
+        message: 'Database Connection Error',
+        type: 'MongoNetworkError',
+        details: 'Unable to connect to the database. Please try again later.',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Product-specific errors
+  if (err.name === 'ProductOperationError') {
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Product Operation Failed',
+        type: 'ProductOperationError',
+        details: err.message || 'An unexpected error occurred during product operation',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Authorization and permission errors
+  if (err.name === 'UnauthorizedError' || err.name === 'ForbiddenError') {
+    res.status(err.name === 'UnauthorizedError' ? 401 : 403).json({
+      success: false,
+      error: {
+        message: err.name === 'UnauthorizedError' ? 'Unauthorized' : 'Forbidden',
+        type: err.name,
+        details: 'You do not have permission to perform this action',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // File upload and image-related errors
+  if (err.name === 'FileUploadError') {
+    res.status(400).json({
+      success: false,
+      error: {
+        message: 'File Upload Failed',
+        type: 'FileUploadError',
+        details: err.message || 'Unable to process the uploaded file',
+        timestamp: new Date().toISOString()
+      }
+    });
+    return;
+  }
+
+  // Generic server error for unhandled exceptions
   res.status(500).json({
     success: false,
     error: {
       message: 'Internal Server Error',
-      type: 'ServerError',
-      details: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
-    },
-    timestamp: new Date().toISOString()
+      type: 'UnhandledError',
+      details: err.message || 'An unexpected error occurred',
+      timestamp: new Date().toISOString()
+    }
   });
 };
 

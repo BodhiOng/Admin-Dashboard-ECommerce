@@ -158,7 +158,11 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     // If the product is not found
     if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
     
-    res.status(200).json(deletedProduct);
+    res.status(200).json({
+      success: true,
+      data: deletedProduct,
+      error: null
+    });
   } catch (error) {
     next(error);
   }

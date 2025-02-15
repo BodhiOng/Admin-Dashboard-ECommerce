@@ -100,7 +100,6 @@ export default function Dashboard() {
       }
 
       const result: ApiResponse<LowStockItem[]> = await response.json();
-      console.log(result);
 
       if (result.success && result.data) {
         setLowStockItems(result.data);
