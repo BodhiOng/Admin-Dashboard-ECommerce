@@ -6,7 +6,7 @@ import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
 import EditProductModal from './components/EditProductModal';
 
-// Product interface defining the structure of a product
+// Interface for a product
 interface Product {
   id: string;
   name: string;
@@ -29,6 +29,11 @@ interface ApiResponse<T> {
     totalProducts: number;
     hasNextPage: boolean;
     hasPreviousPage: boolean;
+  };
+  query?: {
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   };
 }
 
@@ -68,15 +73,12 @@ const StatusPill = ({ stock }: { stock: number }) => {
 };
 
 export default function Products() {
-  // State management for products, search, pagination, and modals
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  
-  // Initial state for a new product with empty values
   const [newProduct, setNewProduct] = useState<Omit<Product, 'id'>>({
     name: '',
     price: 0,
@@ -87,18 +89,12 @@ export default function Products() {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-
-  // New state for sorting
   const [sortConfig, setSortConfig] = useState<{
     key: keyof Product;
     direction: 'ascending' | 'descending';
   } | null>(null);
-
-  // State for loading and error
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  // State for pagination metadata
   const [totalPages, setTotalPages] = useState(1);
   const [totalProducts, setTotalProducts] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
@@ -227,30 +223,51 @@ export default function Products() {
     });
   };
 
+  // Function to update a specific product
+  const updateProduct = async (productId: string, updatedProduct: Omit<Product, 'id'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${productId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduct)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update product');
+      }
+
+      const result: ApiResponse<Product> = await response.json();
+
+      if (result.success && result.data) {
+        // Update the product in the list
+        setProducts(prevProducts => 
+          prevProducts.map(product => 
+            product.id === productId ? result.data! : product
+          )
+        );
+
+        // Close the edit modal
+        setIsEditModalOpen(false);
+        setSelectedProduct(null);
+      } else {
+        throw new Error(result.error || 'Unknown error occurred while updating product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Update existing product
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!selectedProduct) return;
-
-    setProducts(products.map(product =>
-      product.id === selectedProduct.id
-        ? {
-            ...selectedProduct,
-            id: selectedProduct.id  // Preserve the original ID
-          }
-        : product
-    ));
-
-    // Reset states
-    setIsEditModalOpen(false);
-    setSelectedProduct(null);
-    setNewProduct({
-      name: '',
-      price: 0,
-      stock: 0,
-      category: '',
-      description: '',
-      image: ''
-    });
+    await updateProduct(selectedProduct.id, selectedProduct);
   };
 
   // Delete product
@@ -287,19 +304,6 @@ export default function Products() {
     setIsModalOpen(true);
   };
 
-  // Filtered products
-  const filteredProducts = useMemo(() => {
-    return sortedProducts.filter(product => 
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [sortedProducts, searchQuery]);
-
-  // Pagination calculations are now handled by the API
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProducts = products; // Use the products directly from the API
-
   // Pagination handler
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -309,21 +313,14 @@ export default function Products() {
     }
   };
 
-  // Change number of products displayed per page
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = parseInt(event.target.value);
-    setPageSize(newSize);
-    setCurrentPage(1); // Reset to first page when changing page size
-  };
-
   // Search query change handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
     setSearchQuery(query);
-    setCurrentPage(1);  // Reset to first page when search query changes
+    setCurrentPage(1); // Reset to first page when search query changes
   };
 
-  // New function to fetch products
+  // Function to fetch products
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -367,16 +364,6 @@ export default function Products() {
     fetchProducts();
   }, [currentPage, pageSize, searchQuery]);
 
-  // Loading state component
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-        <span className="ml-2">Loading products...</span>
-      </div>
-    );
-  }
-
   // Error state component
   if (error) {
     return (
@@ -389,7 +376,7 @@ export default function Products() {
 
   // Render table rows
   const renderTableRows = () => {
-    if (paginatedProducts.length === 0) {
+    if (products.length === 0) {
       return (
         <tr>
           <td colSpan={6} className="text-center py-4 text-gray-500">
@@ -399,7 +386,7 @@ export default function Products() {
       );
     }
 
-    return paginatedProducts.map((product) => (
+    return products.map((product) => (
       <tr key={product.id} className="hover:bg-gray-50 transition-colors">
         <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={product.id}>{product.id}</td>
         <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={product.name}>{product.name}</td>
@@ -644,7 +631,7 @@ export default function Products() {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {paginatedProducts.map((product) => (
+        {products.map((product) => (
           <div 
             key={product.id} 
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"

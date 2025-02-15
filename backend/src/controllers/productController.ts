@@ -124,28 +124,6 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
   }
 };
 
-// GET /api/products/:id
-export const getProductById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // Retrieve the ID from the request parameters
-    const { id } = req.params;
-
-    // Find product by its unique ID
-    const product = await Product.findOne({ id });
-
-    // If the product is not found
-    if (!product) {
-      return res.status(404).json({ message: 'Product not found' });
-    }
-
-    res.status(200).json({
-      product
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // PUT /api/products/:id
 export const updateProduct = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -158,7 +136,11 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
     // If the product is not found
     if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
     
-    res.status(200).json(updatedProduct);
+    res.status(200).json({
+      success: true,
+      data: updatedProduct,
+      error: null
+    });
   } catch (error) {
     next(error);
   }

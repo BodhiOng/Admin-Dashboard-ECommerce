@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-// Interface defining the structure of a product without an ID
+// Interface for a product
 interface Product {
   name: string;
   price: number;
@@ -10,26 +10,19 @@ interface Product {
   image: string;
 }
 
-// Props interface for the EditProductModal component
 interface EditProductModalProps {
-  // The selected product being edited
   selectedProduct: Product;
-  // The original product for comparison
   originalProduct: Product;
-  // Handler for input changes in the form
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | { 
     target: { 
       name: string; 
       value: string | number
     } 
   }) => void;
-  // Handler to update the product
   onUpdateProduct: () => void;
-  // Handler to close the modal
   onClose: () => void;
 }
 
-// EditProductModal component for editing existing products
 const EditProductModal: React.FC<EditProductModalProps> = ({ 
   selectedProduct, 
   originalProduct,
@@ -37,23 +30,30 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   onUpdateProduct, 
   onClose 
 }) => {
-  // State to manage image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // State to manage exit animation
   const [isClosing, setIsClosing] = useState(false);
+
+  // Convert base64 image to a valid data URL
+  const convertBase64ToImage = (base64String: string) => {
+    // Check if the string is already a valid URL or data URL
+    if (base64String.startsWith('http') || base64String.startsWith('data:')) {
+      return base64String;
+    }
+
+    // If it's a base64 string without a prefix, add the data URL prefix
+    return `data:image/jpeg;base64,${base64String}`;
+  };
 
   // Modified close handler to trigger animation
   const handleClose = () => {
     setIsClosing(true);
-    // Wait for animation to complete before calling actual close
     setTimeout(onClose, 300);
   };
 
   // Set initial image preview when component mounts or selectedProduct changes
   useEffect(() => {
     if (selectedProduct.image) {
-      setImagePreview(selectedProduct.image);
+      setImagePreview(convertBase64ToImage(selectedProduct.image));
     }
   }, [selectedProduct]);
 
@@ -61,17 +61,21 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Update the product image
-      onInputChange({ 
-        target: { 
-          name: 'image', 
-          value: URL.createObjectURL(file) 
-        } 
-      });
-      
-      // Create image preview
+      // Create image preview and convert to base64
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Extract base64 string (remove data URL prefix if present)
+        const base64String = (reader.result as string).replace(/^data:image\/\w+;base64,/, '');
+        
+        // Update the product image with base64
+        onInputChange({ 
+          target: { 
+            name: 'image', 
+            value: base64String 
+          } 
+        });
+        
+        // Set image preview (keep full data URL for display)
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -80,7 +84,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      {/* Mobile View - Full Screen */}
+      {/* Mobile View */}
       <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-50 
         ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}
         flex items-end sm:items-center justify-center`}
@@ -196,7 +200,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                   {imagePreview && (
                     <div className="mt-4">
                       <img
-                        src={imagePreview}
+                        src={convertBase64ToImage(imagePreview)}
                         alt="Product Preview"
                         className="mx-auto h-48 w-full object-contain"
                       />
@@ -206,11 +210,10 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
               </div>
             </div>
 
-            {/* Spacer to ensure buttons don't cover content */}
             <div className="h-20"></div>
           </form>
 
-          {/* Submit Buttons - Fixed at bottom */}
+          {/* Cancel/Update buttons */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
             <div className="flex space-x-2">
               <button
@@ -249,7 +252,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
         </div>
       </div>
 
-      {/* Desktop View - Hidden on mobile screens */}
+      {/* Desktop View */}
       <div className="hidden md:block w-full max-w-2xl bg-white rounded-lg shadow-xl">
         <div className="p-6 border-b relative">
           <h2 className="text-xl font-semibold text-gray-800">Edit Product</h2>
@@ -363,7 +366,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
                 {imagePreview && (
                   <div className="mt-4">
                     <img
-                      src={imagePreview}
+                      src={convertBase64ToImage(imagePreview)}
                       alt="Product Preview"
                       className="mx-auto h-48 w-full object-contain"
                     />
@@ -373,7 +376,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
             </div>
           </div>
 
-          {/* Submit Buttons */}
+          {/* Update/cancel buttons */}
           <div className="flex justify-end space-x-2 pt-4">
             <button
               type="button"
