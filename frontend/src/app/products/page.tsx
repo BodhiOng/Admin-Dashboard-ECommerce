@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
@@ -99,33 +99,6 @@ export default function Products() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
-
-  // Sorting function
-  const sortedProducts = useMemo(() => {
-    let sortableProducts = [...products];
-    
-    if (sortConfig !== null) {
-      sortableProducts.sort((a, b) => {
-        // Handle different types of sorting
-        const aValue = a[sortConfig.key] ?? '';
-        const bValue = b[sortConfig.key] ?? '';
-
-        // Compare values as strings to ensure consistent sorting
-        const aString = String(aValue).toLowerCase();
-        const bString = String(bValue).toLowerCase();
-
-        if (aString < bString) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aString > bString) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    
-    return sortableProducts;
-  }, [products, sortConfig]);
 
   // Sorting request handler
   const requestSort = (key: keyof Product) => {
@@ -391,7 +364,18 @@ export default function Products() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?page=${currentPage}&limit=${pageSize}${searchQuery ? `&search=${searchQuery}` : ''}`, {
+      // Construct query parameters
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        ...(searchQuery && { search: searchQuery }),
+        ...(sortConfig && { 
+          sortBy: sortConfig.key, 
+          sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+        })
+      });
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?${queryParams}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -427,7 +411,7 @@ export default function Products() {
   // Fetch data on component mount and page change
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, pageSize, searchQuery]);
+  }, [currentPage, pageSize, searchQuery, sortConfig]);
 
   // Error state component
   if (error) {
@@ -551,61 +535,78 @@ export default function Products() {
       {/* Desktop Table View */}
       <div className="bg-white rounded-lg shadow-sm hidden md:block">
         <div className="overflow-x-auto max-w-full">
-          <table className="w-full min-w-full table-auto">
-            <thead>
-              {/* Table headers */}
-              <tr className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('id')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  ID 
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'id'} 
-                    direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    ID
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'id'} 
+                      direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('name')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  Name 
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'name'} 
-                    direction={sortConfig?.key === 'name' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Name
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'name'} 
+                      direction={sortConfig?.key === 'name' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('category')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  Category
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'category'} 
-                    direction={sortConfig?.key === 'category' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Category
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'category'} 
+                      direction={sortConfig?.key === 'category' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('price')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  Price
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'price'} 
-                    direction={sortConfig?.key === 'price' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Price
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'price'} 
+                      direction={sortConfig?.key === 'price' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('stock')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 select-none"
                 >
-                  Stock
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'stock'} 
-                    direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Stock
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'stock'} 
+                      direction={sortConfig?.key === 'stock' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider select-none">
+                <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               </tr>
