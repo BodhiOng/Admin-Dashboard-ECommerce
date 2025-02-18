@@ -10,20 +10,15 @@ interface Product {
   image: string;
 }
 
-// Props interface for the AddProductModal component
 interface AddProductModalProps {
-  // The new product being created
   newProduct: Product;
-  // Handler for input changes in the form
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | {
     target: {
       name: string;
       value: string | number
     }
   }) => void;
-  // Handler to add the new product
   onAddProduct: () => void;
-  // Handler to close the modal
   onClose: () => void;
 }
 
@@ -34,10 +29,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   onAddProduct,
   onClose
 }) => {
-  // State to manage image preview
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  // State to manage exit animation
   const [isClosing, setIsClosing] = useState(false);
 
   // Modified close handler to trigger animation
@@ -51,17 +43,21 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Update the product image
-      onInputChange({
-        target: {
-          name: 'image',
-          value: URL.createObjectURL(file)
-        }
-      });
-
-      // Create image preview
+      // Create image preview and convert to base64
       const reader = new FileReader();
       reader.onloadend = () => {
+        // Extract base64 string (remove data URL prefix if present)
+        const base64String = (reader.result as string).replace(/^data:image\/\w+;base64,/, '');
+        
+        // Update the product image with base64
+        onInputChange({ 
+          target: { 
+            name: 'image', 
+            value: base64String 
+          } 
+        });
+        
+        // Set image preview (keep full data URL for display)
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
@@ -70,7 +66,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      {/* Mobile View - Full Screen */}
+      {/* Mobile View  */}
       <div className={`md:hidden fixed inset-0 bg-black bg-opacity-50 z-50 
         ${isClosing ? 'animate-fade-out' : 'animate-fade-in'}
         flex items-end sm:items-center justify-center`}
@@ -153,30 +149,36 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
             </div>
 
             {/* Image Upload */}
-            <div>
+            <div className="space-y-4">
               <label className="block text-xs font-medium text-gray-700">Product Image</label>
               <div 
-                className="mt-1 flex justify-center px-4 pt-4 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+                className="flex justify-center px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
                 onClick={() => {
                   const fileInput = document.getElementById('file-upload') as HTMLInputElement;
                   fileInput.click();
                 }}
               >
-                <input
-                  id="file-upload"
-                  name="image"
-                  type="file"
-                  className="hidden"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                />
-                <div className="space-y-1 text-center">
-                  <div className="flex text-sm text-gray-600">
-                    <div className="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
-                      <span>Upload a file</span>
+                <div 
+                  className="space-y-1 text-center cursor-pointer w-full"
+                >
+                  <input 
+                    id="file-upload" 
+                    name="image" 
+                    type="file" 
+                    className="hidden" 
+                    onChange={handleImageChange}
+                    accept="image/*"
+                  />
+                  {!imagePreview && (
+                    <div className="py-8 text-center">
+                      <div className="flex justify-center text-sm text-gray-600">
+                        <div className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                          <span>Upload a file</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF up to 10MB</p>
                     </div>
-                  </div>
-                  <p className="text-sm text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                  )}
                   {imagePreview && (
                     <div className="mt-4">
                       <img
@@ -216,7 +218,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         </div>
       </div>
 
-      {/* Desktop View - Unchanged */}
+      {/* Desktop View */}
       <div className="hidden md:block bg-white rounded-lg shadow-xl w-full max-w-2xl mx-4">
         <div className="p-6 border-b relative">
           <h2 className="text-xl font-semibold text-gray-800">Add New Product</h2>
@@ -297,37 +299,43 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
           </div>
 
           {/* Image Upload */}
-          <div>
+          <div className="space-y-4">
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
             <div 
-              className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+              className="flex justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 const fileInput = document.getElementById('file-upload') as HTMLInputElement;
                 fileInput.click();
               }}
             >
-              <input
-                id="file-upload"
-                name="image"
-                type="file"
-                className="hidden"
-                onChange={handleImageChange}
-                accept="image/*"
-              />
-              <div className="space-y-1 text-center">
-                <div className="flex text-sm text-gray-600">
-                  <div className="relative bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
-                    <span>Upload a file</span>
+              <div 
+                className="space-y-1 text-center cursor-pointer w-full"
+              >
+                <input 
+                  id="file-upload" 
+                  name="image" 
+                  type="file" 
+                  className="hidden" 
+                  onChange={handleImageChange}
+                  accept="image/*"
+                />
+                {!imagePreview && (
+                  <div className="py-8 text-center">
+                    <div className="flex justify-center text-sm text-gray-600">
+                      <div className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500">
+                        <span>Upload a file</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">PNG, JPG, GIF up to 10MB</p>
                   </div>
-                </div>
-                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                )}
                 {imagePreview && (
                   <div className="mt-4">
                     <img
                       src={imagePreview}
                       alt="Product Preview"
-                      className="mx-auto h-32 object-contain"
+                      className="mx-auto h-48 w-full object-contain"
                     />
                   </div>
                 )}

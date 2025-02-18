@@ -186,6 +186,50 @@ export default function Products() {
     }
   };
 
+  // Function to add a new product
+  const addProduct = async (newProductData: Omit<Product, 'id'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProductData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add product');
+      }
+
+      const result: ApiResponse<Product> = await response.json();
+
+      if (result.success && result.data) {
+        // Add the new product to the list
+        setProducts(prevProducts => [...prevProducts, result.data as Product]);
+
+        // Close the add modal and reset new product state
+        setIsModalOpen(false);
+        setNewProduct({
+          name: '',
+          price: 0,
+          stock: 0,
+          category: '',
+          description: '',
+          image: ''
+        });
+      } else {
+        throw new Error(result.error || 'Unknown error occurred while adding product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Handler to add a new product
   const handleAddProduct = () => {
     // Validate that all required fields are filled
@@ -197,30 +241,12 @@ export default function Products() {
       newProduct.description.trim() === '' ||
       newProduct.image === ''
     ) {
-      alert('Please fill in all fields');
+      setError('Please fill in all fields correctly');
       return;
     }
 
-    // Create a new product with a unique ID
-    const productToAdd = {
-      ...newProduct,
-      id: uuidv4()
-    };
-
-    // Add the new product to the list
-    setProducts(prevProducts => [...prevProducts, productToAdd]);
-
-    // Close the modal and reset the new product state
-    setIsModalOpen(false);
-    setSelectedProduct(null);
-    setNewProduct({
-      name: '',
-      price: 0,
-      stock: 0,
-      category: '',
-      description: '',
-      image: ''
-    });
+    // Call the addProduct function with validated data
+    addProduct(newProduct);
   };
 
   // Function to update a specific product
@@ -247,7 +273,7 @@ export default function Products() {
         // Update the product in the list
         setProducts(prevProducts => 
           prevProducts.map(product => 
-            product.id === productId ? result.data! : product
+            product.id === productId ? (result.data as Product) : product
           )
         );
 

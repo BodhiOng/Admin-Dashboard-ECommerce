@@ -336,7 +336,7 @@ const EditProductModal: React.FC<EditProductModalProps> = ({
           <div>
             <label className="block text-sm font-medium text-gray-700">Product Image</label>
             <div 
-              className="mt-1 flex justify-center px-6 border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
+              className="flex justify-center border-2 border-gray-300 border-dashed rounded-md cursor-pointer"
               onClick={() => {
                 const fileInput = document.getElementById('file-upload') as HTMLInputElement;
                 fileInput.click();

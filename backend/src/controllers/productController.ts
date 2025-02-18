@@ -118,7 +118,11 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
       _id: productId
     };
     
-    res.status(201).json(transformedProduct);
+    res.status(201).json({
+      success: true,
+      data: transformedProduct,
+      error: null
+    });
   } catch (error) {
     next(error);
   }
