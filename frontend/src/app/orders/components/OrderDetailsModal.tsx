@@ -1,12 +1,11 @@
+"use client";
+
 import React, { useState } from 'react';
 
 // Order interface to match the one in page.tsx
 interface Order {
   id: string;
-  customer: {
-    name: string;
-  };
-  orderNumber: string;
+  customer: string;
   date: string;
   status: string;
   total: number;
@@ -19,12 +18,12 @@ interface Order {
 
 // Props interface for OrderDetailsModal
 interface OrderDetailsModalProps {
-  order: Order;
+  specificOrder: Order;
   onClose: () => void;
 }
 
 // OrderDetailsModal component for displaying detailed order information
-const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose }) => {
+const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ specificOrder, onClose }) => {
   // Manages the closing animation state for mobile view
   const [isClosing, setIsClosing] = useState(false);
 
@@ -55,30 +54,30 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
           <div className="space-y-4">
             <div>
               <p className="text-sm font-medium text-gray-600">Order Number</p>
-              <p className="text-gray-900">{order.orderNumber}</p>
+              <p className="text-gray-900">{specificOrder.id}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Customer</p>
-              <p className="text-gray-900">{order.customer.name}</p>
+              <p className="text-gray-900">{specificOrder.customer}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Date</p>
-              <p className="text-gray-900">{order.date}</p>
+              <p className="text-gray-900">{specificOrder.date}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-gray-900">${order.total.toFixed(2)}</p>
+              <p className="text-gray-900">${specificOrder.total.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Status</p>
-              <p className="text-gray-900">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</p>
+              <p className="text-gray-900">{specificOrder.status.charAt(0).toUpperCase() + specificOrder.status.slice(1).toLowerCase()}</p>
             </div>
 
             {/* Products Section */}
             <div>
               <p className="text-sm font-medium text-gray-600">Products</p>
               <div className="space-y-2">
-                {order.products.map((product, index) => (
+                {specificOrder.products.map((product, index) => (
                   <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
                     <div>
                       <p className="text-gray-900">{product.name}</p>
@@ -124,30 +123,30 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ order, onClose })
           <div className="space-y-4 p-4">
             <div>
               <p className="text-xs font-medium text-gray-600">Order Number</p>
-              <p className="text-sm text-gray-900">{order.orderNumber}</p>
+              <p className="text-sm text-gray-900">{specificOrder.id}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-600">Customer</p>
-              <p className="text-sm text-gray-900">{order.customer.name}</p>
+              <p className="text-sm text-gray-900">{specificOrder.customer}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-600">Date</p>
-              <p className="text-sm text-gray-900">{order.date}</p>
+              <p className="text-sm text-gray-900">{specificOrder.date}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-600">Total</p>
-              <p className="text-sm text-gray-900">${order.total.toFixed(2)}</p>
+              <p className="text-sm text-gray-900">${specificOrder.total.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-xs font-medium text-gray-600">Status</p>
-              <p className="text-sm text-gray-900">{order.status.charAt(0).toUpperCase() + order.status.slice(1).toLowerCase()}</p>
+              <p className="text-sm text-gray-900">{specificOrder.status.charAt(0).toUpperCase() + specificOrder.status.slice(1).toLowerCase()}</p>
             </div>
 
             {/* Mobile Products Section */}
             <div>
               <p className="text-xs font-medium text-gray-600">Products</p>
               <div className="space-y-2">
-                {order.products.map((product, index) => (
+                {specificOrder.products.map((product, index) => (
                   <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
                     <div>
                       <p className="text-sm text-gray-900">{product.name}</p>

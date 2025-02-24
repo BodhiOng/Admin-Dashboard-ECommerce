@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
 import EditProductModal from './components/EditProductModal';
@@ -627,7 +626,7 @@ export default function Products() {
                 setPageSize(parseInt(e.target.value));
                 setCurrentPage(1);
               }}
-              className="border border-gray-300 rounded-md text-sm px-2 py-1"
+              className="border rounded-md text-sm p-1"
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -636,20 +635,20 @@ export default function Products() {
             <span className="ml-2 text-sm text-gray-700">entries</span>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex space-x-2">
             {/* Previous button */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={!hasPreviousPage}
               className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 border border-gray-300'
+                hasPreviousPage
+                  ? 'bg-white text-gray-700 border border-gray-300'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
               Previous
             </button>
-            
+
             {(() => {
               const windowSize = 5; // Number of page buttons to show
               const halfWindow = Math.floor(windowSize / 2);
@@ -658,35 +657,62 @@ export default function Products() {
               let startPage = Math.max(1, currentPage - halfWindow);
               let endPage = Math.min(totalPages, startPage + windowSize - 1);
               
-              // Adjust if we're near the end or start of total pages
-              if (endPage - startPage + 1 < windowSize) {
+              // Adjust if we're near the end
+              if (endPage - startPage + 1 < windowSize && totalPages > windowSize) {
                 startPage = Math.max(1, endPage - windowSize + 1);
               }
+
+              const pageNumbers = [];
+
+              // Add first page and ellipsis if needed
+              if (startPage > 1) {
+                pageNumbers.push(1);
+                if (startPage > 2) {
+                  pageNumbers.push('...');
+                }
+              }
+
+              // Add page numbers
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+              }
+
+              // Add ellipsis and last page if needed
+              if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                  pageNumbers.push('...');
+                }
+                pageNumbers.push(totalPages);
+              }
               
-              // Generate page number buttons
-              return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    currentPage === page
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300'
-                  }`}
-                >
-                  {page}
-                </button>
-              ));
+              return pageNumbers.map((page, index) => {
+                if (page === '...') {
+                  return <span key={`ellipsis-${index}`} className="px-3 py-1">...</span>;
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page as number)}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              });
             })()}
 
             {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={!hasNextPage}
               className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 border border-gray-300'
+                hasNextPage
+                  ? 'bg-white text-gray-700 border border-gray-300'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
               Next

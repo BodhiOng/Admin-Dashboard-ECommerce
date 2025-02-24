@@ -45,17 +45,22 @@ export const getAllOrders = async (req: Request, res: Response, next: NextFuncti
       .exec();
 
     res.status(200).json({
-      orders,
-      pagination: {
-        currentPage: validPage,
-        totalPages: Math.ceil(totalOrders / validLimit),
-        totalOrders,
-        pageSize: validLimit
-      }, 
-      
       success: true,
       data: orders,
-      error: null
+      error: null,
+      pagination: {
+        currentPage: validPage,
+        pageSize: validLimit,
+        totalPages: Math.ceil(totalOrders / validLimit),
+        totalOrders,
+        hasNextPage: validPage * validLimit < totalOrders,
+        hasPreviousPage: validPage > 1
+      }, 
+      query: {
+        search,
+        sortBy,
+        sortOrder: sortOrder === 1 ? 'asc' : 'desc'
+      },
     });
   } catch (error) {
     next(error);

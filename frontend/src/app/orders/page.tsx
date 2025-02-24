@@ -1,198 +1,11 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import OrderDetailsModal from './components/OrderDetailsModal';
-
-// Mock data
-const mockOrders = [
-  {
-    id: '1',
-    customer: { name: 'John Doe' },
-    orderNumber: 'ORD-001',
-    date: '2023-12-10',
-    status: 'PENDING',
-    total: 129.99,
-    products: [{ productId: 'PROD-001', name: 'Wireless Headphones', quantity: 1 }]
-  },
-  {
-    id: '2',
-    customer: { name: 'Jane Smith' },
-    orderNumber: 'ORD-002',
-    date: '2023-12-09',
-    status: 'COMPLETED',
-    total: 259.99,
-    products: [{ productId: 'PROD-002', name: 'Smart Watch', quantity: 2 }]
-  },
-  {
-    id: '3',
-    customer: { name: 'Mike Johnson' },
-    orderNumber: 'ORD-003',
-    date: '2023-12-08',
-    status: 'PROCESSING',
-    total: 89.99,
-    products: [{ productId: 'PROD-003', name: 'Bluetooth Speaker', quantity: 1 }]
-  },
-  {
-    id: '4',
-    customer: { name: 'Sarah Williams' },
-    orderNumber: 'ORD-004',
-    date: '2023-12-08',
-    status: 'COMPLETED',
-    total: 199.99,
-    products: [{ productId: 'PROD-004', name: 'Noise Cancelling Earbuds', quantity: 1 }]
-  },
-  {
-    id: '5',
-    customer: { name: 'Robert Brown' },
-    orderNumber: 'ORD-005',
-    date: '2023-12-07',
-    status: 'PENDING',
-    total: 149.99,
-    products: [{ productId: 'PROD-005', name: 'Portable Power Bank', quantity: 1 }]
-  },
-  {
-    id: '6',
-    customer: { name: 'Emily Davis' },
-    orderNumber: 'ORD-006',
-    date: '2023-12-11',
-    status: 'PROCESSING',
-    total: 349.50,
-    products: [{ productId: 'PROD-006', name: 'Gaming Laptop', quantity: 1 }]
-  },
-  {
-    id: '7',
-    customer: { name: 'David Wilson' },
-    orderNumber: 'ORD-007',
-    date: '2023-12-06',
-    status: 'COMPLETED',
-    total: 79.99,
-    products: [{ productId: 'PROD-007', name: 'Wireless Mouse', quantity: 1 }]
-  },
-  {
-    id: '8',
-    customer: { name: 'Lisa Martinez' },
-    orderNumber: 'ORD-008',
-    date: '2023-12-12',
-    status: 'PROCESSING',
-    total: 219.75,
-    products: [{ productId: 'PROD-008', name: 'External SSD', quantity: 1 }]
-  },
-  {
-    id: '9',
-    customer: { name: 'Chris Taylor' },
-    orderNumber: 'ORD-009',
-    date: '2023-12-05',
-    status: 'COMPLETED',
-    total: 189.50,
-    products: [{ productId: 'PROD-009', name: 'Smart Home Camera', quantity: 1 }]
-  },
-  {
-    id: '10',
-    customer: { name: 'Amanda Anderson' },
-    orderNumber: 'ORD-010',
-    date: '2023-12-13',
-    status: 'PENDING',
-    total: 99.99,
-    products: [{ productId: 'PROD-010', name: 'Fitness Tracker', quantity: 1 }]
-  },
-  {
-    id: '11',
-    customer: { name: 'Michael Thompson' },
-    orderNumber: 'ORD-011',
-    date: '2023-12-04',
-    status: 'PROCESSING',
-    total: 279.99,
-    products: [{ productId: 'PROD-011', name: 'Wireless Keyboard', quantity: 1 }]
-  },
-  {
-    id: '12',
-    customer: { name: 'Jessica Rodriguez' },
-    orderNumber: 'ORD-012',
-    date: '2023-12-14',
-    status: 'PENDING',
-    total: 159.50,
-    products: [{ productId: 'PROD-012', name: 'Portable Bluetooth Speaker', quantity: 1 }]
-  },
-  {
-    id: '13',
-    customer: { name: 'Kevin Lee' },
-    orderNumber: 'ORD-013',
-    date: '2023-12-03',
-    status: 'COMPLETED',
-    total: 299.75,
-    products: [{ productId: 'PROD-013', name: 'Wireless Charging Pad', quantity: 1 }]
-  },
-  {
-    id: '14',
-    customer: { name: 'Nicole Garcia' },
-    orderNumber: 'ORD-014',
-    date: '2023-12-15',
-    status: 'PROCESSING',
-    total: 129.50,
-    products: [{ productId: 'PROD-014', name: 'Smart Thermostat', quantity: 1 }]
-  },
-  {
-    id: '15',
-    customer: { name: 'Ryan Martinez' },
-    orderNumber: 'ORD-015',
-    date: '2023-12-02',
-    status: 'COMPLETED',
-    total: 249.99,
-    products: [{ productId: 'PROD-015', name: 'Wireless Router', quantity: 1 }]
-  },
-  {
-    id: '16',
-    customer: { name: 'Sophia Clark' },
-    orderNumber: 'ORD-016',
-    date: '2023-12-16',
-    status: 'PENDING',
-    total: 179.50,
-    products: [{ productId: 'PROD-016', name: 'Smart Display', quantity: 1 }]
-  },
-  {
-    id: '17',
-    customer: { name: 'Daniel Rodriguez' },
-    orderNumber: 'ORD-017',
-    date: '2023-12-01',
-    status: 'PROCESSING',
-    total: 399.75,
-    products: [{ productId: 'PROD-017', name: '4K Monitor', quantity: 1 }]
-  },
-  {
-    id: '18',
-    customer: { name: 'Olivia White' },
-    orderNumber: 'ORD-018',
-    date: '2023-12-17',
-    status: 'COMPLETED',
-    total: 109.99,
-    products: [{ productId: 'PROD-018', name: 'Wireless Earphones', quantity: 1 }]
-  },
-  {
-    id: '19',
-    customer: { name: 'Ethan Harris' },
-    orderNumber: 'ORD-019',
-    date: '2023-11-30',
-    status: 'PENDING',
-    total: 269.50,
-    products: [{ productId: 'PROD-019', name: 'Smart Home Hub', quantity: 1 }]
-  },
-  {
-    id: '20',
-    customer: { name: 'Isabella Martin' },
-    orderNumber: 'ORD-020',
-    date: '2023-12-18',
-    status: 'PROCESSING',
-    total: 189.75,
-    products: [{ productId: 'PROD-020', name: 'Wireless Charging Stand', quantity: 1 }]
-  }
-];
 
 interface Order {
   id: string;
-  customer: {
-    name: string;
-  };
-  orderNumber: string;
+  customer: string;
   date: string;
   status: string;
   total: number;
@@ -201,6 +14,25 @@ interface Order {
     name: string;
     quantity: number;
   }[];
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  pagination?: {
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    totalOrders: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+  query?: {
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  };
 }
 
 const StatusPill = ({ status }: { status: string }) => {
@@ -225,55 +57,27 @@ const StatusPill = ({ status }: { status: string }) => {
 };
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-
-  // New state for sorting
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [sortConfig, setSortConfig] = useState<{
-    key: keyof Order | 'customer.name';
+    key: keyof Order;
     direction: 'ascending' | 'descending';
   } | null>(null);
-
-  // Sorting function
-  const sortedOrders = useMemo(() => {
-    let sortableOrders = [...orders];
-    
-    if (sortConfig !== null) {
-      sortableOrders.sort((a, b) => {
-        // Handle nested customer.name sorting
-        const aValue = sortConfig.key === 'customer.name' 
-          ? a.customer.name 
-          : a[sortConfig.key as keyof Order] ?? '';
-        const bValue = sortConfig.key === 'customer.name' 
-          ? b.customer.name 
-          : b[sortConfig.key as keyof Order] ?? '';
-
-        // Compare values as strings to ensure consistent sorting
-        const aString = String(aValue).toLowerCase();
-        const bString = String(bValue).toLowerCase();
-
-        if (aString < bString) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aString > bString) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    
-    return sortableOrders;
-  }, [orders, sortConfig]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
   // Sorting request handler
-  const requestSort = (key: keyof Order | 'customer.name') => {
+  const requestSort = (key: keyof Order) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     
-    // If already sorting by this key, toggle direction
     if (sortConfig && sortConfig.key === key) {
       direction = sortConfig.direction === 'ascending' 
         ? 'descending' 
@@ -295,28 +99,103 @@ export default function Orders() {
       : <span className="ml-1 text-gray-600">▼</span>;
   };
 
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery) return sortedOrders;
+  // Filter and sort orders
+  const filteredAndSortedOrders = useMemo(() => {
+    let result = [...orders];
 
-    return sortedOrders.filter(order => 
-      order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.status.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [sortedOrders, searchQuery]);
+    // Apply sorting
+    if (sortConfig) {
+      result.sort((a, b) => {
+        let aValue: any = a[sortConfig.key];
+        let bValue: any = b[sortConfig.key];
 
-  const totalPages = Math.ceil(filteredOrders.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedOrders = filteredOrders.slice(startIndex, startIndex + pageSize);
+        // Handle nested customer name
+        if (sortConfig.key === 'customer') {
+          aValue = a.customer;
+          bValue = b.customer;
+        }
 
-  // Change current page
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page);
+        if (aValue < bValue) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [orders, sortConfig]);
+
+  // Function to fetch orders
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Construct query parameters
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: pageSize.toString(),
+        ...(searchQuery && { search: searchQuery }),
+        ...(sortConfig && { 
+          sortBy: sortConfig.key, 
+          sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+        })
+      });
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders?${queryParams}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch orders');
+      }
+
+      const result: ApiResponse<Order[]> = await response.json();
+
+      if (result.success && result.data) {
+        setOrders(result.data);
+        
+        // Update pagination metadata from API response
+        if (result.pagination) {
+          setCurrentPage(result.pagination.currentPage);
+          setPageSize(result.pagination.pageSize);
+          setTotalPages(result.pagination.totalPages);
+          setTotalOrders(result.pagination.totalOrders);
+          setHasNextPage(result.pagination.hasNextPage);
+          setHasPreviousPage(result.pagination.hasPreviousPage);
+        }
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setOrders([]); // Clear orders on error
+    } finally {
+      setLoading(false);
     }
   };
 
-  // Change number of orders displayed per page
+  // Search query change handler
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page when search query changes
+  };
+
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setCurrentPage(newPage);
+    }
+  };
+
+  // Handle page size change
   const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newSize = parseInt(event.target.value);
     setPageSize(newSize);
@@ -347,11 +226,10 @@ export default function Orders() {
     setIsDetailsModalOpen(true);
   };
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on search
-  };
+  // Fetch orders when dependencies change
+  useEffect(() => {
+    fetchOrders();
+  }, [currentPage, pageSize, searchQuery, sortConfig]);
 
   return (
     <div className="p-6 md:p-6 max-md:p-0">
@@ -411,15 +289,15 @@ export default function Orders() {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {paginatedOrders.map((order) => (
+        {filteredAndSortedOrders.map((order) => (
           <div 
             key={order.id} 
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
           >
             <div className="flex flex-col">
-              <h3 className="text-base font-semibold text-gray-900">{order.orderNumber}</h3>
+              <h3 className="text-base font-semibold text-gray-900">{order.id}</h3>
               <span className="text-xs text-gray-500 mt-1 truncate max-w-full overflow-hidden">
-                {order.customer.name}
+                {order.customer}
               </span>
             </div>
             
@@ -491,23 +369,23 @@ export default function Orders() {
             <thead>
               <tr className="bg-gray-50">
                 <th 
-                  onClick={() => requestSort('orderNumber')}
+                  onClick={() => requestSort('id')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   ID
                   <SortIcon 
-                    isActive={sortConfig?.key === 'orderNumber'} 
-                    direction={sortConfig?.key === 'orderNumber' ? sortConfig.direction : undefined} 
+                    isActive={sortConfig?.key === 'id'} 
+                    direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
                   />
                 </th>
                 <th 
-                  onClick={() => requestSort('customer.name')}
+                  onClick={() => requestSort('customer')}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
                   Customer
                   <SortIcon 
-                    isActive={sortConfig?.key === 'customer.name'} 
-                    direction={sortConfig?.key === 'customer.name' ? sortConfig.direction : undefined} 
+                    isActive={sortConfig?.key === 'customer'} 
+                    direction={sortConfig?.key === 'customer' ? sortConfig.direction : undefined} 
                   />
                 </th>
                 <th 
@@ -547,13 +425,13 @@ export default function Orders() {
             </thead>
             {/* Table body */}
             <tbody className="bg-white divide-y divide-gray-200">
-              {paginatedOrders.map((order) => (
+              {filteredAndSortedOrders.map((order) => (
                 <tr 
                   key={order.id} 
                   className="hover:bg-gray-50"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">{order.orderNumber}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{order.customer.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{order.id}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
                   <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
                   <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -586,7 +464,7 @@ export default function Orders() {
             <select
               value={pageSize}
               onChange={handlePageSizeChange}
-              className="border border-gray-300 rounded-md text-sm px-2 py-1"
+              className="border rounded-md text-sm p-1"
             >
               <option value={10}>10</option>
               <option value={20}>20</option>
@@ -595,20 +473,21 @@ export default function Orders() {
             <span className="ml-2 text-sm text-gray-700">entries</span>
           </div>
 
-          {/* Previous button */}
-          <div className="flex items-center space-x-2">
+          <div className="flex space-x-2">
+            {/* Previous button */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 1}
+              disabled={!hasPreviousPage}
               className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === 1
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                hasPreviousPage
+                  ? 'bg-white text-gray-700 border border-gray-300'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
               Previous
             </button>
-            
+
+            {/* Page buttons */}
             {(() => {
               const windowSize = 5; // Number of page buttons to show
               const halfWindow = Math.floor(windowSize / 2);
@@ -617,35 +496,62 @@ export default function Orders() {
               let startPage = Math.max(1, currentPage - halfWindow);
               let endPage = Math.min(totalPages, startPage + windowSize - 1);
               
-              // Adjust if we're near the end or start of total pages
-              if (endPage - startPage + 1 < windowSize) {
+              // Adjust if we're near the end
+              if (endPage - startPage + 1 < windowSize && totalPages > windowSize) {
                 startPage = Math.max(1, endPage - windowSize + 1);
               }
+
+              const pageNumbers = [];
+
+              // Add first page and ellipsis if needed
+              if (startPage > 1) {
+                pageNumbers.push(1);
+                if (startPage > 2) {
+                  pageNumbers.push('...');
+                }
+              }
+
+              // Add page numbers
+              for (let i = startPage; i <= endPage; i++) {
+                pageNumbers.push(i);
+              }
+
+              // Add ellipsis and last page if needed
+              if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                  pageNumbers.push('...');
+                }
+                pageNumbers.push(totalPages);
+              }
               
-              // Generate page number buttons
-              return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i).map((page) => (
-                <button
-                  key={page}
-                  onClick={() => handlePageChange(page)}
-                  className={`px-3 py-1 rounded-md text-sm ${
-                    currentPage === page
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-white text-gray-700 border border-gray-300'
-                  }`}
-                >
-                  {page}
-                </button>
-              ));
+              return pageNumbers.map((page, index) => {
+                if (page === '...') {
+                  return <span key={`ellipsis-${index}`} className="px-3 py-1">...</span>;
+                }
+                return (
+                  <button
+                    key={page}
+                    onClick={() => handlePageChange(page as number)}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      currentPage === page
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                );
+              });
             })()}
-            
+
             {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
+              disabled={!hasNextPage}
               className={`px-3 py-1 rounded-md text-sm ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300'
+                hasNextPage
+                  ? 'bg-white text-gray-700 border border-gray-300'
+                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
               }`}
             >
               Next
@@ -657,7 +563,7 @@ export default function Orders() {
       {/* Order Details Modal */}
       {isDetailsModalOpen && selectedOrder && (
         <OrderDetailsModal 
-          order={selectedOrder} 
+          specificOrder={selectedOrder} 
           onClose={() => setIsDetailsModalOpen(false)} 
         />
       )}
