@@ -114,8 +114,9 @@ export const updateOrderStatus = async (req: Request, res: Response, next: NextF
     if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
 
     res.status(200).json({
+      success: true,
       message: 'Order status updated successfully',
-      order: updatedOrder
+      data: updatedOrder
     });
   } catch (error) {
     next(error);

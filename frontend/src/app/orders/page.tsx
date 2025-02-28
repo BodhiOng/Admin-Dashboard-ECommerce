@@ -50,7 +50,7 @@ const StatusPill = ({ status }: { status: string }) => {
   };
 
   return (
-    <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium ${getStatusStyle(status)}`}>
+    <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium select-none ${getStatusStyle(status)}`}>
       {status}
     </span>
   );
@@ -181,6 +181,45 @@ export default function Orders() {
     }
   };
 
+  // Function to update order status
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/${orderId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update order status');
+      }
+
+      const result: ApiResponse<Order> = await response.json();
+
+      if (result.success && result.data) {
+        // Update the order in the local state
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order.id === orderId ? { ...order, status: newStatus } : order
+          )
+        );
+        return true;
+      } else {
+        throw new Error(result.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Search query change handler
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const query = e.target.value;
@@ -196,8 +235,8 @@ export default function Orders() {
   };
 
   // Handle page size change
-  const handlePageSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = parseInt(event.target.value);
+  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSize = parseInt(e.target.value);
     setPageSize(newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
@@ -207,23 +246,52 @@ export default function Orders() {
     const currentOrder = orders.find(order => order.id === orderId);
     if (!currentOrder) return;
 
-    const statusCycle = ['PENDING', 'PROCESSING', 'COMPLETED'];
+    const statusCycle = ['Pending', 'Processing', 'Completed'];
     const currentIndex = statusCycle.indexOf(currentOrder.status);
     const nextIndex = (currentIndex + 1) % statusCycle.length;
 
-    const updatedOrders = orders.map(order => 
-      order.id === orderId 
-        ? { ...order, status: statusCycle[nextIndex] } 
-        : order
-    );
-
-    setOrders(updatedOrders);
+    updateOrderStatus(orderId, statusCycle[nextIndex]);
   };
 
   // Open order details modal
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
     setIsDetailsModalOpen(true);
+  };
+
+  // Render table rows
+  const renderTableRows = () => {
+    if (orders.length === 0) {
+      return (
+        <tr>
+          <td colSpan={6} className="text-center py-4 text-gray-500">
+            No orders found
+          </td>
+        </tr>
+      );
+    }
+
+    return filteredAndSortedOrders.map((order) => (
+      <tr key={order.id}>
+        <td className="px-6 py-4 whitespace-nowrap truncate max-w-[150px]">{order.id}</td>
+        <td className="px-6 py-4 whitespace-nowrap truncate max-w-[200px]">{order.customer}</td>
+        <td className="px-6 py-4 whitespace-nowrap">{new Date(order.date).toLocaleDateString()}</td>
+        <td className="px-6 py-4 whitespace-nowrap">RM {order.total.toFixed(2)}</td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <div onClick={() => handleStatusChange(order.id)} className="cursor-pointer inline-block">
+            <StatusPill status={order.status}/>
+          </div>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <button
+            onClick={() => handleViewDetails(order)}
+            className="text-indigo-600 hover:text-indigo-900"
+          >
+            View Details
+          </button>
+        </td>
+      </tr>
+    ));
   };
 
   // Fetch orders when dependencies change
@@ -295,7 +363,7 @@ export default function Orders() {
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
           >
             <div className="flex flex-col">
-              <h3 className="text-base font-semibold text-gray-900">{order.id}</h3>
+              <h3 className="text-sm font-semibold text-gray-900">{order.id}</h3>
               <span className="text-xs text-gray-500 mt-1 truncate max-w-full overflow-hidden">
                 {order.customer}
               </span>
@@ -361,109 +429,100 @@ export default function Orders() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="hidden md:block bg-white rounded-lg shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            {/* Table header */}
-            <thead>
-              <tr className="bg-gray-50">
+      {/* Desktop Table View */}
+      <div className="bg-white rounded-lg shadow-sm hidden md:block">
+        <div className="overflow-x-auto max-w-full">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50 select-none">
+              <tr>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('id')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
-                  ID
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'id'} 
-                    direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    ID
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'id'} 
+                      direction={sortConfig?.key === 'id' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('customer')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
-                  Customer
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'customer'} 
-                    direction={sortConfig?.key === 'customer' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Customer
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'customer'} 
+                      direction={sortConfig?.key === 'customer' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('date')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
-                  Date
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'date'} 
-                    direction={sortConfig?.key === 'date' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Date
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'date'} 
+                      direction={sortConfig?.key === 'date' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('total')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
-                  Total
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'total'} 
-                    direction={sortConfig?.key === 'total' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Total
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'total'} 
+                      direction={sortConfig?.key === 'total' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
                 <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
                   onClick={() => requestSort('status')}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                 >
-                  Status
-                  <SortIcon 
-                    isActive={sortConfig?.key === 'status'} 
-                    direction={sortConfig?.key === 'status' ? sortConfig.direction : undefined} 
-                  />
+                  <div className="flex items-center">
+                    Status
+                    <SortIcon 
+                      isActive={sortConfig?.key === 'status'} 
+                      direction={sortConfig?.key === 'status' ? sortConfig.direction : undefined} 
+                    />
+                  </div>
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th 
+                  scope="col" 
+                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                >
                   Actions
                 </th>
               </tr>
             </thead>
-            {/* Table body */}
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredAndSortedOrders.map((order) => (
-                <tr 
-                  key={order.id} 
-                  className="hover:bg-gray-50"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap">{order.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{order.customer}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{order.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">${order.total.toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div 
-                      onClick={() => handleStatusChange(order.id)}
-                      className="cursor-pointer inline-block"
-                    >
-                      <StatusPill status={order.status} />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button 
-                      onClick={() => handleViewDetails(order)}
-                      className="text-indigo-600 hover:text-indigo-900 hover:underline"
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {renderTableRows()}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination controls */}
         <div className="px-6 py-4 flex items-center justify-between border-t border-gray-200">
-          {/* Show entries dropdown */}
           <div className="flex items-center">
             <span className="mr-2 text-sm text-gray-700">Show</span>
             <select
               value={pageSize}
-              onChange={handlePageSizeChange}
+              onChange={(e) => {
+                setPageSize(parseInt(e.target.value));
+                setCurrentPage(1);
+              }}
               className="border rounded-md text-sm p-1"
             >
               <option value={10}>10</option>
@@ -474,7 +533,6 @@ export default function Orders() {
           </div>
 
           <div className="flex space-x-2">
-            {/* Previous button */}
             <button
               onClick={() => handlePageChange(currentPage - 1)}
               disabled={!hasPreviousPage}
@@ -487,23 +545,19 @@ export default function Orders() {
               Previous
             </button>
 
-            {/* Page buttons */}
             {(() => {
-              const windowSize = 5; // Number of page buttons to show
+              const windowSize = 5;
               const halfWindow = Math.floor(windowSize / 2);
               
-              // Calculate the start and end of the page number window
               let startPage = Math.max(1, currentPage - halfWindow);
               let endPage = Math.min(totalPages, startPage + windowSize - 1);
               
-              // Adjust if we're near the end
               if (endPage - startPage + 1 < windowSize && totalPages > windowSize) {
                 startPage = Math.max(1, endPage - windowSize + 1);
               }
 
               const pageNumbers = [];
 
-              // Add first page and ellipsis if needed
               if (startPage > 1) {
                 pageNumbers.push(1);
                 if (startPage > 2) {
@@ -511,12 +565,10 @@ export default function Orders() {
                 }
               }
 
-              // Add page numbers
               for (let i = startPage; i <= endPage; i++) {
                 pageNumbers.push(i);
               }
 
-              // Add ellipsis and last page if needed
               if (endPage < totalPages) {
                 if (endPage < totalPages - 1) {
                   pageNumbers.push('...');
@@ -544,7 +596,6 @@ export default function Orders() {
               });
             })()}
 
-            {/* Next button */}
             <button
               onClick={() => handlePageChange(currentPage + 1)}
               disabled={!hasNextPage}

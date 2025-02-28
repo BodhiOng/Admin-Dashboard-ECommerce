@@ -535,7 +535,7 @@ export default function Products() {
       <div className="bg-white rounded-lg shadow-sm hidden md:block">
         <div className="overflow-x-auto max-w-full">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 select-none">
               <tr>
                 <th 
                   scope="col" 
