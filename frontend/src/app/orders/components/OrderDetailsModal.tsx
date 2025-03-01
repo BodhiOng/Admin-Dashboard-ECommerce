@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-// Order interface to match the one in page.tsx
+// Interface for an order
 interface Order {
   id: string;
   customer: string;
@@ -10,19 +10,17 @@ interface Order {
   status: string;
   total: number;
   products: {
-    productId: string;
-    name: string;
-    quantity: number;
+    product_id: string;
+    product_name: string;
+    product_quantity: number;
   }[];
 }
 
-// Props interface for OrderDetailsModal
 interface OrderDetailsModalProps {
   specificOrder: Order;
   onClose: () => void;
 }
 
-// OrderDetailsModal component for displaying detailed order information
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ specificOrder, onClose }) => {
   // Manages the closing animation state for mobile view
   const [isClosing, setIsClosing] = useState(false);
@@ -66,7 +64,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ specificOrder, on
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-gray-900">${specificOrder.total.toFixed(2)}</p>
+              <p className="text-gray-900">RM {specificOrder.total.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Status</p>
@@ -78,13 +76,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ specificOrder, on
               <p className="text-sm font-medium text-gray-600">Products</p>
               <div className="space-y-2">
                 {specificOrder.products.map((product, index) => (
-                  <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                  <div key={product.product_id} className="flex justify-between items-center border-b pb-2 last:border-b-0">
                     <div>
-                      <p className="text-gray-900">{product.name}</p>
-                      <p className="text-xs text-gray-500">Product ID: {product.productId}</p>
+                      <p className="text-gray-900">{product.product_name}</p>
+                      <p className="text-xs text-gray-500">Product ID: {product.product_id}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-gray-900">Qty: {product.quantity}</p>
+                      <p className="text-gray-900">Qty: {product.product_quantity}</p>
                     </div>
                   </div>
                 ))}
@@ -147,13 +145,13 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ specificOrder, on
               <p className="text-xs font-medium text-gray-600">Products</p>
               <div className="space-y-2">
                 {specificOrder.products.map((product, index) => (
-                  <div key={product.productId} className="flex justify-between items-center border-b pb-2 last:border-b-0">
+                  <div key={product.product_id} className="flex justify-between items-center border-b pb-2 last:border-b-0">
                     <div>
-                      <p className="text-sm text-gray-900">{product.name}</p>
-                      <p className="text-xs text-gray-500">Product ID: {product.productId}</p>
+                      <p className="text-sm text-gray-900">{product.product_name}</p>
+                      <p className="text-xs text-gray-500">Product ID: {product.product_id}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-gray-900">Qty: {product.quantity}</p>
+                      <p className="text-sm text-gray-900">Qty: {product.product_quantity}</p>
                     </div>
                   </div>
                 ))}

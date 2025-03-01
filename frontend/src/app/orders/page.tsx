@@ -578,11 +578,11 @@ export default function Orders() {
               
               return pageNumbers.map((page, index) => {
                 if (page === '...') {
-                  return <span key={`ellipsis-${index}`} className="px-3 py-1">...</span>;
+                  return <span key={`ellipsis-${index}-${page}`} className="px-3 py-1">...</span>;
                 }
                 return (
                   <button
-                    key={page}
+                    key={`page-${page}`}
                     onClick={() => handlePageChange(page as number)}
                     className={`px-3 py-1 rounded-md text-sm ${
                       currentPage === page
