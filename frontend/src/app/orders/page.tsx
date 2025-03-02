@@ -99,35 +99,6 @@ export default function Orders() {
       : <span className="ml-1 text-gray-600">▼</span>;
   };
 
-  // Filter and sort orders
-  const filteredAndSortedOrders = useMemo(() => {
-    let result = [...orders];
-
-    // Apply sorting
-    if (sortConfig) {
-      result.sort((a, b) => {
-        let aValue: any = a[sortConfig.key];
-        let bValue: any = b[sortConfig.key];
-
-        // Handle nested customer name
-        if (sortConfig.key === 'customer') {
-          aValue = a.customer;
-          bValue = b.customer;
-        }
-
-        if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-
-    return result;
-  }, [orders, sortConfig]);
-
   // Function to fetch orders
   const fetchOrders = async () => {
     try {
@@ -233,14 +204,7 @@ export default function Orders() {
       setCurrentPage(newPage);
     }
   };
-
-  // Handle page size change
-  const handlePageSizeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSize = parseInt(e.target.value);
-    setPageSize(newSize);
-    setCurrentPage(1); // Reset to first page when changing page size
-  };
-
+  
   // Function to handle status change
   const handleStatusChange = (orderId: string) => {
     const currentOrder = orders.find(order => order.id === orderId);
@@ -271,7 +235,7 @@ export default function Orders() {
       );
     }
 
-    return filteredAndSortedOrders.map((order) => (
+    return orders.map((order) => (
       <tr key={order.id}>
         <td className="px-6 py-4 whitespace-nowrap truncate max-w-[150px]">{order.id}</td>
         <td className="px-6 py-4 whitespace-nowrap truncate max-w-[200px]">{order.customer}</td>
@@ -357,7 +321,7 @@ export default function Orders() {
 
       {/* Mobile Card View */}
       <div className="md:hidden space-y-4">
-        {filteredAndSortedOrders.map((order) => (
+        {orders.map((order) => (
           <div 
             key={order.id} 
             className="bg-white rounded-lg shadow-md p-4 flex flex-col space-y-3"
