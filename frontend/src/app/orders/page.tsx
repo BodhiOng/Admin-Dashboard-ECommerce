@@ -10,9 +10,9 @@ interface Order {
   status: string;
   total: number;
   products: {
-    productId: string;
-    name: string;
-    quantity: number;
+    product_id: string;
+    product_name: string;
+    product_quantity: number;
   }[];
 }
 
