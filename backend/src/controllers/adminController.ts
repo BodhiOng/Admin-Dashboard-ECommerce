@@ -49,7 +49,8 @@ export const getAllAdmins = async (req: Request, res: Response, next: NextFuncti
       .exec();
 
     res.status(200).json({
-      admins,
+      success: true,
+      data: admins,
       pagination: {
         currentPage: validPage,
         pageSize: validLimit,
@@ -63,8 +64,6 @@ export const getAllAdmins = async (req: Request, res: Response, next: NextFuncti
         sortBy,
         sortOrder: sortOrder === 1 ? 'asc' : 'desc'
       },
-      allowedPageSizes,
-      allowedSortFields
     });
   } catch (error) {
     next(error);
@@ -89,6 +88,7 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
 
     // Validate input data
     if (!username || !email || !password) {
+      console.log('Missing required fields:', { username: !!username, email: !!email, password: !!password });
       return res.status(400).json({ 
         message: 'Missing required fields', 
         requiredFields: ['username', 'email', 'password'] 
@@ -101,6 +101,7 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
     });
 
     if (existingAdmin) {
+      console.log('Admin already exists:', { username, email });
       return res.status(400).json({ 
         message: 'Username or email already exists' 
       });
@@ -125,12 +126,12 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
       last_name: last_name?.trim() || '',
       address: address?.trim() || '',
       role: role?.trim() || 'Current Admin',
-      profile_picture: profile_picture?.trim() || undefined
+      profile_picture: profile_picture?.trim() || ''
     });
 
     // Save admin
     await newAdmin.save();
-    
+        
     // Transform admin to include id and exclude password
     const transformedAdmin = {
       ...newAdmin.toObject(),
@@ -139,26 +140,9 @@ export const createAdmin = async (req: Request, res: Response, next: NextFunctio
       password: undefined
     };
     
-    res.status(201).json(transformedAdmin);
-  } catch (error) {
-    next(error);
-  }
-};
-
-// GET /api/admins/:id
-export const getAdminById = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // Retrieve the ID from the request parameters
-    const { id } = req.params;
-
-    // Find admin by its unique ID
-    const admin = await Admin.findOne({ id }).select('-password');
-
-    // If the admin is not found
-    if (!admin) return res.status(404).json({ message: 'Admin not found' });
-
-    res.status(200).json({
-      admin
+    res.status(201).json({
+      success: true,
+      data: transformedAdmin
     });
   } catch (error) {
     next(error);
@@ -213,7 +197,50 @@ export const updateAdmin = async (req: Request, res: Response, next: NextFunctio
     // If the admin is not found
     if (!updatedAdmin) return res.status(404).json({ message: 'Admin not found' });
     
-    res.status(200).json(updatedAdmin);
+    res.status(200).json({
+      success: true,
+      data: updatedAdmin
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// POST /api/admins/validate
+export const validateAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username, email, phone_number } = req.body;
+    const errors: { [key: string]: string } = {};
+
+    // Check username availability
+    if (username) {
+      const existingUsername = await Admin.findOne({ username });
+      if (existingUsername) {
+        errors.username = 'Username is already taken';
+      }
+    }
+
+    // Check email availability
+    if (email) {
+      const existingEmail = await Admin.findOne({ email });
+      if (existingEmail) {
+        errors.email = 'Email is already registered';
+      }
+    }
+
+    // Check phone number availability
+    if (phone_number) {
+      const existingPhoneNumber = await Admin.findOne({ phone_number });
+      if (existingPhoneNumber) {
+        errors.phone_number = 'Phone number is already registered';
+      }
+    }
+
+    // Return validation results
+    res.status(200).json({
+      success: Object.keys(errors).length === 0,
+      errors
+    });
   } catch (error) {
     next(error);
   }

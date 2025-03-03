@@ -21,47 +21,76 @@ export default function AddAdminModal({
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isValid, setIsValid] = useState(false);
-
-  // New state for taken checks
-  const [usernameTaken, setUsernameTaken] = useState(false);
-  const [emailTaken, setEmailTaken] = useState(false);
-  const [phoneNumberTaken, setPhoneNumberTaken] = useState(false);
-
-  // State to manage exit animation
+  const [validationErrors, setValidationErrors] = useState<{
+    username?: string;
+    email?: string;
+    phone_number?: string;
+  }>({});
   const [isClosing, setIsClosing] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Check if fields are taken (temporary implementation)
-  const checkFieldAvailability = useCallback(async (field: string, value: string) => {
-    // Temporary hardcoded values for testing
-    const mockData = {
-      username: value === 'admin',
-      email: value === 'admin@example.com',
-      phoneNumber: value === '1234567890'
-    };
+  // Check if fields are taken
+  const checkFieldAvailability = async (formData: any) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          email: formData.email,
+          phone_number: formData.phone_number
+        })
+      });
 
-    switch(field) {
-      case 'username':
-        setUsernameTaken(mockData.username);
-        break;
-      case 'email':
-        setEmailTaken(mockData.email);
-        break;
-      case 'phoneNumber':
-        setPhoneNumberTaken(mockData.phoneNumber);
-        break;
-    }
-  }, []);
+      if (!response.ok) {
+        throw new Error('Validation failed');
+      }
 
-  // Modify onInputChange to check availability
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    onInputChange(e);
-
-    // Check availability for specific fields
-    if (['username', 'email', 'phoneNumber'].includes(name)) {
-      checkFieldAvailability(name, value);
+      const result = await response.json();
+      return result.errors || {};
+    } catch (error) {
+      console.error('Validation error:', error);
+      return {};
     }
   };
+
+  // Memoize the password validation
+  const passwordsMatch = useMemo(() => {
+    return password === confirmPassword;
+  }, [password, confirmPassword]);
+
+  // Update useEffect to only check basic validations
+  useEffect(() => {
+    const errors: typeof validationErrors = {};
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.email && !emailRegex.test(formData.email)) {
+      errors.email = 'Invalid email format';
+    }
+
+    // Username validation
+    if (formData.username && formData.username.length < 3) {
+      errors.username = 'Username must be at least 3 characters long';
+    }
+
+    // Password validation
+    const isPasswordValid = password.trim() !== '' && 
+                          confirmPassword.trim() !== '' && 
+                          passwordsMatch &&
+                          password.length >= 8;
+
+    const formIsValid = formData.username?.trim() !== '' &&
+                       formData.email?.trim() !== '' &&
+                       formData.phone_number?.trim() !== '' &&
+                       isPasswordValid &&
+                       Object.keys(errors).length === 0;
+    
+    setValidationErrors(errors);
+    setIsValid(formIsValid);
+  }, [password, confirmPassword, passwordsMatch, formData]);
 
   const handlePasswordChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
@@ -71,73 +100,34 @@ export default function AddAdminModal({
     setConfirmPassword(e.target.value);
   }, []);
 
-  // Memoize the password validation
-  const passwordsMatch = useMemo(() => {
-    return password === confirmPassword;
-  }, [password, confirmPassword]);
-
-  // Update useEffect to include taken checks in validation
-  useEffect(() => {
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (formData.email && !emailRegex.test(formData.email)) {
-      // Email format validation
-      setEmailTaken(false);
-    } else {
-      // Check availability if email is valid
-      checkFieldAvailability('email', formData.email);
-    }
-
-    // Username validation
-    if (formData.username && formData.username.length < 3) {
-      // Username length validation
-      setUsernameTaken(false);
-    } else {
-      // Check availability if username is valid
-      checkFieldAvailability('username', formData.username);
-    }
-
-    // Check availability for phone number
-    checkFieldAvailability('phoneNumber', formData.phoneNumber);
-
-    const isPasswordValid = password.trim() !== '' && 
-                          confirmPassword.trim() !== '' && 
-                          passwordsMatch &&
-                          password.length >= 8;
-
-    const formIsValid = formData.username?.trim() !== '' &&
-                       formData.email?.trim() !== '' &&
-                       formData.phoneNumber?.trim() !== '' &&
-                       isPasswordValid &&
-                       !usernameTaken &&
-                       !emailTaken &&
-                       !phoneNumberTaken;
-    
-    setIsValid(formIsValid);
-  }, [password, confirmPassword, passwordsMatch, formData, 
-      usernameTaken, emailTaken, phoneNumberTaken, checkFieldAvailability]);
-
-  // Reset password fields when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setPassword('');
-      setConfirmPassword('');
-    }
-  }, [isOpen]);
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid) {
+    if (!isValid || isSubmitting) return;
+
+    setIsSubmitting(true);
+    
+    try {
+      // Check for duplicates before submitting
+      const validationErrors = await checkFieldAvailability(formData);
+      
+      if (Object.keys(validationErrors).length > 0) {
+        setValidationErrors(validationErrors);
+        return;
+      }
+
       // Explicitly add password to formData before submission
       const updatedFormData = {
         ...formData,
         password: password
       };
       
-      // Directly pass updated form data
-      onSubmit(updatedFormData);
-      
-      onClose();
+      // Submit the form
+      await onSubmit(updatedFormData);
+      handleClose();
+    } catch (error) {
+      console.error('Error submitting form:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -175,22 +165,20 @@ export default function AddAdminModal({
                 type="text"
                 name="username"
                 value={formData.username || ''}
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
-              <div className="h-4 mt-1">
-                {usernameTaken && (
-                  <p className="text-red-500 text-xs">
-                    Username is already taken
-                  </p>
-                )}
-                {formData.username && formData.username.length < 3 && (
-                  <p className="text-red-500 text-xs">
-                    Username must be at least 3 characters long
-                  </p>
-                )}
-              </div>
+              {validationErrors.username && (
+                <p className="text-red-500 text-xs">
+                  {validationErrors.username}
+                </p>
+              )}
+              {formData.username && formData.username.length < 3 && (
+                <p className="text-red-500 text-xs">
+                  Username must be at least 3 characters long
+                </p>
+              )}
             </div>
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -198,40 +186,37 @@ export default function AddAdminModal({
                 type="email"
                 name="email"
                 value={formData.email || ''}
-                onChange={handleInputChange}
+                onChange={onInputChange}
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
-              <div className="h-4 mt-1">
-                {emailTaken && (
-                  <p className="text-red-500 text-xs">
-                    Email is already registered
-                  </p>
-                )}
-                {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
-                  <p className="text-red-500 text-xs">
-                    Please enter a valid email address
-                  </p>
-                )}
-              </div>
+              {validationErrors.email && (
+                <p className="text-red-500 text-xs">
+                  {validationErrors.email}
+                </p>
+              )}
+              {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                <p className="text-red-500 text-xs">
+                  Please enter a valid email address
+                </p>
+              )}
             </div>
             <div className="mt-4">
               <label className="block text-sm font-medium text-gray-700">Phone Number</label>
               <input
                 type="tel"
-                name="phoneNumber"
-                value={formData.phoneNumber || ''}
-                onChange={handleInputChange}
+                name="phone_number"
+                value={formData.phone_number || ''}
+                onChange={onInputChange}
                 required
+
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
-              <div className="h-4 mt-1">
-                {phoneNumberTaken && (
-                  <p className="text-red-500 text-xs">
-                    Phone number is already registered
-                  </p>
-                )}
-              </div>
+              {validationErrors.phone_number && (
+                <p className="text-red-500 text-xs">
+                  {validationErrors.phone_number}
+                </p>
+              )}
             </div>
             <div className="mt-4">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
@@ -244,11 +229,9 @@ export default function AddAdminModal({
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
-              <div className="h-4 mt-1">
-                {password && password.length < 8 && (
-                  <p className="text-red-500 text-xs">Password must be at least 8 characters long</p>
-                )}
-              </div>
+              {password && password.length < 8 && (
+                <p className="text-red-500 text-xs">Password must be at least 8 characters long</p>
+              )}
             </div>
             <div className="mb-4">
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
@@ -261,11 +244,9 @@ export default function AddAdminModal({
                 required
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
               />
-              <div className="h-4 mt-1">
-                {!passwordsMatch && confirmPassword && (
-                  <p className="text-red-500 text-xs">Passwords do not match</p>
-                )}
-              </div>
+              {!passwordsMatch && confirmPassword && (
+                <p className="text-red-500 text-xs">Passwords do not match</p>
+              )}
             </div>
             <div className="flex justify-end space-x-2">
               <button
@@ -312,7 +293,7 @@ export default function AddAdminModal({
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800 text-center">Add New Admin</h2>
             </div>
-            <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20">
+            <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20" onSubmit={handleSubmit}>
               {/* Username */}
               <div>
                 <label className="block text-xs font-medium text-gray-700">Username</label>
@@ -320,22 +301,20 @@ export default function AddAdminModal({
                   type="text"
                   name="username"
                   value={formData.username || ''}
-                  onChange={handleInputChange}
+                  onChange={onInputChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   required
                 />
-                <div className="h-4 mt-1">
-                  {usernameTaken && (
-                    <p className="text-red-500 text-xs">
-                      Username is already taken
-                    </p>
-                  )}
-                  {formData.username && formData.username.length < 3 && (
-                    <p className="text-red-500 text-xs">
-                      Username must be at least 3 characters long
-                    </p>
-                  )}
-                </div>
+                {validationErrors.username && (
+                  <p className="text-red-500 text-xs">
+                    {validationErrors.username}
+                  </p>
+                )}
+                {formData.username && formData.username.length < 3 && (
+                  <p className="text-red-500 text-xs">
+                    Username must be at least 3 characters long
+                  </p>
+                )}
               </div>
 
               {/* Email */}
@@ -345,22 +324,20 @@ export default function AddAdminModal({
                   type="email"
                   name="email"
                   value={formData.email || ''}
-                  onChange={handleInputChange}
+                  onChange={onInputChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   required
                 />
-                <div className="h-4 mt-1">
-                  {emailTaken && (
-                    <p className="text-red-500 text-xs">
-                      Email is already registered
-                    </p>
-                  )}
-                  {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
-                    <p className="text-red-500 text-xs">
-                      Please enter a valid email address
-                    </p>
-                  )}
-                </div>
+                {validationErrors.email && (
+                  <p className="text-red-500 text-xs">
+                    {validationErrors.email}
+                  </p>
+                )}
+                {formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) && (
+                  <p className="text-red-500 text-xs">
+                    Please enter a valid email address
+                  </p>
+                )}
               </div>
 
               {/* Phone Number */}
@@ -368,19 +345,17 @@ export default function AddAdminModal({
                 <label className="block text-xs font-medium text-gray-700">Phone Number</label>
                 <input
                   type="tel"
-                  name="phoneNumber"
-                  value={formData.phoneNumber || ''}
-                  onChange={handleInputChange}
+                  name="phone_number"
+                  value={formData.phone_number || ''}
+                  onChange={onInputChange}
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   required
                 />
-                <div className="h-4 mt-1">
-                  {phoneNumberTaken && (
-                    <p className="text-red-500 text-xs">
-                      Phone number is already registered
-                    </p>
-                  )}
-                </div>
+                {validationErrors.phone_number && (
+                  <p className="text-red-500 text-xs">
+                    {validationErrors.phone_number}
+                  </p>
+                )}
               </div>
 
               {/* Password */}
@@ -394,11 +369,9 @@ export default function AddAdminModal({
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   required
                 />
-                <div className="h-4 mt-1">
-                  {password && password.length < 8 && (
-                    <p className="text-red-500 text-xs">Password must be at least 8 characters long</p>
-                  )}
-                </div>
+                {password && password.length < 8 && (
+                  <p className="text-red-500 text-xs">Password must be at least 8 characters long</p>
+                )}
               </div>
 
               {/* Confirm Password */}
@@ -412,41 +385,38 @@ export default function AddAdminModal({
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
                   required
                 />
-                <div className="h-4 mt-1">
-                  {!passwordsMatch && confirmPassword && (
-                    <p className="text-red-500 text-xs">Passwords do not match</p>
-                  )}
-                </div>
+                {!passwordsMatch && confirmPassword && (
+                  <p className="text-red-500 text-xs">Passwords do not match</p>
+                )}
               </div>
 
               {/* Spacer to ensure buttons don't cover content */}
               <div className="h-20"></div>
-            </form>
 
-            {/* Submit Buttons - Fixed at bottom */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-              <div className="flex space-x-2">
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={!isValid}
-                  className={`flex-1 px-4 py-2 text-sm font-medium text-white rounded-md 
-                    ${isValid 
-                      ? 'bg-indigo-600 hover:bg-indigo-700' 
-                      : 'bg-gray-400 cursor-not-allowed'
+              {/* Submit Buttons - Fixed at bottom */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={!isValid}
+                    className={`flex-1 px-4 py-2 rounded ${
+                      isValid 
+                        ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+                        : 'bg-gray-400 text-gray-200 cursor-not-allowed'
                     }`}
-                >
-                  Add Admin
-                </button>
+                  >
+                    Add Admin
+                  </button>
+                </div>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}

@@ -34,13 +34,11 @@ export interface IAdmin extends Document {
 const AdminSchema: Schema = new Schema<IAdmin>({
   _id: {
     type: String,
-    required: true,
-    default: () => `ADMIN-${uuidv4()}`
+    required: true
   },
   id: {
     type: String,
-    required: true,
-    default: () => `ADMIN-${uuidv4()}`
+    required: true
   },
   username: {
     type: String,
@@ -57,28 +55,27 @@ const AdminSchema: Schema = new Schema<IAdmin>({
   },
   phone_number: {
     type: String,
-    required: true,
+    default: '',
     trim: true
   },
   role: {
     type: String,
-    required: true,
-    trim: true,
-    default: 'Current Admin'
+    default: 'Current Admin',
+    trim: true
   },
   first_name: {
     type: String,
-    required: true,
+    default: '',
     trim: true
   },
   last_name: {
     type: String,
-    required: true,
+    default: '',
     trim: true
   },
   address: {
     type: String,
-    required: true,
+    default: '',
     trim: true
   },
   password: {
@@ -88,7 +85,7 @@ const AdminSchema: Schema = new Schema<IAdmin>({
   profile_picture: {
     type: String,
     default: getDefaultAdminProfilePicture
-  },
+  }
 }, {
   timestamps: true,
   versionKey: '__v'

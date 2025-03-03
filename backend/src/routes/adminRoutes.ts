@@ -2,9 +2,9 @@ import { Router } from 'express';
 import { 
   getAllAdmins, 
   createAdmin, 
-  getAdminById, 
   updateAdmin, 
-  deleteAdmin
+  deleteAdmin,
+  validateAdmin
 } from '../controllers/adminController';
 
 const router = Router();
@@ -18,8 +18,11 @@ router.route('/')
   .get(asyncHandler(getAllAdmins))
   .post(asyncHandler(createAdmin));
 
+// Validation route
+router.route('/validate')
+  .post(asyncHandler(validateAdmin));
+
 router.route('/:id')
-  .get(asyncHandler(getAdminById))
   .put(asyncHandler(updateAdmin))
   .delete(asyncHandler(deleteAdmin));
 

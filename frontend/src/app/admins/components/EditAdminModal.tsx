@@ -8,7 +8,7 @@ interface EditAdminModalProps {
   formData: {
     username: string;
     email: string;
-    phoneNumber: string;
+    phone_number: string;
     role: 'Current Admin' | 'Admin Applicant';
   };
   onClose: () => void;
@@ -80,7 +80,7 @@ export default function EditAdminModal({
               <input
                 type="tel"
                 name="phoneNumber"
-                value={formData.phoneNumber || ''}
+                value={formData.phone_number || ''}
                 onChange={onInputChange}
                 required
                 placeholder="+1 (555) 123-4567"
@@ -170,7 +170,7 @@ export default function EditAdminModal({
                 <input
                   type="tel"
                   name="phoneNumber"
-                  value={formData.phoneNumber || ''}
+                  value={formData.phone_number || ''}
                   onChange={onInputChange}
                   required
                   placeholder="+1 (555) 123-4567"

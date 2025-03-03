@@ -1,165 +1,45 @@
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
 
-// Mock initial admin data
-const mockAdmins: Admin[] = [
-    {
-        id: 'ADM-0001',
-        username: 'johndoe',
-        email: 'john.doe@gmail.com',
-        phoneNumber: '+6011351561561',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0002',
-        username: 'janesmith',
-        email: 'jane.smith@gmail.com',
-        phoneNumber: '+6056153156161',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0003',
-        username: 'mikebrown',
-        email: 'mike.brown@company.com',
-        phoneNumber: '+6012345678901',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0004',
-        username: 'sarahlee',
-        email: 'sarah.lee@enterprise.org',
-        phoneNumber: '+6087654321098',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0005',
-        username: 'davidwong',
-        email: 'david.wong@corporation.net',
-        phoneNumber: '+6023456789012',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0006',
-        username: 'emilytang',
-        email: 'emily.tang@startup.io',
-        phoneNumber: '+6098765432109',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0007',
-        username: 'alexchang',
-        email: 'alex.chang@tech.com',
-        phoneNumber: '+6034567890123',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0008',
-        username: 'oliviachen',
-        email: 'olivia.chen@digital.org',
-        phoneNumber: '+6076543210987',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0009',
-        username: 'ryantan',
-        email: 'ryan.tan@innovation.net',
-        phoneNumber: '+6045678901234',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0010',
-        username: 'sophialam',
-        email: 'sophia.lam@solutions.io',
-        phoneNumber: '+6054321098765',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0011',
-        username: 'ethankim',
-        email: 'ethan.kim@global.com',
-        phoneNumber: '+6056789012345',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0012',
-        username: 'isabellawu',
-        email: 'isabella.wu@enterprise.org',
-        phoneNumber: '+6043210987654',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0013',
-        username: 'danielnguyen',
-        email: 'daniel.nguyen@technology.net',
-        phoneNumber: '+6067890123456',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0014',
-        username: 'amandachow',
-        email: 'amanda.chow@startup.io',
-        phoneNumber: '+6032109876543',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0015',
-        username: 'williamlin',
-        email: 'william.lin@digital.com',
-        phoneNumber: '+6078901234567',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0016',
-        username: 'hannahyang',
-        email: 'hannah.yang@corporation.org',
-        phoneNumber: '+6021098765432',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0017',
-        username: 'jasonzhang',
-        email: 'jason.zhang@innovation.net',
-        phoneNumber: '+6089012345678',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0018',
-        username: 'graceteo',
-        email: 'grace.teo@solutions.com',
-        phoneNumber: '+6010987654321',
-        role: 'Admin Applicant',
-    },
-    {
-        id: 'ADM-0019',
-        username: 'kevinliu',
-        email: 'kevin.liu@tech.org',
-        phoneNumber: '+6090123456789',
-        role: 'Current Admin',
-    },
-    {
-        id: 'ADM-0020',
-        username: 'rachelchen',
-        email: 'rachel.chen@global.io',
-        phoneNumber: '+6001234567890',
-        role: 'Admin Applicant',
-    }
-];
-
-// Admin interface for type safety
+// Interface for admin
 interface Admin {
     id: string;
     username: string;
     email: string;
-    phoneNumber: string;
+    phone_number: string;
     role: 'Current Admin' | 'Admin Applicant';
-    password?: string;
+    first_name: string;
+    last_name: string;
+    address: string;
+    password: string;
+    profile_picture: string;
 }
 
+// Interface for API response
+interface ApiResponse<T> {
+    success: boolean;
+    data?: T;
+    error?: string;
+    pagination?: {
+      currentPage: number;
+      pageSize: number;
+      totalPages: number;
+      totalProducts: number;
+      hasNextPage: boolean;
+      hasPreviousPage: boolean;
+    };
+    query?: {
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+    };
+  }
+
 export default function AdminsPage() {
-    const [admins, setAdmins] = useState<Admin[]>(mockAdmins);
+    const [admins, setAdmins] = useState<Admin[]>([]);
     const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -167,54 +47,83 @@ export default function AdminsPage() {
         id: '',
         username: '',
         email: '',
-        phoneNumber: '',
+        phone_number: '',
         role: 'Current Admin',
-        password: ''
+        first_name: '',
+        last_name: '',
+        address: '',
+        password: '',
+        profile_picture: ''
     });
-
-    // Search and Pagination states
-    const [searchQuery, setSearchQuery] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
-
-    // New state for sorting
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalAdmins, setTotalAdmins] = useState(0);
+    const [hasNextPage, setHasNextPage] = useState(false);
+    const [hasPreviousPage, setHasPreviousPage] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     const [sortConfig, setSortConfig] = useState<{
         key: keyof Admin;
         direction: 'ascending' | 'descending';
     } | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Sorting function
-    const sortedAdmins = useMemo(() => {
-        let sortableAdmins = [...admins];
-        
-        if (sortConfig !== null) {
-            sortableAdmins.sort((a, b) => {
-                // Safely get values with type coercion and default
-                const aValue = a[sortConfig.key] ?? '';
-                const bValue = b[sortConfig.key] ?? '';
+    // Function to fetch admins
+    const fetchAdmins = async () => {
+        try {
+            setLoading(true);
+            setError(null);
 
-                // Compare values as strings to ensure consistent sorting
-                const aString = String(aValue).toLowerCase();
-                const bString = String(bValue).toLowerCase();
-
-                if (aString < bString) {
-                    return sortConfig.direction === 'ascending' ? -1 : 1;
-                }
-                if (aString > bString) {
-                    return sortConfig.direction === 'ascending' ? 1 : -1;
-                }
-                return 0;
+            // Construct query parameters
+            const queryParams = new URLSearchParams({
+                page: currentPage.toString(),
+                limit: pageSize.toString(),
+                ...(searchQuery && { search: searchQuery }),
+                ...(sortConfig && { 
+                    sortBy: sortConfig.key, 
+                    sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+                })
             });
-        }
-        
-        return sortableAdmins;
-    }, [admins, sortConfig]);
 
-    // Sorting request handler
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins?${queryParams}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to fetch admins');
+            }
+
+            const result: ApiResponse<Admin[]> = await response.json();
+
+            if (result.success && result.data) {
+                setAdmins(result.data);
+
+                // Update pagination metadata
+                if (result.pagination) {
+                    setTotalPages(result.pagination.totalPages);
+                    setTotalAdmins(result.pagination.totalProducts);
+                    setHasNextPage(result.pagination.hasNextPage);
+                    setHasPreviousPage(result.pagination.hasPreviousPage);
+                }
+            } else {
+                throw new Error(result.error || 'Unknown error occurred');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+            setAdmins([]); // Clear admins on error
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Request sort function - triggers backend sorting
     const requestSort = (key: keyof Admin) => {
         let direction: 'ascending' | 'descending' = 'ascending';
         
-        // If already sorting by this key, toggle direction
         if (sortConfig && sortConfig.key === key) {
             direction = sortConfig.direction === 'ascending' 
                 ? 'descending' 
@@ -236,81 +145,121 @@ export default function AdminsPage() {
             : <span className="ml-1 text-gray-600">▼</span>;
     };
 
+    // Fetch admins when dependencies change
+    useEffect(() => {
+        fetchAdmins();
+    }, [currentPage, pageSize, searchQuery, sortConfig]);
+
     // Filter admins based on search query
-    const filteredAdmins = sortedAdmins.filter(admin => 
+    const filteredAdmins = admins.filter(admin => 
         admin.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.phoneNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        admin.phone_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
         admin.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        admin.email.toLowerCase().includes(searchQuery.toLowerCase())
+        admin.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        admin.role.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Pagination calculations
-    const totalPages = Math.ceil(filteredAdmins.length / pageSize);
-    const startIndex = (currentPage - 1) * pageSize;
-    const paginatedAdmins = filteredAdmins.slice(startIndex, startIndex + pageSize);
-
     // Create new admin
-    const handleCreateAdmin = (formData: Admin) => {
-        // Validate form data
-        const trimmedData = {
-            username: formData.username?.trim(),
-            email: formData.email?.trim(),
-            phoneNumber: formData.phoneNumber?.trim(),
-            password: formData.password?.trim()
-        };
+    const handleCreateAdmin = async (formData: Admin) => {
+        try {
+            setLoading(true);
+            setError(null);
 
-        // Check if all required fields are filled
-        if (!trimmedData.username || !trimmedData.email || 
-            !trimmedData.phoneNumber || !trimmedData.password) {
-            console.error('All fields are required', trimmedData);
-            return;
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to add admin');
+            }
+
+            const result: ApiResponse<Admin> = await response.json();
+
+            if (result.success && result.data) {
+                // Add the new admin to the list
+                setAdmins(prevAdmins => [...prevAdmins, result.data as Admin]);
+
+                // Reset form and close modal
+                setFormData({
+                    id: '',
+                    username: '',
+                    email: '',
+                    phone_number: '',
+                    role: 'Current Admin',
+                    first_name: '',
+                    last_name: '',
+                    address: '',
+                    password: '',
+                    profile_picture: ''
+                });
+                setIsAddModalOpen(false);
+            } else {
+                throw new Error(result.error || 'Unknown error occurred while adding admin');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        } finally {
+            setLoading(false);
         }
-
-        const admin: Admin = {
-            ...formData,
-            id: `ADM-${String(admins.length + 1).padStart(4, '0')}`,
-            role: 'Current Admin',
-        };
-        
-        // Add new admin to the list
-        setAdmins(prevAdmins => [...prevAdmins, admin]);
-        
-        // Reset form and close modal
-        setFormData({
-            id: '',
-            username: '',
-            email: '',
-            phoneNumber: '',
-            role: 'Current Admin',
-            password: ''
-        });
-        setIsAddModalOpen(false);
     };
 
     // Update existing admin
-    const handleUpdateAdmin = () => {
-        if (!selectedAdmin || !formData.username || !formData.phoneNumber) return;
+    const handleUpdateAdmin = async () => {
+        if (!selectedAdmin) return;
 
-        setAdmins(admins.map(admin =>
-            admin.id === selectedAdmin.id
-                ? {
-                    ...admin,
-                    username: formData.username,
-                    phoneNumber: formData.phoneNumber,
-                    role: formData.role,  // Use the selected role from the form
-                }
-                : admin
-        ));
-        setIsEditModalOpen(false);
-        // Reset form data
-        setFormData({
-            id: '',
-            username: '',
-            email: '',
-            phoneNumber: '',
-            role: 'Current Admin',
-            password: ''
-        });
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${selectedAdmin.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update admin');
+            }
+
+            const result: ApiResponse<Admin> = await response.json();
+
+            if (result.success && result.data) {
+                // Update the admin in the list
+                setAdmins(prevAdmins => 
+                    prevAdmins.map(admin => 
+                        admin.id === selectedAdmin.id ? (result.data as Admin) : admin
+                    )
+                );
+
+                // Reset form and close modal
+                setFormData({
+                    id: '',
+                    username: '',
+                    email: '',
+                    phone_number: '',
+                    role: 'Current Admin',
+                    first_name: '',
+                    last_name: '',
+                    address: '',
+                    password: '',
+                    profile_picture: ''
+                });
+                setIsEditModalOpen(false);
+                setSelectedAdmin(null);
+            } else {
+                throw new Error(result.error || 'Unknown error occurred while updating admin');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Delete admin
@@ -326,9 +275,13 @@ export default function AdminsPage() {
             id: '',
             username: '',
             email: '',
-            phoneNumber: '',
+            phone_number: '',
             role: 'Current Admin',
-            password: ''
+            first_name: '',
+            last_name: '',
+            address: '',
+            password: '',
+            profile_picture: ''
         });
         setIsAddModalOpen(true);
     };
@@ -477,13 +430,13 @@ export default function AdminsPage() {
                                     />
                                 </th>
                                 <th 
-                                    onClick={() => requestSort('phoneNumber')}
+                                    onClick={() => requestSort('phone_number')}
                                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
                                 >
                                     Phone Number
                                     <SortIcon 
-                                        isActive={sortConfig?.key === 'phoneNumber'} 
-                                        direction={sortConfig?.key === 'phoneNumber' ? sortConfig.direction : undefined} 
+                                        isActive={sortConfig?.key === 'phone_number'} 
+                                        direction={sortConfig?.key === 'phone_number' ? sortConfig.direction : undefined} 
                                     />
                                 </th>
                                 <th 
@@ -502,12 +455,12 @@ export default function AdminsPage() {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {paginatedAdmins.map((admin) => (
+                            {filteredAdmins.map((admin) => (
                                 <tr key={admin.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap max-w-[150px] truncate" title={admin.id}>{admin.id}</td>
                                     <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={admin.username}>{admin.username}</td>
                                     <td className="px-6 py-4 whitespace-nowrap max-w-[250px] truncate" title={admin.email}>{admin.email}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={admin.phoneNumber}>{admin.phoneNumber}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap max-w-[200px] truncate" title={admin.phone_number}>{admin.phone_number}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
                                             admin.role === 'Current Admin' 
@@ -617,7 +570,7 @@ export default function AdminsPage() {
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-4">
-                {paginatedAdmins.map((admin) => (
+                {filteredAdmins.map((admin) => (
                     <div key={admin.id} className="bg-white shadow-md rounded-lg p-4 mb-4">
                         <div className="flex justify-between items-center mb-2">
                             <h3 className="text-base font-semibold text-gray-800">{admin.username}</h3>
@@ -636,7 +589,7 @@ export default function AdminsPage() {
                         
                         <div className="flex justify-start items-center mt-2">
                             <span className="text-xs text-gray-600 mr-2">Phone:</span>
-                            <span className="text-xs text-gray-800">{admin.phoneNumber}</span>
+                            <span className="text-xs text-gray-800">{admin.phone_number}</span>
                         </div>
                         
                         <div className="flex justify-start items-center mt-2">
