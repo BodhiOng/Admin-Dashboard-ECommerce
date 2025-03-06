@@ -14,8 +14,8 @@ interface Admin {
     first_name: string;
     last_name: string;
     address: string;
-    password: string;
     profile_picture: string;
+    password?: string; // Make password optional in the type since we don't always have it
 }
 
 // Interface for API response
@@ -38,22 +38,26 @@ interface ApiResponse<T> {
     };
   }
 
+// Type for form data
+interface AdminFormData {
+    username: string;
+    email: string;
+    phone_number: string;
+    role: 'Current Admin' | 'Admin Applicant';
+    password: string;
+}
+
 export default function AdminsPage() {
     const [admins, setAdmins] = useState<Admin[]>([]);
     const [selectedAdmin, setSelectedAdmin] = useState<Admin | null>(null);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [formData, setFormData] = useState<Admin>({
-        id: '',
+    const [formData, setFormData] = useState<AdminFormData>({
         username: '',
         email: '',
         phone_number: '',
-        role: 'Current Admin',
-        first_name: '',
-        last_name: '',
-        address: '',
-        password: '',
-        profile_picture: ''
+        role: 'Admin Applicant',
+        password: ''
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -160,21 +164,39 @@ export default function AdminsPage() {
     );
 
     // Create new admin
-    const handleCreateAdmin = async (formData: Admin) => {
+    const handleCreateAdmin = async (formData: AdminFormData) => {
         try {
             setLoading(true);
             setError(null);
+
+            // Create base admin data without password
+            const baseAdminData: Omit<Admin, 'id' | 'password'> = {
+                username: formData.username,
+                email: formData.email,
+                phone_number: formData.phone_number,
+                role: formData.role,
+                first_name: '',
+                last_name: '',
+                address: '',
+                profile_picture: ''
+            };
+
+            // Add password for new admin creation
+            const newAdminData = {
+                ...baseAdminData,
+                password: formData.password // Password is required for new admins
+            };
 
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(newAdminData)
             });
 
             if (!response.ok) {
-                throw new Error('Failed to add admin');
+                throw new Error('Failed to create admin');
             }
 
             const result: ApiResponse<Admin> = await response.json();
@@ -185,20 +207,15 @@ export default function AdminsPage() {
 
                 // Reset form and close modal
                 setFormData({
-                    id: '',
                     username: '',
                     email: '',
                     phone_number: '',
-                    role: 'Current Admin',
-                    first_name: '',
-                    last_name: '',
-                    address: '',
-                    password: '',
-                    profile_picture: ''
+                    role: 'Admin Applicant',
+                    password: ''
                 });
                 setIsAddModalOpen(false);
             } else {
-                throw new Error(result.error || 'Unknown error occurred while adding admin');
+                throw new Error(result.error || 'Unknown error occurred while creating admin');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -207,20 +224,18 @@ export default function AdminsPage() {
         }
     };
 
-    // Update existing admin
-    const handleUpdateAdmin = async () => {
-        if (!selectedAdmin) return;
-
+    // Function to update a specific admin
+    const updateAdmin = async (adminId: string, updatedAdmin: Omit<Admin, 'id'>) => {
         try {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${selectedAdmin.id}`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${adminId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData)
+                body: JSON.stringify(updatedAdmin)
             });
 
             if (!response.ok) {
@@ -233,23 +248,11 @@ export default function AdminsPage() {
                 // Update the admin in the list
                 setAdmins(prevAdmins => 
                     prevAdmins.map(admin => 
-                        admin.id === selectedAdmin.id ? (result.data as Admin) : admin
+                        admin.id === adminId ? (result.data as Admin) : admin
                     )
                 );
 
-                // Reset form and close modal
-                setFormData({
-                    id: '',
-                    username: '',
-                    email: '',
-                    phone_number: '',
-                    role: 'Current Admin',
-                    first_name: '',
-                    last_name: '',
-                    address: '',
-                    password: '',
-                    profile_picture: ''
-                });
+                // Close the edit modal
                 setIsEditModalOpen(false);
                 setSelectedAdmin(null);
             } else {
@@ -262,39 +265,41 @@ export default function AdminsPage() {
         }
     };
 
-    // Delete admin
-    const handleDeleteAdmin = (adminId: string) => {
-        setAdmins(admins.filter(admin => admin.id !== adminId));
-    };
-
-    // Open modal for adding new admin
-    const openAddModal = () => {
-        setSelectedAdmin(null);
-        // Reset form data for add modal
-        setFormData({
-            id: '',
-            username: '',
-            email: '',
-            phone_number: '',
-            role: 'Current Admin',
-            first_name: '',
-            last_name: '',
-            address: '',
-            password: '',
-            profile_picture: ''
-        });
-        setIsAddModalOpen(true);
-    };
-
-    // Open modal for editing existing admin
-    const openEditModal = (admin: Admin) => {
+    // Handle edit button click
+    const handleEditAdmin = (admin: Admin) => {
         setSelectedAdmin(admin);
-        // Populate form data for edit modal
         setFormData({
-            ...admin,
+            username: admin.username,
+            email: admin.email,
+            phone_number: admin.phone_number,
+            role: admin.role,
             password: '' // Clear password for security
         });
         setIsEditModalOpen(true);
+    };
+
+    // Handle form submission for editing admin
+    const handleUpdateAdmin = async () => {
+        if (!selectedAdmin) return;
+
+        // Create base admin data without password
+        const baseAdminData: Omit<Admin, 'id' | 'password'> = {
+            username: formData.username,
+            email: formData.email,
+            phone_number: formData.phone_number,
+            role: formData.role,
+            first_name: selectedAdmin.first_name,
+            last_name: selectedAdmin.last_name,
+            address: selectedAdmin.address,
+            profile_picture: selectedAdmin.profile_picture,
+        };
+
+        // Add password only if it was changed
+        const adminData = formData.password
+            ? { ...baseAdminData, password: formData.password }
+            : baseAdminData;
+
+        await updateAdmin(selectedAdmin.id, adminData);
     };
 
     // Handle form input changes
@@ -304,12 +309,6 @@ export default function AdminsPage() {
             ...prev, 
             [name]: value 
         }));
-    };
-
-    // Handle form submission for editing admin
-    const handleEditSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        handleUpdateAdmin();
     };
 
     // Change current page
@@ -329,6 +328,25 @@ export default function AdminsPage() {
     const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(e.target.value);
         setCurrentPage(1); // Reset to first page when searching
+    };
+
+    // Delete admin
+    const handleDeleteAdmin = (adminId: string) => {
+        setAdmins(admins.filter(admin => admin.id !== adminId));
+    };
+
+    // Open modal for adding new admin
+    const openAddModal = () => {
+        setSelectedAdmin(null);
+        // Reset form data for add modal
+        setFormData({
+            username: '',
+            email: '',
+            phone_number: '',
+            role: 'Admin Applicant',
+            password: ''
+        });
+        setIsAddModalOpen(true);
     };
 
     return (
@@ -473,7 +491,7 @@ export default function AdminsPage() {
                                     <td className="px-6 py-4 whitespace-nowrap text-left">
                                         <div className="flex justify-start space-x-2">
                                             <button
-                                                onClick={() => openEditModal(admin)}
+                                                onClick={() => handleEditAdmin(admin)}
                                                 className="text-indigo-600 hover:text-indigo-900"
                                             >
                                                 Edit
@@ -605,7 +623,7 @@ export default function AdminsPage() {
                         
                         <div className="flex justify-between items-center pt-0 mt-2 space-x-2">
                             <button 
-                                onClick={() => openEditModal(admin)}
+                                onClick={() => handleEditAdmin(admin)}
                                 className="flex-1 px-3 py-2 border-2 text-green-600 rounded-lg text-center text-xs font-semibold"
                             >
                                 Edit
@@ -665,9 +683,10 @@ export default function AdminsPage() {
             <EditAdminModal
                 isOpen={isEditModalOpen}
                 formData={formData}
+                originalData={selectedAdmin || formData}
                 onClose={() => setIsEditModalOpen(false)}
                 onInputChange={handleInputChange}
-                onSubmit={handleEditSubmit}
+                onSubmit={handleUpdateAdmin}
             />
         </div>
     );

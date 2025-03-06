@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // Define the props for the EditAdminModal
 interface EditAdminModalProps {
@@ -11,20 +11,33 @@ interface EditAdminModalProps {
     phone_number: string;
     role: 'Current Admin' | 'Admin Applicant';
   };
+  originalData: {
+    username: string;
+    email: string;
+    phone_number: string;
+    role: 'Current Admin' | 'Admin Applicant';
+  };
   onClose: () => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: () => void;
 }
 
 export default function EditAdminModal({
   isOpen,
   formData,
+  originalData,
   onClose,
   onInputChange,
   onSubmit
 }: EditAdminModalProps) {
   // State to manage exit animation
   const [isClosing, setIsClosing] = useState(false);
+
+  // Check if any changes were made
+  const hasChanges = 
+    formData.username !== originalData.username ||
+    formData.phone_number !== originalData.phone_number ||
+    formData.role !== originalData.role;
 
   // Handle close with animation
   const handleClose = () => {
@@ -53,7 +66,7 @@ export default function EditAdminModal({
               ✕
             </button>
           </div>
-          <form className="p-6 space-y-4" onSubmit={onSubmit}>
+          <form className="p-6 space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">Username</label>
               <input
@@ -79,7 +92,7 @@ export default function EditAdminModal({
               <label className="block text-sm font-medium text-gray-700">Phone Number</label>
               <input
                 type="tel"
-                name="phoneNumber"
+                name="phone_number"
                 value={formData.phone_number || ''}
                 onChange={onInputChange}
                 required
@@ -112,8 +125,14 @@ export default function EditAdminModal({
                 Cancel
               </button>
               <button
-                type="submit"
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                type="button"
+                onClick={onSubmit}
+                disabled={!hasChanges}
+                className={`px-4 py-2 rounded-lg ${
+                  !hasChanges
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                }`}
               >
                 Update Admin
               </button>
@@ -143,7 +162,7 @@ export default function EditAdminModal({
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold text-gray-800 text-center">Edit Admin</h2>
             </div>
-            <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)] pb-20" onSubmit={onSubmit}>
+            <form className="p-4 space-y-4 overflow-y-auto max-h-[calc(90vh-100px)]">
               <div>
                 <label className="block text-xs font-medium text-gray-700">Username</label>
                 <input
@@ -169,7 +188,7 @@ export default function EditAdminModal({
                 <label className="block text-xs font-medium text-gray-700">Phone Number</label>
                 <input
                   type="tel"
-                  name="phoneNumber"
+                  name="phone_number"
                   value={formData.phone_number || ''}
                   onChange={onInputChange}
                   required
@@ -193,30 +212,31 @@ export default function EditAdminModal({
                   Only Current Admins can promote Admin Applicants.
                 </p>
               </div>
-              
               {/* Spacer to ensure buttons don't cover content */}
               <div className="h-20"></div>
-            </form>
-
-            {/* Submit Buttons - Fixed at bottom */}
-            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t">
-              <div className="flex space-x-2">
+              {/* Submit Buttons - Fixed at bottom */}
+              <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t flex justify-end space-x-2">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md"
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
                 >
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
                   onClick={onSubmit}
-                  className="flex-1 px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md"
+                  disabled={!hasChanges}
+                  className={`px-4 py-2 rounded-lg ${
+                    !hasChanges
+                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                  }`}
                 >
                   Update Admin
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       )}
