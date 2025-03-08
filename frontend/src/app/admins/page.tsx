@@ -331,8 +331,35 @@ export default function AdminsPage() {
     };
 
     // Delete admin
-    const handleDeleteAdmin = (adminId: string) => {
-        setAdmins(admins.filter(admin => admin.id !== adminId));
+    const handleDeleteAdmin = async (adminId: string) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${adminId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete admin');
+            }
+
+            const result: ApiResponse<void> = await response.json();
+
+            if (result.success) {
+                // Remove the deleted admin from the list
+                setAdmins(prevAdmins => prevAdmins.filter(admin => admin.id !== adminId));
+            } else {
+                throw new Error(result.error || 'Unknown error occurred while deleting admin');
+            }
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Open modal for adding new admin

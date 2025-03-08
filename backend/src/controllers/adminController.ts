@@ -258,7 +258,10 @@ export const deleteAdmin = async (req: Request, res: Response, next: NextFunctio
     // If the admin is not found
     if (!deletedAdmin) return res.status(404).json({ message: 'Admin not found' });
     
-    res.status(200).json(deletedAdmin);
+    res.status(200).json({
+      success: true,
+      data: deletedAdmin
+    });
   } catch (error) {
     next(error);
   }
