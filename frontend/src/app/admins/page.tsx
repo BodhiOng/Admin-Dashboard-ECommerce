@@ -3,6 +3,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
+import api from '@/lib/axios';
 
 // Interface for admin
 interface Admin {
@@ -21,7 +22,7 @@ interface Admin {
 // Interface for API response
 interface ApiResponse<T> {
     success: boolean;
-    data?: T;
+    data: T;
     error?: string;
     pagination?: {
       currentPage: number;
@@ -36,7 +37,7 @@ interface ApiResponse<T> {
       sortBy?: string;
       sortOrder?: 'asc' | 'desc';
     };
-  }
+}
 
 // Type for form data
 interface AdminFormData {
@@ -79,42 +80,30 @@ export default function AdminsPage() {
             setLoading(true);
             setError(null);
 
-            // Construct query parameters
-            const queryParams = new URLSearchParams({
-                page: currentPage.toString(),
-                limit: pageSize.toString(),
-                ...(searchQuery && { search: searchQuery }),
-                ...(sortConfig && { 
-                    sortBy: sortConfig.key, 
-                    sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
-                })
+            const { data } = await api.get<ApiResponse<Admin[]>>('/admins', {
+                params: {
+                    page: currentPage,
+                    limit: pageSize,
+                    ...(searchQuery && { search: searchQuery }),
+                    ...(sortConfig && { 
+                        sortBy: sortConfig.key, 
+                        sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+                    })
+                }
             });
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins?${queryParams}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch admins');
-            }
-
-            const result: ApiResponse<Admin[]> = await response.json();
-
-            if (result.success && result.data) {
-                setAdmins(result.data);
+            if (data.success && data.data) {
+                setAdmins(data.data);
 
                 // Update pagination metadata
-                if (result.pagination) {
-                    setTotalPages(result.pagination.totalPages);
-                    setTotalAdmins(result.pagination.totalProducts);
-                    setHasNextPage(result.pagination.hasNextPage);
-                    setHasPreviousPage(result.pagination.hasPreviousPage);
+                if (data.pagination) {
+                    setTotalPages(data.pagination.totalPages);
+                    setTotalAdmins(data.pagination.totalProducts);
+                    setHasNextPage(data.pagination.hasNextPage);
+                    setHasPreviousPage(data.pagination.hasPreviousPage);
                 }
             } else {
-                throw new Error(result.error || 'Unknown error occurred');
+                throw new Error(data.error || 'Unknown error occurred');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -187,25 +176,11 @@ export default function AdminsPage() {
                 password: formData.password // Password is required for new admins
             };
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(newAdminData)
-            });
+            const { data } = await api.post<ApiResponse<Admin>>('/admins', newAdminData);
 
-            if (!response.ok) {
-                throw new Error('Failed to create admin');
-            }
-
-            const result: ApiResponse<Admin> = await response.json();
-
-            if (result.success && result.data) {
-                // Add the new admin to the list
-                setAdmins(prevAdmins => [...prevAdmins, result.data as Admin]);
-
-                // Reset form and close modal
+            if (data.success) {
+                await fetchAdmins(); // Refresh the list
+                setIsAddModalOpen(false);
                 setFormData({
                     username: '',
                     email: '',
@@ -213,9 +188,8 @@ export default function AdminsPage() {
                     role: 'Admin Applicant',
                     password: ''
                 });
-                setIsAddModalOpen(false);
             } else {
-                throw new Error(result.error || 'Unknown error occurred while creating admin');
+                throw new Error(data.error || 'Failed to create admin');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -230,25 +204,13 @@ export default function AdminsPage() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${adminId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(updatedAdmin)
-            });
+            const { data } = await api.put<ApiResponse<Admin>>(`/admins/${adminId}`, updatedAdmin);
 
-            if (!response.ok) {
-                throw new Error('Failed to update admin');
-            }
-
-            const result: ApiResponse<Admin> = await response.json();
-
-            if (result.success && result.data) {
+            if (data.success) {
                 // Update the admin in the list
                 setAdmins(prevAdmins => 
                     prevAdmins.map(admin => 
-                        admin.id === adminId ? (result.data as Admin) : admin
+                        admin.id === adminId ? (data.data as Admin) : admin
                     )
                 );
 
@@ -256,7 +218,7 @@ export default function AdminsPage() {
                 setIsEditModalOpen(false);
                 setSelectedAdmin(null);
             } else {
-                throw new Error(result.error || 'Unknown error occurred while updating admin');
+                throw new Error(data.error || 'Unknown error occurred while updating admin');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -336,24 +298,13 @@ export default function AdminsPage() {
             setLoading(true);
             setError(null);
 
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/${adminId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            });
+            const { data } = await api.delete<ApiResponse<void>>(`/admins/${adminId}`);
 
-            if (!response.ok) {
-                throw new Error('Failed to delete admin');
-            }
-
-            const result: ApiResponse<void> = await response.json();
-
-            if (result.success) {
+            if (data.success) {
                 // Remove the deleted admin from the list
                 setAdmins(prevAdmins => prevAdmins.filter(admin => admin.id !== adminId));
             } else {
-                throw new Error(result.error || 'Unknown error occurred while deleting admin');
+                throw new Error(data.error || 'Unknown error occurred while deleting admin');
             }
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An unexpected error occurred');

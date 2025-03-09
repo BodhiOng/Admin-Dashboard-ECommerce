@@ -3,15 +3,39 @@
 import React, { useState } from 'react';
 import { FaKey } from 'react-icons/fa';
 import Link from 'next/link';
+import api from '@/lib/axios';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleForgotPassword = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleForgotPassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Password reset requested for:', email);
-    setIsSubmitted(true);
+    setError(null);
+    setLoading(true);
+
+    try {
+      const response = await api.post<ApiResponse<{ message: string }>>('/auth/forgot-password', { email });
+
+      if (response.data.success) {
+        setIsSubmitted(true);
+      } else {
+        throw new Error(response.data.error || 'Failed to process password reset request');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setIsSubmitted(false);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,6 +48,11 @@ export default function ForgotPasswordPage() {
             <h1 className="text-4xl font-bold text-gray-800 mb-4">
               Forgot Password
             </h1>
+            {error && (
+              <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                {error}
+              </div>
+            )}
             {!isSubmitted ? (
               <form onSubmit={handleForgotPassword} className="space-y-6">
                 <input
@@ -35,18 +64,22 @@ export default function ForgotPasswordPage() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                 />
                 <button
                   type="submit"
-                  className="w-full inline-flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+                  disabled={loading}
+                  className={`w-full inline-flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                    loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+                  } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300`}
                 >
-                  Reset Password
+                  {loading ? 'Processing...' : 'Reset Password'}
                 </button>
               </form>
             ) : (
               <div className="p-6 rounded-lg">
                 <p className="text-gray-800 text-lg mb-4">
-                  Thank you for entering your email. Our admin will contact you personally via the entered email to resolve your password reset request.
+                  If an account exists with this email, you will receive password reset instructions shortly.
                 </p>
                 <Link 
                   href="/login" 
@@ -75,10 +108,15 @@ export default function ForgotPasswordPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">
             Forgot Password
           </h1>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {error}
+            </div>
+          )}
           {!isSubmitted ? (
             <form onSubmit={handleForgotPassword} className="space-y-6">
               <input
-                id="email"
+                id="email-desktop"
                 name="email"
                 type="email"
                 required
@@ -86,18 +124,22 @@ export default function ForgotPasswordPage() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
               />
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300"
+                disabled={loading}
+                className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
+                  loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-300`}
               >
-                Reset Password
+                {loading ? 'Processing...' : 'Reset Password'}
               </button>
             </form>
           ) : (
             <div className="bg-gray-100 p-6 rounded-lg">
               <p className="text-gray-800 text-lg mb-4">
-                Thank you for entering your email. Our admin will contact you personally via the entered email to resolve your password reset request.
+                If an account exists with this email, you will receive password reset instructions shortly.
               </p>
               <Link 
                 href="/login" 

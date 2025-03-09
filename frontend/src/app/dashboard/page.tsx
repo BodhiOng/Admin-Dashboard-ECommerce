@@ -3,6 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Link from 'next/link';
 import React, { useState, useEffect } from 'react';
+import api from '@/lib/axios';
 
 // Mock data for sales chart
 const salesData = [
@@ -30,7 +31,7 @@ interface Order {
 
 interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   error?: string;
 }
 
@@ -57,23 +58,17 @@ export default function Dashboard() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders?sortBy=date&sortOrder=desc`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await api.get<ApiResponse<Order[]>>('/orders', {
+        params: {
+          sortBy: 'date',
+          sortOrder: 'desc'
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-
-      const result: ApiResponse<Order[]> = await response.json();
-
-      if (result.success && result.data) {
-        setOrders(result.data);
+      if (response.data.success && response.data.data) {
+        setOrders(response.data.data);
       } else {
-        throw new Error(result.error || 'Unknown error occurred');
+        throw new Error(response.data.error || 'Unknown error occurred');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -88,23 +83,17 @@ export default function Dashboard() {
       setLowStockLoading(true);
       setLowStockError(null);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?sortBy=stock&sortOrder=asc`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await api.get<ApiResponse<LowStockItem[]>>('/products', {
+        params: {
+          sortBy: 'stock',
+          sortOrder: 'asc'
+        }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch low stock items');
-      }
-
-      const result: ApiResponse<LowStockItem[]> = await response.json();
-
-      if (result.success && result.data) {
-        setLowStockItems(result.data);
+      if (response.data.success && response.data.data) {
+        setLowStockItems(response.data.data);
       } else {
-        throw new Error(result.error || 'Unknown error occurred');
+        throw new Error(response.data.error || 'Unknown error occurred');
       }
     } catch (err) {
       setLowStockError(err instanceof Error ? err.message : 'An unexpected error occurred');

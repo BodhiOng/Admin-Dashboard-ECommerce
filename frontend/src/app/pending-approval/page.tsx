@@ -1,10 +1,77 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaClock } from 'react-icons/fa';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import api from '@/lib/axios';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+interface ApprovalStatus {
+  status: 'pending' | 'approved' | 'rejected';
+  message?: string;
+}
 
 export default function PendingApprovalPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [approvalStatus, setApprovalStatus] = useState<ApprovalStatus | null>(null);
+
+  useEffect(() => {
+    const checkApprovalStatus = async () => {
+      try {
+        const response = await api.get<ApiResponse<ApprovalStatus>>('/auth/approval-status');
+
+        if (response.data.success) {
+          setApprovalStatus(response.data.data);
+          
+          // If approved, redirect to dashboard
+          if (response.data.data.status === 'approved') {
+            router.push('/dashboard');
+          } else if (response.data.data.status === 'rejected') {
+            // If rejected, redirect to login
+            router.push('/login');
+          }
+        } else {
+          throw new Error(response.data.error || 'Failed to fetch approval status');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkApprovalStatus();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+          <strong className="font-bold">Error: </strong>
+          <span className="block sm:inline">{error}</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Mobile View */}
@@ -16,9 +83,8 @@ export default function PendingApprovalPage() {
               Pending Approval
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed mb-6">
-              Your application to become an admin is currently under review. 
-              You will be notified once the process is complete. 
-              Thank you for your patience!
+              {approvalStatus?.message || 
+                'Your application to become an admin is currently under review. You will be notified once the process is complete. Thank you for your patience!'}
             </p>
             <Link 
               href="/login" 
@@ -38,9 +104,8 @@ export default function PendingApprovalPage() {
             Pending Approval
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed mb-6">
-            Your application to become an admin is currently under review. 
-            You will be notified once the process is complete. 
-            Thank you for your patience!
+            {approvalStatus?.message || 
+              'Your application to become an admin is currently under review. You will be notified once the process is complete. Thank you for your patience!'}
           </p>
           <Link 
             href="/login" 

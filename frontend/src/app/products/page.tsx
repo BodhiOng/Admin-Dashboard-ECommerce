@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
 import EditProductModal from './components/EditProductModal';
+import api from '@/lib/axios';
 
 // Interface for a product
 interface Product {
@@ -19,7 +20,7 @@ interface Product {
 // Interface for API response
 interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   error?: string;
   pagination?: {
     currentPage: number;
@@ -99,11 +100,136 @@ export default function Products() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
+  // Function to fetch products
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.get<ApiResponse<Product[]>>('/products', {
+        params: {
+          page: currentPage,
+          limit: pageSize,
+          ...(searchQuery && { search: searchQuery }),
+          ...(sortConfig && { 
+            sortBy: sortConfig.key, 
+            sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+          })
+        }
+      });
+
+      if (response.data.success && response.data.data) {
+        setProducts(response.data.data);
+        
+        // Update pagination metadata from API response
+        if (response.data.pagination) {
+          setCurrentPage(response.data.pagination.currentPage);
+          setPageSize(response.data.pagination.pageSize);
+          setTotalPages(response.data.pagination.totalPages);
+          setTotalProducts(response.data.pagination.totalProducts);
+          setHasNextPage(response.data.pagination.hasNextPage);
+          setHasPreviousPage(response.data.pagination.hasPreviousPage);
+        }
+      } else {
+        throw new Error(response.data.error || 'Unknown error occurred');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      setProducts([]); // Clear products on error
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to add a new product
+  const addProduct = async (newProductData: Omit<Product, 'id'>) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.post<ApiResponse<Product>>('/products', newProductData);
+      console.log(response);
+
+      if (response.data.success && response.data.data) {
+        // Add the new product to the list
+        setProducts(prevProducts => [...prevProducts, response.data.data]);
+
+        // Close the add modal and reset new product state
+        setIsModalOpen(false);
+        setNewProduct({
+          name: '',
+          price: 0,
+          stock: 0,
+          category: '',
+          description: '',
+          image: ''
+        });
+      } else {
+        throw new Error(response.data.error || 'Failed to add product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to update an existing product
+  const updateProduct = async (productId: string, updatedData: Partial<Product>) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.put<ApiResponse<Product>>(`/products/${productId}`, updatedData);
+
+      if (response.data.success && response.data.data) {
+        // Update the product in the list
+        setProducts(prevProducts =>
+          prevProducts.map(product =>
+            product.id === productId ? response.data.data : product
+          )
+        );
+
+        // Close the edit modal and reset selected product
+        setIsEditModalOpen(false);
+        setSelectedProduct(null);
+      } else {
+        throw new Error(response.data.error || 'Failed to update product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to delete a product
+  const deleteProduct = async (productId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await api.delete<ApiResponse<void>>(`/products/${productId}`);
+
+      if (response.data.success) {
+        // Remove the product from the list
+        setProducts(prevProducts =>
+          prevProducts.filter(product => product.id !== productId)
+        );
+      } else {
+        throw new Error(response.data.error || 'Failed to delete product');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Sorting request handler
   const requestSort = (key: keyof Product) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     
-    // If already sorting by this key, toggle direction
     if (sortConfig && sortConfig.key === key) {
       direction = sortConfig.direction === 'ascending' 
         ? 'descending' 
@@ -132,10 +258,8 @@ export default function Products() {
       value: string | number 
     } 
   }) => {
-    // Check if it's a standard event or a custom event
     const { name, value } = 'target' in e ? e.target : e;
 
-    // Determine which state to update based on whether a product is selected
     if (selectedProduct) {
       setSelectedProduct(prev => {
         if (!prev) return null;
@@ -158,49 +282,10 @@ export default function Products() {
     }
   };
 
-  // Function to add a new product
-  const addProduct = async (newProductData: Omit<Product, 'id'>) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(newProductData)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to add product');
-      }
-
-      const result: ApiResponse<Product> = await response.json();
-
-      if (result.success && result.data) {
-        // Add the new product to the list
-        setProducts(prevProducts => [...prevProducts, result.data as Product]);
-
-        // Close the add modal and reset new product state
-        setIsModalOpen(false);
-        setNewProduct({
-          name: '',
-          price: 0,
-          stock: 0,
-          category: '',
-          description: '',
-          image: ''
-        });
-      } else {
-        throw new Error(result.error || 'Unknown error occurred while adding product');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Fetch products when dependencies change
+  useEffect(() => {
+    fetchProducts();
+  }, [currentPage, pageSize, searchQuery, sortConfig]);
 
   // Handler to add a new product
   const handleAddProduct = () => {
@@ -221,90 +306,10 @@ export default function Products() {
     addProduct(newProduct);
   };
 
-  // Function to update a specific product
-  const updateProduct = async (productId: string, updatedProduct: Omit<Product, 'id'>) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${productId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedProduct)
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update product');
-      }
-
-      const result: ApiResponse<Product> = await response.json();
-
-      if (result.success && result.data) {
-        // Update the product in the list
-        setProducts(prevProducts => 
-          prevProducts.map(product => 
-            product.id === productId ? (result.data as Product) : product
-          )
-        );
-
-        // Close the edit modal
-        setIsEditModalOpen(false);
-        setSelectedProduct(null);
-      } else {
-        throw new Error(result.error || 'Unknown error occurred while updating product');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // Update existing product
   const handleUpdateProduct = async () => {
     if (!selectedProduct) return;
     await updateProduct(selectedProduct.id, selectedProduct);
-  };
-
-  // Function to delete a specific product
-  const deleteProduct = async (productId: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete product');
-      }
-
-      const result: ApiResponse<null> = await response.json();
-
-      if (result.success) {
-        // Remove the deleted product from the list
-        setProducts(prevProducts => 
-          prevProducts.filter(product => product.id !== productId)
-        );
-
-        // Adjust pagination if needed
-        if (products.length === 1 && currentPage > 1) {
-          setCurrentPage(currentPage - 1);
-        }
-      } else {
-        throw new Error(result.error || 'Unknown error occurred while deleting product');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
   };
 
   // Delete product
@@ -345,8 +350,6 @@ export default function Products() {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-    } else {
-      console.log('Page change prevented');
     }
   };
 
@@ -356,71 +359,6 @@ export default function Products() {
     setSearchQuery(query);
     setCurrentPage(1); // Reset to first page when search query changes
   };
-
-  // Function to fetch products
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Construct query parameters
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: pageSize.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(sortConfig && { 
-          sortBy: sortConfig.key, 
-          sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
-        })
-      });
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/products?${queryParams}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-
-      const result: ApiResponse<Product[]> = await response.json();
-
-      if (result.success && result.data) {
-        setProducts(result.data);
-
-        // Update pagination metadata
-        if (result.pagination) {
-          setTotalPages(result.pagination.totalPages);
-          setTotalProducts(result.pagination.totalProducts);
-          setHasNextPage(result.pagination.hasNextPage);
-          setHasPreviousPage(result.pagination.hasPreviousPage);
-        }
-      } else {
-        throw new Error(result.error || 'Unknown error occurred');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch data on component mount and page change
-  useEffect(() => {
-    fetchProducts();
-  }, [currentPage, pageSize, searchQuery, sortConfig]);
-
-  // Error state component
-  if (error) {
-    return (
-      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
-        <strong className="font-bold">Error: </strong>
-        <span className="block sm:inline">{error}</span>
-      </div>
-    );
-  }
 
   // Render table rows
   const renderTableRows = () => {

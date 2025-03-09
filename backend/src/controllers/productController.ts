@@ -84,14 +84,29 @@ export const createProduct = async (req: Request, res: Response, next: NextFunct
     // Validate input data
     if (!name || !description || price === undefined || !category || stock === undefined) {
       return res.status(400).json({ 
-        message: 'Missing required fields', 
-        requiredFields: ['name', 'description', 'price', 'category', 'stock'] 
+        success: false,
+        error: 'Missing required fields',
+        data: null,
+        requiredFields: ['name', 'description', 'price', 'category', 'stock']
       });
     }
 
-    // Additional validations (for stock and price)
-    if (price < 0) return res.status(400).json({ message: 'Price must be non-negative' });
-    if (stock < 0) return res.status(400).json({ message: 'Stock must be non-negative' });
+    // Additional validations
+    if (price < 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Price must be non-negative',
+        data: null
+      });
+    }
+    
+    if (stock < 0) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Stock must be non-negative',
+        data: null
+      });
+    }
 
     // Generate UUID for both id and _id
     const productId = "PRODUCT-" + uuidv4();
@@ -133,12 +148,22 @@ export const updateProduct = async (req: Request, res: Response, next: NextFunct
   try {
     // Retrieve the ID from the request parameters
     const { id } = req.params;
+    const updateData = { ...req.body };
 
     // Find and update the product by its ID
-    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
+    const updatedProduct = await Product.findByIdAndUpdate(id, updateData, { 
+      new: true,
+      runValidators: true 
+    });
     
     // If the product is not found
-    if (!updatedProduct) return res.status(404).json({ message: 'Product not found' });
+    if (!updatedProduct) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Product not found',
+        data: null
+      });
+    }
     
     res.status(200).json({
       success: true,
@@ -160,7 +185,13 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     const deletedProduct = await Product.findByIdAndDelete(id);
     
     // If the product is not found
-    if (!deletedProduct) return res.status(404).json({ message: 'Product not found' });
+    if (!deletedProduct) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Product not found',
+        data: null
+      });
+    }
     
     res.status(200).json({
       success: true,

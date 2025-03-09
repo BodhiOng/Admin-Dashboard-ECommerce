@@ -1,6 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import api from '@/lib/axios';
 
 // Interface for user profile
 interface UserProfile {
@@ -14,23 +16,22 @@ interface UserProfile {
   address?: string;
 }
 
-// Mock initial user profile data
-const initialUserProfile: UserProfile = {
-  id: 'USR-0001',
-  username: 'bodhiong',
-  email: 'bodhiong@gmail.com',
-  firstName: 'Bodhi',
-  lastName: 'Ong',
-  phoneNumber: '+603515156156',
-  avatar: '/default-avatar.png',
-  address: 'Bukit Jalil'
-};
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
 
 export default function ProfilePage() {
+  const { user } = useAuth();
+  
   // State for user profile
-  const [profile, setProfile] = useState<UserProfile>(initialUserProfile);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   // State for form data
-  const [formData, setFormData] = useState<UserProfile>(initialUserProfile);
+  const [formData, setFormData] = useState<UserProfile | null>(null);
+  // Loading and error states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // State for password change
   const [passwordData, setPasswordData] = useState({
@@ -51,12 +52,36 @@ export default function ProfilePage() {
     [key: string]: string;
   }>({});
 
-  // Mock current password for testing
-  const MOCK_CURRENT_PASSWORD = 'currentpassword123';
+  // Fetch user profile
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const response = await api.get<ApiResponse<UserProfile>>('/auth/me');
+
+        if (response.data.success && response.data.data) {
+          setProfile(response.data.data);
+          setFormData(response.data.data);
+        } else {
+          throw new Error(response.data.error || 'Failed to fetch profile');
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProfile();
+  }, []);
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!formData) return;
 
     // Reset previous password errors
     setPasswordErrors({
@@ -65,37 +90,22 @@ export default function ProfilePage() {
       confirmNewPassword: ''
     });
 
-    // Prepare update payload
-    const updatePayload = {
-      ...formData,
-      // Only include password fields if they are filled
-      ...(passwordData.currentPassword && passwordData.newPassword ? {
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      } : {})
-    };
-
-    // Validate entire form including password (only if password fields are filled)
-    const passwordValidationErrors: Partial<typeof passwordErrors> = {};
-
+    // Validate password fields if they are filled
     if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmNewPassword) {
+      const passwordValidationErrors: Partial<typeof passwordErrors> = {};
+
       // Current password validation
       if (!passwordData.currentPassword) {
         passwordValidationErrors.currentPassword = 'Current password is required';
-      } else if (passwordData.currentPassword !== MOCK_CURRENT_PASSWORD) {
-        passwordValidationErrors.currentPassword = 'Current password is incorrect';
       }
 
       // New password validation
       if (!passwordData.newPassword) {
         passwordValidationErrors.newPassword = 'New password is required';
-      } else {
-        // Password length check
-        if (passwordData.newPassword.length < 8) {
-          passwordValidationErrors.newPassword = 'Password must be at least 8 characters long';
-        } else if (passwordData.newPassword === passwordData.currentPassword) {
-          passwordValidationErrors.newPassword = 'New password cannot be the same as current password';
-        }
+      } else if (passwordData.newPassword.length < 8) {
+        passwordValidationErrors.newPassword = 'Password must be at least 8 characters long';
+      } else if (passwordData.newPassword === passwordData.currentPassword) {
+        passwordValidationErrors.newPassword = 'New password cannot be the same as current password';
       }
 
       // Confirm password validation
@@ -104,41 +114,75 @@ export default function ProfilePage() {
       } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
         passwordValidationErrors.confirmNewPassword = 'Passwords do not match';
       }
+
+      // If there are password validation errors, set them and stop submission
+      if (Object.keys(passwordValidationErrors).length > 0) {
+        setPasswordErrors(prevErrors => ({
+          ...prevErrors,
+          ...passwordValidationErrors
+        }));
+        return;
+      }
     }
 
-    // If there are password validation errors, set them and stop submission
-    if (Object.keys(passwordValidationErrors).length > 0) {
-      setPasswordErrors(prevErrors => ({
-        ...prevErrors,
-        ...passwordValidationErrors
-      }));
-      return;
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Update profile
+      const profileResponse = await api.put<ApiResponse<UserProfile>>('/auth/profile', {
+        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phoneNumber: formData.phoneNumber,
+        address: formData.address,
+        avatar: formData.avatar
+      });
+
+      if (!profileResponse.data.success) {
+        throw new Error(profileResponse.data.error || 'Failed to update profile');
+      }
+
+      // Update password if provided
+      if (passwordData.currentPassword && passwordData.newPassword) {
+        const passwordResponse = await api.put<ApiResponse<void>>('/auth/password', {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        });
+
+        if (!passwordResponse.data.success) {
+          throw new Error(passwordResponse.data.error || 'Failed to update password');
+        }
+      }
+
+      // Update local state
+      setProfile(profileResponse.data.data);
+      
+      // Reset password fields
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+      setPasswordErrors({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+    } finally {
+      setLoading(false);
     }
-
-    // TODO: Implement actual profile and password update logic
-    console.log('Profile update submitted', updatePayload);
-
-    // Reset form and password fields
-    setProfile(formData);
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmNewPassword: ''
-    });
-    setPasswordErrors({
-      currentPassword: '',
-      newPassword: '',
-      confirmNewPassword: ''
-    });
   };
 
   // Handle input changes for profile fields
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData(prev => prev ? {
       ...prev,
       [name]: value
-    }));
+    } : null);
 
     // Clear specific error when user starts typing
     if (formErrors[name]) {
@@ -168,17 +212,31 @@ export default function ProfilePage() {
   };
 
   // Handle avatar upload
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({
+    if (!file || !formData) return;
+
+    try {
+      // Create form data
+      const formData = new FormData();
+      formData.append('avatar', file);
+
+      const response = await api.post<ApiResponse<{ avatarUrl: string }>>('/auth/avatar', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        setFormData(prev => prev ? {
           ...prev,
-          avatar: reader.result as string
-        }));
-      };
-      reader.readAsDataURL(file);
+          avatar: response.data.data.avatarUrl
+        } : null);
+      } else {
+        throw new Error(response.data.error || 'Failed to upload avatar');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
     }
   };
 
@@ -191,7 +249,38 @@ export default function ProfilePage() {
       newPassword: '',
       confirmNewPassword: ''
     });
+    setPasswordErrors({
+      currentPassword: '',
+      newPassword: '',
+      confirmNewPassword: ''
+    });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">Error: </strong>
+        <span className="block sm:inline">{error}</span>
+      </div>
+    );
+  }
+
+  if (!profile || !formData) {
+    return (
+      <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded relative" role="alert">
+        <strong className="font-bold">No profile data available. </strong>
+        <span className="block sm:inline">Please try refreshing the page.</span>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-md:p-0 max-w-2xl mx-auto">

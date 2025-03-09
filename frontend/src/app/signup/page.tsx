@@ -2,6 +2,18 @@
 
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import api from '@/lib/axios';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+interface ValidationResponse {
+  isAvailable: boolean;
+  message?: string;
+}
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
@@ -9,20 +21,47 @@ export default function SignupPage() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
-  // New state for individual errors and availability
+  // State for individual errors and availability
   const [emailError, setEmailError] = useState('');
   const [usernameError, setUsernameError] = useState('');
   const [phoneNumberError, setPhoneNumberError] = useState('');
   const [passwordError, setPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
-
-  // New state for field availability
-  const [emailTaken, setEmailTaken] = useState(false);
-  const [usernameTaken, setUsernameTaken] = useState(false);
-  const [phoneNumberTaken, setPhoneNumberTaken] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+
+  // Debounced validation functions
+  const validateField = useCallback(async (field: string, value: string) => {
+    if (!value) return;
+
+    try {
+      const response = await api.post<ApiResponse<ValidationResponse>>('/auth/validate', {
+        field,
+        value
+      });
+
+      if (response.data.success) {
+        const { isAvailable, message } = response.data.data;
+        switch (field) {
+          case 'email':
+            setEmailError(isAvailable ? '' : message || 'Email is already taken');
+            break;
+          case 'username':
+            setUsernameError(isAvailable ? '' : message || 'Username is already taken');
+            break;
+          case 'phoneNumber':
+            setPhoneNumberError(isAvailable ? '' : message || 'Phone number is already registered');
+            break;
+        }
+      }
+    } catch (err) {
+      console.error(`Error validating ${field}:`, err);
+    }
+  }, []);
 
   // Handle form submission with comprehensive validation
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,9 +73,6 @@ export default function SignupPage() {
     setPhoneNumberError('');
     setPasswordError('');
     setConfirmPasswordError('');
-    setUsernameTaken(false);
-    setEmailTaken(false);
-    setPhoneNumberTaken(false);
 
     // Validation object to track all validation errors
     const validationErrors: {
@@ -81,26 +117,6 @@ export default function SignupPage() {
       validationErrors.confirmPassword = 'Passwords do not match';
     }
 
-    // Field availability checks (simulated backend validation)
-    // Temporary hardcoded values for testing
-    if (Object.keys(validationErrors).length === 0) {
-      // Simulate backend availability checks
-      if (username === 'admin') {
-        validationErrors.username = 'Username is already taken';
-        setUsernameTaken(true);
-      }
-
-      if (email === 'admin@example.com') {
-        validationErrors.email = 'Email is already registered';
-        setEmailTaken(true);
-      }
-
-      if (phoneNumber === '1234567890') {
-        validationErrors.phoneNumber = 'Phone number is already registered';
-        setPhoneNumberTaken(true);
-      }
-    }
-
     // If there are any validation errors, set them and stop submission
     if (Object.keys(validationErrors).length > 0) {
       // Set individual error states
@@ -109,19 +125,43 @@ export default function SignupPage() {
       setPhoneNumberError(validationErrors.phoneNumber || '');
       setPasswordError(validationErrors.password || '');
       setConfirmPasswordError(validationErrors.confirmPassword || '');
-      
-      return; // Stop form submission
+      return;
     }
 
     // If all validations pass, proceed with form submission
     try {
-      // Actual signup logic here
-      if (email && password && username && phoneNumber) {
-        // Simulate successful signup
+      setLoading(true);
+
+      const response = await api.post<ApiResponse<{ user: any; token: string }>>('/auth/register', {
+        email,
+        username,
+        password,
+        firstName,
+        lastName,
+        phoneNumber
+      });
+
+      if (response.data.success) {
+        // Registration successful, redirect to login
         router.push('/login');
+      } else {
+        throw new Error(response.data.error || 'Registration failed');
       }
-    } catch (error) {
-      console.error('Signup failed', error);
+    } catch (err) {
+      const error = err instanceof Error ? err.message : 'Registration failed';
+      // Set appropriate error based on the response
+      if (error.includes('email')) {
+        setEmailError(error);
+      } else if (error.includes('username')) {
+        setUsernameError(error);
+      } else if (error.includes('phone')) {
+        setPhoneNumberError(error);
+      } else {
+        // Set a general error
+        setEmailError(error);
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -137,6 +177,7 @@ export default function SignupPage() {
           </div>
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md shadow-sm space-y-4">
+              {/* Email */}
               <div>
                 <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
                   Email address
@@ -150,12 +191,17 @@ export default function SignupPage() {
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    validateField('email', e.target.value);
+                  }}
                 />
                 {emailError && (
                   <p className="text-red-500 text-xs">{emailError}</p>
                 )}
               </div>
+
+              {/* Username */}
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
                   Username
@@ -169,12 +215,51 @@ export default function SignupPage() {
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="Choose a username"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    validateField('username', e.target.value);
+                  }}
                 />
                 {usernameError && (
                   <p className="text-red-500 text-xs">{usernameError}</p>
                 )}
               </div>
+
+              {/* First Name */}
+              <div>
+                <label htmlFor="first-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name
+                </label>
+                <input
+                  id="first-name"
+                  name="firstName"
+                  type="text"
+                  autoComplete="given-name"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="First Name"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+
+              {/* Last Name */}
+              <div>
+                <label htmlFor="last-name" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name
+                </label>
+                <input
+                  id="last-name"
+                  name="lastName"
+                  type="text"
+                  autoComplete="family-name"
+                  className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  placeholder="Last Name"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+
+              {/* Phone Number */}
               <div>
                 <label htmlFor="phone-number" className="block text-sm font-medium text-gray-700 mb-1">
                   Phone Number
@@ -188,12 +273,17 @@ export default function SignupPage() {
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
                   placeholder="+60 123 456 789"
                   value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  onChange={(e) => {
+                    setPhoneNumber(e.target.value);
+                    validateField('phoneNumber', e.target.value);
+                  }}
                 />
                 {phoneNumberError && (
                   <p className="text-red-500 text-xs">{phoneNumberError}</p>
                 )}
               </div>
+
+              {/* Password */}
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
@@ -205,7 +295,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter password"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -213,18 +303,20 @@ export default function SignupPage() {
                   <p className="text-red-500 text-xs">{passwordError}</p>
                 )}
               </div>
+
+              {/* Confirm Password */}
               <div>
                 <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
                 <input
                   id="confirm-password"
-                  name="confirm-password"
+                  name="confirmPassword"
                   type="password"
                   autoComplete="new-password"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirm password"
+                  placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -234,151 +326,205 @@ export default function SignupPage() {
               </div>
             </div>
 
+            {/* Submit Button */}
             <div>
               <button
                 type="submit"
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={loading}
+                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
+                  loading ? 'bg-indigo-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'
+                } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                Sign up
+                {loading ? 'Creating account...' : 'Create account'}
               </button>
             </div>
+
+            {/* Login Link */}
+            <div className="text-center">
+              <p className="text-sm text-gray-600">
+                Already have an account?{' '}
+                <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
+                  Sign in
+                </a>
+              </p>
+            </div>
           </form>
-          <div className="text-center mt-4">
-            <p className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
-              </a>
-            </p>
-          </div>
         </div>
       </div>
 
       {/* Mobile View */}
-      <div className="md:hidden fixed inset-0 bg-white overflow-y-auto flex items-center justify-center">
-        <div className="p-6 w-full max-w-md">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">
-            Create your account
-          </h2>
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="email-address-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-                  Email address
-                </label>
-                <input
-                  id="email-address-mobile"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                {emailError && (
-                  <p className="text-red-500 text-xs">{emailError}</p>
-                )}
-              </div>
+      <div className="md:hidden h-screen w-screen absolute inset-0 bg-gray-50 flex flex-col">
+        <div className="flex-grow flex flex-col justify-center px-4 py-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md">
+            <h2 className="mt-6 text-center text-2xl font-bold text-gray-900">
+              Create your account
+            </h2>
+          </div>
 
-              <div>
-                <label htmlFor="username-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
-                </label>
-                <input
-                  id="username-mobile"
-                  name="username"
-                  type="text"
-                  autoComplete="username"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Choose a username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                />
-                {usernameError && (
-                  <p className="text-red-500 text-xs">{usernameError}</p>
-                )}
-              </div>
+          <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+            <div className="py-8 px-4 sm:rounded-lg sm:px-10">
+              {/* Same form content as desktop view */}
+              <form className="space-y-6" onSubmit={handleSubmit}>
+                {/* Email */}
+                <div>
+                  <label htmlFor="email-address-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email address
+                  </label>
+                  <input
+                    id="email-address-mobile"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateField('email', e.target.value);
+                    }}
+                  />
+                  {emailError && (
+                    <p className="text-red-500 text-xs">{emailError}</p>
+                  )}
+                </div>
 
-              <div>
-                <label htmlFor="phone-number-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  id="phone-number-mobile"
-                  name="phone-number"
-                  type="tel"
-                  autoComplete="tel"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="+60 123 456 789"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                />
-                {phoneNumberError && (
-                  <p className="text-red-500 text-xs">{phoneNumberError}</p>
-                )}
-              </div>
+                {/* Username */}
+                <div>
+                  <label htmlFor="username-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Username
+                  </label>
+                  <input
+                    id="username-mobile"
+                    name="username"
+                    type="text"
+                    autoComplete="username"
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Choose a username"
+                    value={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      validateField('username', e.target.value);
+                    }}
+                  />
+                  {usernameError && (
+                    <p className="text-red-500 text-xs">{usernameError}</p>
+                  )}
+                </div>
 
-              <div>
-                <label htmlFor="password-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
-                <input
-                  id="password-mobile"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Enter password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                {passwordError && (
-                  <p className="text-red-500 text-xs">{passwordError}</p>
-                )}
-              </div>
+                {/* First Name */}
+                <div>
+                  <label htmlFor="first-name-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
+                  <input
+                    id="first-name-mobile"
+                    name="firstName"
+                    type="text"
+                    autoComplete="given-name"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="First Name"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                  />
+                </div>
 
-              <div>
-                <label htmlFor="confirm-password-mobile" className="block text-sm font-medium text-gray-700 mb-1">
-                  Confirm Password
-                </label>
-                <input
-                  id="confirm-password-mobile"
-                  name="confirm-password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Confirm password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-                {confirmPasswordError && (
-                  <p className="text-red-500 text-xs">{confirmPasswordError}</p>
-                )}
-              </div>
+                {/* Last Name */}
+                <div>
+                  <label htmlFor="last-name-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
+                  <input
+                    id="last-name-mobile"
+                    name="lastName"
+                    type="text"
+                    autoComplete="family-name"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Last Name"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                  />
+                </div>
 
-              <div>
-                <button
-                  type="submit"
-                  className="w-full py-3 px-4 mt-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  Sign up
-                </button>
-              </div>
+                {/* Phone Number */}
+                <div>
+                  <label htmlFor="phone-number-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    id="phone-number-mobile"
+                    name="phone-number"
+                    type="tel"
+                    autoComplete="tel"
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="+60 123 456 789"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value);
+                      validateField('phoneNumber', e.target.value);
+                    }}
+                  />
+                  {phoneNumberError && (
+                    <p className="text-red-500 text-xs">{phoneNumberError}</p>
+                  )}
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label htmlFor="password-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Password
+                  </label>
+                  <input
+                    id="password-mobile"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  {passwordError && (
+                    <p className="text-red-500 text-xs">{passwordError}</p>
+                  )}
+                </div>
+
+                {/* Confirm Password */}
+                <div>
+                  <label htmlFor="confirm-password-mobile" className="block text-sm font-medium text-gray-700 mb-1">
+                    Confirm Password
+                  </label>
+                  <input
+                    id="confirm-password-mobile"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    placeholder="Confirm your password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  {confirmPasswordError && (
+                    <p className="text-red-500 text-xs">{confirmPasswordError}</p>
+                  )}
+                </div>
+
+                {/* Submit Button */}
+                <div>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-3 px-4 mt-4 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                  >
+                    {loading ? 'Creating account...' : 'Create account'}
+                  </button>
+                </div>
+              </form>
             </div>
-          </form>
-          <div className="p-4 mt-auto">
-            <p className="text-center text-sm text-gray-600">
-              Already have an account?{' '}
-              <a href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">
-                Sign in
-              </a>
-            </p>
           </div>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -9,6 +10,7 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
+  const { login } = useAuth();
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -18,7 +20,6 @@ export default function LoginPage() {
       }, 5000);
     }
 
-    // Cleanup function to clear timeout if component unmounts
     return () => {
       if (timeoutId) {
         clearTimeout(timeoutId);
@@ -30,20 +31,11 @@ export default function LoginPage() {
     e.preventDefault();
     setError('');
 
-    // Mock credentials
-    const MOCK_EMAIL = 'bodhiong@gmail.com';
-    const MOCK_PASSWORD = 'password';
-
     try {
-      // Check against mock credentials
-      if (email === MOCK_EMAIL && password === MOCK_PASSWORD) {
-        // Successful login
-        router.push('/');
-      } else {
-        setError('Invalid email or password');
-      }
+      await login({ email, password });
+      // Login successful - redirect handled by AuthContext
     } catch (err) {
-      setError('An error occurred during login');
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     }
   };
 
@@ -165,11 +157,11 @@ export default function LoginPage() {
             <div className="rounded-md shadow-sm space-y-4">
               {/* Email address */}
               <div>
-                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="desktop-email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email address
                 </label>
                 <input
-                  id="email-address"
+                  id="desktop-email"
                   name="email"
                   type="email"
                   autoComplete="email"
@@ -182,11 +174,11 @@ export default function LoginPage() {
               </div>
               {/* Password */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="desktop-password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <input
-                  id="password"
+                  id="desktop-password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
@@ -201,7 +193,7 @@ export default function LoginPage() {
 
             {/* Error */}
             {error && (
-              <div className="text-red-500 text-sm text-left">
+              <div className="text-red-500 text-sm">
                 {error}
               </div>
             )}
@@ -210,14 +202,14 @@ export default function LoginPage() {
               {/* Remember Me */}
               <div className="flex items-center">
                 <input
-                  id="remember-me"
+                  id="desktop-remember-me"
                   name="remember-me"
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="desktop-remember-me" className="ml-2 block text-sm text-gray-900">
                   Remember me
                 </label>
               </div>
@@ -225,12 +217,11 @@ export default function LoginPage() {
               {/* Forgot Password */}
               <div className="text-sm">
                 <a href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">
-                  Forgot your password?
+                  Forgot password?
                 </a>
               </div>
             </div>
 
-            {/* Sign In Button */}
             <div>
               <button
                 type="submit"
@@ -241,7 +232,7 @@ export default function LoginPage() {
             </div>
 
             {/* Sign up link */}
-            <div className="mt-4 text-center">
+            <div className="text-center">
               <p className="text-sm text-gray-600">
                 Don&apos;t have an account?{' '}
                 <a href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">

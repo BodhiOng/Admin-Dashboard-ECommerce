@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import OrderDetailsModal from './components/OrderDetailsModal';
+import api from '@/lib/axios';
 
 interface Order {
   id: string;
@@ -18,7 +19,7 @@ interface Order {
 
 interface ApiResponse<T> {
   success: boolean;
-  data?: T;
+  data: T;
   error?: string;
   pagination?: {
     currentPage: number;
@@ -105,44 +106,32 @@ export default function Orders() {
       setLoading(true);
       setError(null);
 
-      // Construct query parameters
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: pageSize.toString(),
-        ...(searchQuery && { search: searchQuery }),
-        ...(sortConfig && { 
-          sortBy: sortConfig.key, 
-          sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
-        })
+      const response = await api.get<ApiResponse<Order[]>>('/orders', {
+        params: {
+          page: currentPage,
+          limit: pageSize,
+          ...(searchQuery && { search: searchQuery }),
+          ...(sortConfig && { 
+            sortBy: sortConfig.key, 
+            sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
+          })
+        }
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders?${queryParams}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch orders');
-      }
-
-      const result: ApiResponse<Order[]> = await response.json();
-
-      if (result.success && result.data) {
-        setOrders(result.data);
+      if (response.data.success && response.data.data) {
+        setOrders(response.data.data);
         
         // Update pagination metadata from API response
-        if (result.pagination) {
-          setCurrentPage(result.pagination.currentPage);
-          setPageSize(result.pagination.pageSize);
-          setTotalPages(result.pagination.totalPages);
-          setTotalOrders(result.pagination.totalOrders);
-          setHasNextPage(result.pagination.hasNextPage);
-          setHasPreviousPage(result.pagination.hasPreviousPage);
+        if (response.data.pagination) {
+          setCurrentPage(response.data.pagination.currentPage);
+          setPageSize(response.data.pagination.pageSize);
+          setTotalPages(response.data.pagination.totalPages);
+          setTotalOrders(response.data.pagination.totalOrders);
+          setHasNextPage(response.data.pagination.hasNextPage);
+          setHasPreviousPage(response.data.pagination.hasPreviousPage);
         }
       } else {
-        throw new Error(result.error || 'Unknown error occurred');
+        throw new Error(response.data.error || 'Unknown error occurred');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
@@ -158,30 +147,20 @@ export default function Orders() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/orders/${orderId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus })
+      const response = await api.patch<ApiResponse<Order>>(`/orders/${orderId}/status`, {
+        status: newStatus
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to update order status');
-      }
-
-      const result: ApiResponse<Order> = await response.json();
-
-      if (result.success && result.data) {
+      if (response.data.success && response.data.data) {
         // Update the order in the local state
         setOrders(prevOrders => 
           prevOrders.map(order => 
-            order.id === orderId ? { ...order, status: newStatus } : order
+            order.id === orderId ? response.data.data : order
           )
         );
         return true;
       } else {
-        throw new Error(result.error || 'Unknown error occurred');
+        throw new Error(response.data.error || 'Unknown error occurred');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
