@@ -5,6 +5,7 @@ import ProductDetailsModal from './components/ProductDetailsModal';
 import AddProductModal from './components/AddProductModal';
 import EditProductModal from './components/EditProductModal';
 import api from '@/lib/axios';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // Interface for a product
 interface Product {
@@ -49,24 +50,23 @@ const StatusPill = ({ stock }: { stock: number }) => {
       return 'Out of Stock';
     }
   };
-  const status = getStatus(stock);
 
-  // Select color based on stock status
-  const colorClass = () => {
-    switch (status) {
-      case 'In Stock':
-        return 'bg-green-100 text-green-800';
-      case 'Low Stock':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Out of Stock':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  // Determine color based on stock status
+  const getColor = (stock: number) => {
+    if (stock > 20) {
+      return 'bg-green-100 text-green-800'; // Green for in stock
+    } else if (stock > 0) {
+      return 'bg-yellow-100 text-yellow-800'; // Yellow for low stock
+    } else {
+      return 'bg-red-100 text-red-800'; // Red for out of stock
     }
   };
 
+  const status = getStatus(stock);
+  const colorClass = getColor(stock);
+
   return (
-    <span className={`px-3 py-1 rounded-full text-xs md:text-sm font-medium ${colorClass()}`}>
+    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${colorClass}`}>
       {status}
     </span>
   );
@@ -75,6 +75,7 @@ const StatusPill = ({ stock }: { stock: number }) => {
 export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce search query by 500ms
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -110,7 +111,7 @@ export default function Products() {
         params: {
           page: currentPage,
           limit: pageSize,
-          ...(searchQuery && { search: searchQuery }),
+          ...(debouncedSearchQuery ? { search: debouncedSearchQuery } : {}),
           ...(sortConfig && { 
             sortBy: sortConfig.key, 
             sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
@@ -285,7 +286,7 @@ export default function Products() {
   // Fetch products when dependencies change
   useEffect(() => {
     fetchProducts();
-  }, [currentPage, pageSize, searchQuery, sortConfig]);
+  }, [currentPage, pageSize, debouncedSearchQuery, sortConfig]);
 
   // Handler to add a new product
   const handleAddProduct = () => {

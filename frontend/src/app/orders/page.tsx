@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import OrderDetailsModal from './components/OrderDetailsModal';
 import api from '@/lib/axios';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface Order {
   id: string;
@@ -60,6 +61,7 @@ const StatusPill = ({ status }: { status: string }) => {
 export default function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce search query by 500ms
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -110,7 +112,7 @@ export default function Orders() {
         params: {
           page: currentPage,
           limit: pageSize,
-          ...(searchQuery && { search: searchQuery }),
+          ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
           ...(sortConfig && { 
             sortBy: sortConfig.key, 
             sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
@@ -240,7 +242,7 @@ export default function Orders() {
   // Fetch orders when dependencies change
   useEffect(() => {
     fetchOrders();
-  }, [currentPage, pageSize, searchQuery, sortConfig]);
+  }, [currentPage, pageSize, debouncedSearchQuery, sortConfig]);
 
   // Loading state component
   if (loading) {

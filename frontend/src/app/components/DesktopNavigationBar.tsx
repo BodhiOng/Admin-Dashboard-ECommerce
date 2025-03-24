@@ -1,17 +1,89 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useSidebar } from '../contexts/SidebarContext';
+import { useState, useEffect, useCallback } from 'react';
+import { useSidebar } from '@/app/contexts/SidebarContext';
+import api from '@/lib/axios';
+import { PROFILE_UPDATED_EVENT } from '@/utils/eventUtils';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
+  profile_picture?: string;
+  address?: string;
+  role: string;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
 
 // Sidebar component for navigation in the admin dashboard
 export default function SidebarVertical({ className = '' }: { className?: string }) {
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
+  const [admin, setAdmin] = useState<AdminUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Function to fetch admin profile data
+  const fetchAdminProfile = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<ApiResponse<AdminUser>>('/auth/me');
+      if (response.data.success && response.data.data) {
+        setAdmin(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching admin profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  // Initial fetch and event listener setup
+  useEffect(() => {
+    // Fetch profile data initially
+    fetchAdminProfile();
+
+    // Set up event listener for profile updates
+    const handleProfileUpdate = () => {
+      fetchAdminProfile();
+    };
+
+    // Add event listener
+    window.addEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdate);
+
+    // Clean up event listener
+    return () => {
+      window.removeEventListener(PROFILE_UPDATED_EVENT, handleProfileUpdate);
+    };
+  }, [fetchAdminProfile]);
 
   // Extracts the first path segment or defaults to an empty string
   const activeTab = pathname.split('/')[1] || '';
 
   const { isMinimized, toggleSidebar } = useSidebar();
+
+  // Format display name and username
+  const displayName = admin?.first_name && admin?.last_name 
+    ? `${admin.first_name} ${admin.last_name}` 
+    : admin?.username || 'Admin User';
+  
+  const username = admin?.username ? `@${admin.username}` : '';
+
+  // Generate avatar URL if no profile picture
+  const avatarUrl = admin?.profile_picture 
+    ? admin.profile_picture // The profile_picture from backend is already in base64 format with data URL prefix
+    : `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=250`;
+
+  const { logout } = useAuth();
 
   return (
     // Full-height sidebar with dark background and flexible layout
@@ -38,13 +110,21 @@ export default function SidebarVertical({ className = '' }: { className?: string
 
       {/* User profile section */}
       <div className={`flex flex-col items-center my-8 ${isMinimized ? 'hidden' : ''}`}>
-        <img
-          src="https://eu.ui-avatars.com/api/?name=Bodhi+Ong&size=250"
-          alt="Profile"
-          className="w-20 h-20 rounded-full mb-2"
-        />
-        <span className="font-medium">@bodhiong</span>
-        <span className="text-sm text-gray-300">Bodhi Ong</span>
+        {loading ? (
+          <div className="w-20 h-20 rounded-full mb-2 bg-gray-600 animate-pulse"></div>
+        ) : (
+          <img
+            src={avatarUrl}
+            alt="Profile"
+            className="w-20 h-20 rounded-full mb-2 object-cover"
+          />
+        )}
+        {!loading && username && (
+          <span className="font-medium truncate w-full text-center" title={username}>{username}</span>
+        )}
+        {!loading && (
+          <span className="text-sm text-gray-300 truncate w-full text-center" title={displayName}>{displayName}</span>
+        )}
       </div>
 
       {/* Navigation links */}
@@ -132,8 +212,8 @@ export default function SidebarVertical({ className = '' }: { className?: string
           </Link>
 
           {/* Logout button */}
-          <Link 
-            href="/login"
+          <button 
+            onClick={logout}
             className={`p-2 rounded-lg border border-red-400 text-red-400 hover:bg-red-500/10 transition-all duration-200 flex items-center justify-center gap-2 ${isMinimized ? 'w-full' : ''}`}
           >
             <svg
@@ -151,7 +231,7 @@ export default function SidebarVertical({ className = '' }: { className?: string
               />
             </svg>
             {!isMinimized && <span>Logout</span>}
-          </Link>
+          </button>
         </div>
       </div>
     </aside>

@@ -1,8 +1,13 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
+  username: string;
+  first_name: string;
+  last_name: string;
   role: string;
+  phone_number?: string;
+  profile_picture?: string;
+  address?: string;
 }
 
 export interface AuthState {

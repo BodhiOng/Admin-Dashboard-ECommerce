@@ -4,6 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
 import api from '@/lib/axios';
+import { useDebounce } from '@/hooks/useDebounce';
 
 // Interface for admin
 interface Admin {
@@ -67,6 +68,7 @@ export default function AdminsPage() {
     const [hasNextPage, setHasNextPage] = useState(false);
     const [hasPreviousPage, setHasPreviousPage] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+    const debouncedSearchQuery = useDebounce(searchQuery, 500); // Debounce search query by 500ms
     const [sortConfig, setSortConfig] = useState<{
         key: keyof Admin;
         direction: 'ascending' | 'descending';
@@ -84,7 +86,7 @@ export default function AdminsPage() {
                 params: {
                     page: currentPage,
                     limit: pageSize,
-                    ...(searchQuery && { search: searchQuery }),
+                    ...(debouncedSearchQuery && { search: debouncedSearchQuery }),
                     ...(sortConfig && { 
                         sortBy: sortConfig.key, 
                         sortOrder: sortConfig.direction === 'ascending' ? 'asc' : 'desc' 
@@ -141,7 +143,7 @@ export default function AdminsPage() {
     // Fetch admins when dependencies change
     useEffect(() => {
         fetchAdmins();
-    }, [currentPage, pageSize, searchQuery, sortConfig]);
+    }, [currentPage, pageSize, debouncedSearchQuery, sortConfig]);
 
     // Filter admins based on search query
     const filteredAdmins = admins.filter(admin => 

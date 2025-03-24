@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/axios';
 import { useRouter } from 'next/navigation';
+import { notifyProfileUpdated } from '@/utils/eventUtils';
 
 // Interface for user profile
 interface UserProfile {
@@ -444,6 +445,7 @@ export default function ProfilePage() {
       setSelectedFile(null);
 
       setSuccess('Profile updated successfully');
+      notifyProfileUpdated();
     } catch (err) {
       // Handle errors
       if (err instanceof Error) {
