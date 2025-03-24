@@ -3,35 +3,71 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import api from '@/lib/axios';
+import { useRouter } from 'next/navigation';
 
 // Interface for user profile
 interface UserProfile {
   id: string;
   username: string;
   email: string;
-  firstName: string;
-  lastName: string;
-  phoneNumber?: string;
-  avatar: string;
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
+  profile_picture?: string;
   address?: string;
+}
+
+interface ErrorResponse {
+  message?: string;
+  type?: string;
+  details?: string;
 }
 
 interface ApiResponse<T> {
   success: boolean;
   data: T;
-  error?: string;
+  error?: string | ErrorResponse;
+}
+
+interface AdminUser {
+  id: string;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number?: string;
+  profile_picture?: string;
+  address?: string;
 }
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
+  const router = useRouter();
   
   // State for user profile
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  // State for form data
-  const [formData, setFormData] = useState<UserProfile | null>(null);
+  // Initial form data state
+  const [formData, setFormData] = useState<UserProfile & { 
+    phone_number: string;
+    address: string;
+  }>({
+    id: '',
+    email: '',
+    username: '',
+    first_name: '',
+    last_name: '',
+    phone_number: '',
+    address: '',
+    profile_picture: ''
+  });
+
+  // State for selected profile picture file
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
   // Loading and error states
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // State for password change
   const [passwordData, setPasswordData] = useState({
@@ -52,23 +88,124 @@ export default function ProfilePage() {
     [key: string]: string;
   }>({});
 
+  // Convert base64 image to a valid data URL
+  const convertBase64ToImage = (base64String: string | undefined) => {
+    if (!base64String) return '/blank-profile-picture-973460_1280.jpg';
+    
+    // Check if the string is already a valid URL or data URL
+    if (base64String.startsWith('http') || base64String.startsWith('data:')) {
+      return base64String;
+    }
+
+    // If it's a base64 string without a prefix, add the data URL prefix
+    return `data:image/jpeg;base64,${base64String}`;
+  };
+
+  // State for profile picture URL
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string>('/blank-profile-picture-973460_1280.jpg');
+  const [selectedFilePreview, setSelectedFilePreview] = useState<string | null>(null);
+
+  // Update profile picture URL when profile changes or file is selected
+  useEffect(() => {
+    if (selectedFilePreview) {
+      setProfilePictureUrl(selectedFilePreview);
+    } else if (formData?.profile_picture) {
+      setProfilePictureUrl(convertBase64ToImage(formData.profile_picture));
+    } else {
+      setProfilePictureUrl('/blank-profile-picture-973460_1280.jpg');
+    }
+  }, [formData?.profile_picture, selectedFilePreview]);
+
   // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
+        console.log('Fetching profile...');
         setLoading(true);
-        setError(null);
-
         const response = await api.get<ApiResponse<UserProfile>>('/auth/me');
-
-        if (response.data.success && response.data.data) {
-          setProfile(response.data.data);
-          setFormData(response.data.data);
-        } else {
-          throw new Error(response.data.error || 'Failed to fetch profile');
+        
+        if (!response.data.success) {
+          console.log('Profile fetch failed:', response.data);
+          const error = response.data.error;
+          let errorMessage: string;
+          
+          if (typeof error === 'object' && error !== null && 'message' in error) {
+            errorMessage = error.message || error.details || 'Failed to fetch profile';
+          } else {
+            errorMessage = String(error || 'Failed to fetch profile');
+          }
+          
+          throw new Error(errorMessage);
         }
+
+        console.log('Profile fetch successful');
+        const profileData = response.data.data;
+        setProfile(profileData);
+        setFormData({
+          ...profileData,
+          phone_number: profileData.phone_number || '',
+          address: profileData.address || ''
+        });
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unexpected error occurred');
+        console.log('Profile fetch error:', err);
+        // Handle Axios error response
+        const axiosError = err as { 
+          response?: { 
+            data?: { 
+              error?: { 
+                message?: string; 
+                details?: string; 
+                type?: string 
+              } | string;
+            }
+          } 
+        };
+        const errorData = axiosError.response?.data?.error;
+        console.log('Error data:', errorData);
+        let errorMessage = '';
+
+        if (typeof errorData === 'object' && errorData !== null) {
+          console.log('Processing object error');
+          errorMessage = errorData.message || errorData.details || 'An unexpected error occurred';
+        } else if (axiosError.response?.data?.error) {
+          console.log('Processing string error from response');
+          errorMessage = String(axiosError.response.data.error);
+        } else if (err instanceof Error) {
+          console.log('Processing Error instance');
+          errorMessage = err.message;
+        } else {
+          console.log('Fallback error case');
+          errorMessage = 'An unexpected error occurred';
+        }
+
+        console.log('Final error message:', errorMessage);
+        const lowerErrorMessage = errorMessage.toLowerCase();
+        console.log('Checking error type with:', lowerErrorMessage);
+        
+        if (
+          lowerErrorMessage.includes('password') || 
+          lowerErrorMessage.includes('unauthorized') || 
+          lowerErrorMessage.includes('invalid') ||
+          (typeof errorData === 'object' && errorData?.type === 'AuthenticationError')
+        ) {
+          console.log('Handling as password error');
+          // Handle password-specific errors
+          setPasswordErrors(prev => ({
+            ...prev,
+            currentPassword: 'Current password is incorrect'
+          }));
+          // Clear password fields for security
+          setPasswordData({
+            currentPassword: '',
+            newPassword: '',
+            confirmNewPassword: ''
+          });
+          // Clear global error to prevent refresh loop
+          setError('');
+        } else {
+          console.log('Setting global error:', errorMessage);
+          setError(errorMessage);
+        }
       } finally {
         setLoading(false);
       }
@@ -77,189 +214,269 @@ export default function ProfilePage() {
     fetchProfile();
   }, []);
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!formData) return;
-
-    // Reset previous password errors
-    setPasswordErrors({
-      currentPassword: '',
-      newPassword: '',
-      confirmNewPassword: ''
-    });
-
-    // Validate password fields if they are filled
-    if (passwordData.currentPassword || passwordData.newPassword || passwordData.confirmNewPassword) {
-      const passwordValidationErrors: Partial<typeof passwordErrors> = {};
-
-      // Current password validation
-      if (!passwordData.currentPassword) {
-        passwordValidationErrors.currentPassword = 'Current password is required';
-      }
-
-      // New password validation
-      if (!passwordData.newPassword) {
-        passwordValidationErrors.newPassword = 'New password is required';
-      } else if (passwordData.newPassword.length < 8) {
-        passwordValidationErrors.newPassword = 'Password must be at least 8 characters long';
-      } else if (passwordData.newPassword === passwordData.currentPassword) {
-        passwordValidationErrors.newPassword = 'New password cannot be the same as current password';
-      }
-
-      // Confirm password validation
-      if (!passwordData.confirmNewPassword) {
-        passwordValidationErrors.confirmNewPassword = 'Please confirm your new password';
-      } else if (passwordData.newPassword !== passwordData.confirmNewPassword) {
-        passwordValidationErrors.confirmNewPassword = 'Passwords do not match';
-      }
-
-      // If there are password validation errors, set them and stop submission
-      if (Object.keys(passwordValidationErrors).length > 0) {
-        setPasswordErrors(prevErrors => ({
-          ...prevErrors,
-          ...passwordValidationErrors
-        }));
-        return;
-      }
-    }
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Update profile
-      const profileResponse = await api.put<ApiResponse<UserProfile>>('/auth/profile', {
-        username: formData.username,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        phoneNumber: formData.phoneNumber,
-        address: formData.address,
-        avatar: formData.avatar
-      });
-
-      if (!profileResponse.data.success) {
-        throw new Error(profileResponse.data.error || 'Failed to update profile');
-      }
-
-      // Update password if provided
-      if (passwordData.currentPassword && passwordData.newPassword) {
-        const passwordResponse = await api.put<ApiResponse<void>>('/auth/password', {
-          currentPassword: passwordData.currentPassword,
-          newPassword: passwordData.newPassword
-        });
-
-        if (!passwordResponse.data.success) {
-          throw new Error(passwordResponse.data.error || 'Failed to update password');
-        }
-      }
-
-      // Update local state
-      setProfile(profileResponse.data.data);
-      
-      // Reset password fields
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
-      setPasswordErrors({
-        currentPassword: '',
-        newPassword: '',
-        confirmNewPassword: ''
-      });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle input changes for profile fields
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  // Handle form field changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => prev ? {
+    setFormData(prev => ({
       ...prev,
       [name]: value
-    } : null);
-
-    // Clear specific error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
+    }));
+    setError('');
   };
 
   // Handle password input changes
   const handlePasswordInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
-    // Update password data
-    setPasswordData(prevData => ({
-      ...prevData,
+    setPasswordData(prev => ({
+      ...prev,
       [name]: value
     }));
-
-    // Clear the specific error for this field
-    setPasswordErrors(prevErrors => ({
-      ...prevErrors,
+    // Clear password errors when typing
+    setPasswordErrors(prev => ({
+      ...prev,
       [name]: ''
     }));
-  };
-
-  // Handle avatar upload
-  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !formData) return;
-
-    try {
-      // Create form data
-      const formData = new FormData();
-      formData.append('avatar', file);
-
-      const response = await api.post<ApiResponse<{ avatarUrl: string }>>('/auth/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-
-      if (response.data.success) {
-        setFormData(prev => prev ? {
-          ...prev,
-          avatar: response.data.data.avatarUrl
-        } : null);
-      } else {
-        throw new Error(response.data.error || 'Failed to upload avatar');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload avatar');
-    }
+    setError('');
   };
 
   // Handle form cancellation
   const handleCancel = () => {
-    // Reset form data to original profile
-    setFormData(profile);
-    setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmNewPassword: ''
-    });
-    setPasswordErrors({
-      currentPassword: '',
-      newPassword: '',
-      confirmNewPassword: ''
-    });
+    if (profile) {
+      setFormData({
+        ...profile,
+        phone_number: profile.phone_number || '',
+        address: profile.address || ''
+      });
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+      setSelectedFile(null);
+    }
+    setError('');
+    setSuccess('');
   };
+
+  // Handle profile picture selection
+  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    // Create preview and update state
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setSelectedFilePreview(reader.result);
+        setSelectedFile(file);
+        setError('');
+      }
+    };
+    reader.onerror = () => {
+      setError('Failed to read image file');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Clear selected profile picture
+  const handleClearProfilePicture = () => {
+    setSelectedFile(null);
+    setSelectedFilePreview(null);
+    setProfilePictureUrl(convertBase64ToImage(profile?.profile_picture));
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    try {
+      console.log('Submitting form...');
+      setLoading(true);
+      setError('');
+      // Clear all password errors at the start of submission
+      setPasswordErrors({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+
+      // Create update payload with only changed fields
+      const updatePayload: Partial<AdminUser> & { 
+        currentPassword?: string;
+        newPassword?: string;
+        first_name?: string;
+        last_name?: string;
+        username?: string;
+        phone_number?: string;
+        address?: string;
+        profile_picture?: string;
+      } = {};
+
+      // Compare with original profile data and use backend field names
+      if (formData.first_name !== profile?.first_name) updatePayload.first_name = formData.first_name;
+      if (formData.last_name !== profile?.last_name) updatePayload.last_name = formData.last_name;
+      if (formData.phone_number !== profile?.phone_number) updatePayload.phone_number = formData.phone_number;
+      if (formData.address !== profile?.address) updatePayload.address = formData.address;
+      if (formData.username !== profile?.username) updatePayload.username = formData.username;
+
+      // Convert profile picture to base64 if selected and different from current
+      if (selectedFile && selectedFilePreview) {
+        try {
+          // Only update if different from current profile picture
+          if (selectedFilePreview !== convertBase64ToImage(profile?.profile_picture)) {
+            updatePayload.profile_picture = selectedFilePreview;
+          }
+        } catch (error) {
+          setError('Failed to process image. Please try again.');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // Only include password fields if new password is provided
+      if (passwordData.newPassword) {
+        let hasPasswordErrors = false;
+        
+        if (!passwordData.currentPassword) {
+          setPasswordErrors(prev => ({
+            ...prev,
+            currentPassword: 'Current password is required to change password'
+          }));
+          hasPasswordErrors = true;
+        } else if (passwordData.currentPassword.length < 8) {
+          setPasswordErrors(prev => ({
+            ...prev,
+            currentPassword: 'Password must be at least 8 characters'
+          }));
+          hasPasswordErrors = true;
+        }
+
+        if (passwordData.newPassword !== passwordData.confirmNewPassword) {
+          setPasswordErrors(prev => ({
+            ...prev,
+            confirmNewPassword: 'New passwords do not match'
+          }));
+          hasPasswordErrors = true;
+        }
+
+        if (passwordData.newPassword.length < 8) {
+          setPasswordErrors(prev => ({
+            ...prev,
+            newPassword: 'New password must be at least 8 characters long'
+          }));
+          hasPasswordErrors = true;
+        }
+        
+        if (hasPasswordErrors) {
+          setLoading(false);
+          return;
+        }
+        
+        updatePayload.currentPassword = passwordData.currentPassword;
+        updatePayload.newPassword = passwordData.newPassword;
+      }
+
+      // Only make API call if there are changes or a profile picture update
+      const hasChanges = Object.keys(updatePayload).length > 0 || selectedFile !== null;
+      if (!hasChanges) {
+        setLoading(false);
+        return;
+      }
+
+      // If changing password, verify the current password first
+      if (passwordData.newPassword) {
+        try {
+          // Verify current password before proceeding with update
+          const verifyResponse = await api.post<ApiResponse<{valid: boolean}>>('/auth/verify-password', {
+            password: passwordData.currentPassword
+          });
+          
+          if (!verifyResponse.data.success || !verifyResponse.data.data.valid) {
+            setPasswordErrors(prev => ({
+              ...prev,
+              currentPassword: 'Current password is incorrect'
+            }));
+            setLoading(false);
+            return;
+          }
+        } catch (err) {
+          setPasswordErrors(prev => ({
+            ...prev,
+            currentPassword: 'Failed to verify current password'
+          }));
+          setLoading(false);
+          return;
+        }
+      }
+
+      const response = await api.put<ApiResponse<AdminUser>>('/auth/me', updatePayload);
+
+      if (!response.data.success) {
+        throw new Error(typeof response.data.error === 'string' 
+          ? response.data.error 
+          : 'Failed to update profile');
+      }
+
+      // Update local profile data
+      const updatedProfile = response.data.data;
+      setProfile(updatedProfile);
+      setFormData({
+        ...updatedProfile,
+        first_name: updatedProfile.first_name || '',
+        last_name: updatedProfile.last_name || '',
+        username: updatedProfile.username || '',
+        phone_number: updatedProfile.phone_number || '',
+        address: updatedProfile.address || ''
+      });
+      
+      // Clear password fields and selected file
+      setPasswordData({
+        currentPassword: '',
+        newPassword: '',
+        confirmNewPassword: ''
+      });
+      setSelectedFile(null);
+
+      setSuccess('Profile updated successfully');
+    } catch (err) {
+      // Handle errors
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+      
+      // Clear password fields for security if there was an error
+      if (passwordData.currentPassword) {
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmNewPassword: ''
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Display success/error messages
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(''), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
       </div>
     );
   }
@@ -293,54 +510,65 @@ export default function ProfilePage() {
           <div className="mb-6">
             <h2 className="text-lg font-semibold text-gray-700 mb-4">Basic Information</h2>
             
-            {/* Profile Avatar Upload */}
+            {/* Profile Picture Upload */}
             <div className="flex items-center mb-4">
               <div className="mr-6 relative">
                 <input 
                   type="file" 
                   accept="image/*" 
-                  onChange={handleAvatarChange}
+                  onChange={handleProfilePictureChange}
                   className="hidden" 
-                  id="avatar-upload"
+                  id="profile-picture-upload"
                 />
-                <label htmlFor="avatar-upload" className="cursor-pointer group">
+                <label htmlFor="profile-picture-upload" className="cursor-pointer group">
                   <img 
-                    src={formData.avatar} 
-                    alt="Profile Avatar" 
+                    src={profilePictureUrl}
+                    alt="Profile Picture" 
                     className="w-24 h-24 rounded-full object-cover group-hover:opacity-50"
                   />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="text-sm text-gray-700">Change</span>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full bg-black/20">
+                    <span className="text-sm text-white font-medium">{selectedFile ? 'Change' : 'Upload'}</span>
                   </div>
                 </label>
+                {selectedFile && (
+                  <button
+                    type="button"
+                    onClick={handleClearProfilePicture}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
+                )}
               </div>
 
               {/* Name Inputs */}
               <div className="grid grid-cols-2 gap-4 flex-grow">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
                     First Name
                   </label>
                   <input
                     type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleInputChange}
+                    id="first_name"
+                    name="first_name"
+                    value={formData.first_name}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
                     Last Name
                   </label>
                   <input
                     type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleInputChange}
+                    id="last_name"
+                    name="last_name"
+                    value={formData.last_name}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
@@ -358,7 +586,7 @@ export default function ProfilePage() {
                 id="username"
                 name="username"
                 value={formData.username}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 required
               />
@@ -387,15 +615,15 @@ export default function ProfilePage() {
             
             {/* Phone Number */}
             <div className="mb-4">
-              <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">
                 Phone Number
               </label>
               <input
                 type="tel"
-                id="phoneNumber"
-                name="phoneNumber"
-                value={formData.phoneNumber || ''}
-                onChange={handleInputChange}
+                id="phone_number"
+                name="phone_number"
+                value={formData.phone_number || ''}
+                onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 required
               />
@@ -411,7 +639,7 @@ export default function ProfilePage() {
                 id="address"
                 name="address"
                 value={formData.address || ''}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                 required
               />
@@ -491,11 +719,11 @@ export default function ProfilePage() {
               type="submit"
               disabled={Object.keys(profile).every(
                 key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-              ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword}
+              ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword && !selectedFile}
               className={`px-4 py-2 rounded-md transition-colors ${
                 Object.keys(profile).every(
                   key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-                ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword
+                ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword && !selectedFile
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   : 'bg-indigo-600 text-white hover:bg-indigo-700'
               }`}
@@ -515,14 +743,14 @@ export default function ProfilePage() {
               <input 
                 type="file" 
                 accept="image/*" 
-                onChange={handleAvatarChange}
+                onChange={handleProfilePictureChange}
                 className="hidden" 
-                id="avatar-upload-mobile"
+                id="profile-picture-upload-mobile"
               />
-              <label htmlFor="avatar-upload-mobile" className="cursor-pointer group relative">
+              <label htmlFor="profile-picture-upload-mobile" className="cursor-pointer group relative">
                 <img 
-                  src={formData.avatar} 
-                  alt="Profile Avatar" 
+                  src={profilePictureUrl}
+                  alt="Profile Picture" 
                   className="w-20 h-20 rounded-full object-cover"
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -534,7 +762,7 @@ export default function ProfilePage() {
               </label>
             </div>
             <div className="flex-grow overflow-hidden">
-              <h2 className="text-lg font-semibold truncate">{formData.firstName} {formData.lastName}</h2>
+              <h2 className="text-lg font-semibold truncate">{formData.first_name} {formData.last_name}</h2>
               <p className="text-gray-500 text-sm truncate">@{formData.username}</p>
             </div>
           </div>
@@ -544,28 +772,29 @@ export default function ProfilePage() {
             {/* Basic Information Section */}
             <div className="bg-white shadow-md rounded-lg p-4">
               <h3 className="text-base font-semibold text-gray-700 mb-4">Basic Information</h3>
+              
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">First Name</label>
+                    <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">First Name</label>
                     <input
                       type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
+                      id="first_name"
+                      name="first_name"
+                      value={formData.first_name}
+                      onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                       required
                     />
                   </div>
                   <div>
-                    <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">Last Name</label>
+                    <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">Last Name</label>
                     <input
                       type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
+                      id="last_name"
+                      name="last_name"
+                      value={formData.last_name}
+                      onChange={handleChange}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                       required
                     />
@@ -578,7 +807,7 @@ export default function ProfilePage() {
                     id="username"
                     name="username"
                     value={formData.username}
-                    onChange={handleInputChange}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
@@ -601,15 +830,16 @@ export default function ProfilePage() {
             {/* Contact Information Section */}
             <div className="bg-white shadow-md rounded-lg p-4">
               <h3 className="text-base font-semibold text-gray-700 mb-4">Contact Information</h3>
+              
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700">Phone Number</label>
+                  <label htmlFor="phone_number" className="block text-sm font-medium text-gray-700">Phone Number</label>
                   <input
                     type="tel"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber || ''}
-                    onChange={handleInputChange}
+                    id="phone_number"
+                    name="phone_number"
+                    value={formData.phone_number || ''}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
@@ -621,7 +851,7 @@ export default function ProfilePage() {
                     id="address"
                     name="address"
                     value={formData.address || ''}
-                    onChange={handleInputChange}
+                    onChange={handleChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
                     required
                   />
@@ -632,6 +862,7 @@ export default function ProfilePage() {
             {/* Password Change Section */}
             <div className="bg-white shadow-md rounded-lg p-4">
               <h3 className="text-base font-semibold text-gray-700 mb-4">Change Password</h3>
+              
               <div className="space-y-4">
                 <div>
                   <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">Current Password</label>
@@ -691,11 +922,11 @@ export default function ProfilePage() {
                 type="submit"
                 disabled={Object.keys(profile).every(
                   key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-                ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword}
+                ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword && !selectedFile}
                 className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   Object.keys(profile).every(
                     key => profile[key as keyof UserProfile] === formData[key as keyof UserProfile]
-                  ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword
+                  ) && !passwordData.currentPassword && !passwordData.newPassword && !passwordData.confirmNewPassword && !selectedFile
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-indigo-600 text-white hover:bg-indigo-700'
                 }`}

@@ -242,6 +242,16 @@ export default function Orders() {
     fetchOrders();
   }, [currentPage, pageSize, searchQuery, sortConfig]);
 
+  // Loading state component
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <span className="ml-2">Loading Orders...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 md:p-6 max-md:p-0">
       {/* Header */}

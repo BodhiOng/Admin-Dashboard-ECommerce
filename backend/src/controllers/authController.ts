@@ -1,4 +1,5 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
+import type { Multer } from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions, Secret, JwtPayload } from 'jsonwebtoken';
 import { JWT_SECRET, JWT_EXPIRES_IN } from '../config';
@@ -12,12 +13,33 @@ interface LoginBody {
 
 interface AdminDocument extends IAdmin {
   toObject(): Record<string, any>;
+  password: string;
 }
 
 interface JWTPayload extends JwtPayload {
   id: string;
   email: string;
   role: string;
+}
+
+interface UpdateProfileBody {
+  first_name?: string;
+  last_name?: string;
+  phone_number?: string;
+  address?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+
+interface UpdateProfileData extends UpdateProfileBody {
+  password?: string;
+  profile_picture?: string;
+}
+
+// Extend Express Request to include Multer file
+interface RequestWithFile extends Request {
+  file?: Express.Multer.File;
+  body: UpdateProfileBody;
 }
 
 const createToken = (payload: JWTPayload): string => {
@@ -27,29 +49,32 @@ const createToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, JWT_SECRET as Secret, options);
 };
 
-export const login = async (req: Request<{}, {}, LoginBody>, res: Response): Promise<void> => {
+export const login = async (req: Request<{}, {}, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
-      res.status(400).json({ error: 'Email and password are required' });
-      return;
+      const error = new Error('Email and password are required');
+      error.name = 'ValidationError';
+      return next(error);
     }
 
     // Get admin from database
     const admin = await Admin.findOne({ email }) as AdminDocument | null;
 
     if (!admin) {
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
+      const error = new Error('Invalid credentials');
+      error.name = 'UnauthorizedError';
+      return next(error);
     }
 
     // Check password
     const isValidPassword = await bcrypt.compare(password, admin.password);
     if (!isValidPassword) {
-      res.status(401).json({ error: 'Invalid credentials' });
-      return;
+      const error = new Error('Invalid credentials');
+      error.name = 'UnauthorizedError';
+      return next(error);
     }
 
     // Generate JWT token
@@ -71,7 +96,7 @@ export const login = async (req: Request<{}, {}, LoginBody>, res: Response): Pro
     });
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 };
 
@@ -84,14 +109,15 @@ interface RegisterBody {
   phone_number?: string;
 }
 
-export const register = async (req: Request<{}, {}, RegisterBody>, res: Response): Promise<void> => {
+export const register = async (req: Request<{}, {}, RegisterBody>, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { email, password, username, first_name, last_name, phone_number } = req.body;
 
     // Validate input
     if (!email || !password || !username) {
-      res.status(400).json({ error: 'Email, password, and username are required' });
-      return;
+      const error = new Error('Email, password, and username are required');
+      error.name = 'ValidationError';
+      return next(error);
     }
 
     // Check if admin already exists
@@ -100,10 +126,10 @@ export const register = async (req: Request<{}, {}, RegisterBody>, res: Response
     });
 
     if (existingAdmin) {
-      res.status(400).json({ 
-        error: existingAdmin.email === email ? 'Email already registered' : 'Username already taken' 
-      });
-      return;
+      const errorMessage = existingAdmin.email === email ? 'Email already registered' : 'Username already taken';
+      const error = new Error(errorMessage);
+      error.name = 'DuplicateEntryError';
+      return next(error);
     }
 
     // Hash password
@@ -142,24 +168,26 @@ export const register = async (req: Request<{}, {}, RegisterBody>, res: Response
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
   }
 };
 
-export const me = async (req: Request, res: Response): Promise<void> => {
+export const me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const user = (req as any).user;
     if (!user?.id) {
-      res.status(401).json({ error: 'Authentication required' });
-      return;
+      const error = new Error('Authentication required');
+      error.name = 'UnauthorizedError';
+      return next(error);
     }
 
     // Get admin from database
     const admin = await Admin.findOne({ id: user.id }).select('-password') as AdminDocument | null;
 
     if (!admin) {
-      res.status(404).json({ error: 'Admin not found' });
-      return;
+      const error = new Error('Admin not found');
+      error.name = 'NotFoundError';
+      return next(error);
     }
 
     res.json({ 
@@ -168,6 +196,125 @@ export const me = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error('Get me error:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    next(error);
+  }
+};
+
+export const updateProfile = async (req: RequestWithFile, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    if (!user?.id) {
+      const error = new Error('Authentication required');
+      error.name = 'UnauthorizedError';
+      return next(error);
+    }
+
+    // Get admin from database
+    const admin = await Admin.findOne({ id: user.id }) as AdminDocument | null;
+
+    if (!admin) {
+      const error = new Error('Admin not found');
+      error.name = 'NotFoundError';
+      return next(error);
+    }
+
+    const { currentPassword, newPassword, ...updateData } = req.body;
+    const profileUpdate: UpdateProfileData = { ...updateData };
+
+    // Handle password change if requested
+    if (newPassword) {
+      if (!currentPassword) {
+        const error = new Error('Current password is required to change password');
+        error.name = 'ValidationError';
+        return next(error);
+      }
+
+      // Verify current password
+      const isValidPassword = await bcrypt.compare(currentPassword, admin.password);
+      if (!isValidPassword) {
+        const error = new Error('Current password is incorrect');
+        error.name = 'UnauthorizedError';
+        return next(error);
+      }
+
+      // Validate new password
+      if (newPassword.length < 8) {
+        const error = new Error('New password must be at least 8 characters long');
+        error.name = 'ValidationError';
+        return next(error);
+      }
+
+      // Hash new password
+      profileUpdate.password = await bcrypt.hash(newPassword, 10);
+    }
+
+    // Handle file upload if present
+    if (req.file) {
+      // Convert file to base64
+      const base64Image = req.file.buffer.toString('base64');
+      profileUpdate.profile_picture = base64Image;
+    }
+
+    // Update admin profile
+    const updatedAdmin = await Admin.findOneAndUpdate(
+      { id: user.id },
+      { $set: profileUpdate },
+      { new: true }
+    ).select('-password') as AdminDocument | null;
+
+    if (!updatedAdmin) {
+      const error = new Error('Admin not found');
+      error.name = 'NotFoundError';
+      return next(error);
+    }
+
+    res.json({
+      success: true,
+      data: updatedAdmin
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    next(error);
+  }
+};
+
+export const verifyPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const user = (req as any).user;
+    if (!user?.id) {
+      const error = new Error('Authentication required');
+      error.name = 'UnauthorizedError';
+      return next(error);
+    }
+
+    const { password } = req.body;
+
+    if (!password) {
+      const error = new Error('Password is required');
+      error.name = 'ValidationError';
+      return next(error);
+    }
+
+    // Get admin from database
+    const admin = await Admin.findOne({ id: user.id }) as AdminDocument | null;
+
+    if (!admin) {
+      const error = new Error('Admin not found');
+      error.name = 'NotFoundError';
+      return next(error);
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, admin.password);
+    
+    res.json({
+      success: true,
+      data: {
+        valid: isValidPassword
+      }
+    });
+  } catch (error) {
+    console.error('Verify password error:', error);
+    next(error);
   }
 };
