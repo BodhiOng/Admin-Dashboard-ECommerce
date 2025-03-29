@@ -50,27 +50,30 @@ A modern, responsive admin dashboard for e-commerce management built with Next.j
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18 or higher)
+- Node.js
 - MongoDB
-- npm or yarn
+- npm
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Admin-Dashboard-ECommerce.git
+git clone https://github.com/BodhiOng/Admin-Dashboard-ECommerce.git
 cd Admin-Dashboard-ECommerce
 ```
 
 2. Install dependencies:
 ```bash
+# Install root dependencies
+npm install --legacy-peer-deps
+
 # Install frontend dependencies
 cd frontend
-npm install
+npm install --legacy-peer-deps
 
 # Install backend dependencies
 cd ../backend
-npm install
+npm install --legacy-peer-deps
 ```
 
 3. Set up environment variables:
@@ -95,7 +98,7 @@ JWT_SECRET=my-secret-key
 JWT_EXPIRES_IN=24h
 ```
 
-4. Populate the database with sample data (use cmd):
+4. Populate the database with sample data:
 ```bash
 # Navigate to the db-scripts directory
 cd db-scripts
