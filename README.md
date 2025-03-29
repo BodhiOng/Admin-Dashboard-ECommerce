@@ -95,7 +95,22 @@ JWT_SECRET=my-secret-key
 JWT_EXPIRES_IN=24h
 ```
 
-4. Start the development servers:
+4. Populate the database with sample data:
+```bash
+# Navigate to the db-scripts directory
+cd db-scripts
+
+# For Windows users, run the batch file
+populate_db.bat
+
+# This will populate the database with:
+# - Sample admin users (default password: admin123)
+# - Product categories
+# - Sample products
+# - Sample orders
+```
+
+5. Start the development servers:
 
 ```bash
 npm start
@@ -104,6 +119,11 @@ npm start
 The application will be available at:
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:5000
+
+## Default Admin Credentials
+After running the population script, you can log in with:
+- Email: masteradmin@gmail.com
+- Password: password
 
 ## License
 
