@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -12,28 +12,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
-    if (error) {
-      timeoutId = setTimeout(() => {
-        setError('');
-      }, 5000);
-    }
-
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [error]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
     try {
-      await login({ email, password });
-      // Login successful - redirect handled by AuthContext
+      // Let AuthContext handle the login flow and redirection
+      await login({
+        credentials: { email, password },
+        rememberMe
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
     }

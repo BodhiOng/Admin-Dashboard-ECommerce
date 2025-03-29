@@ -94,7 +94,7 @@ def generate_admins(num_admins=50):
         'first_name': "None", 
         'last_name': "None", 
         'address': "None", 
-        'password': hash_password('AdminPassword123!'),
+        'password': hash_password('password'),
         'profile_picture': generate_profile_picture("Master", "Admin"),
         'createdAt': datetime.now(timezone.utc),
         'updatedAt': datetime.now(timezone.utc),
@@ -120,7 +120,7 @@ def generate_admins(num_admins=50):
             'first_name': first_name,
             'last_name': last_name,
             'address': generate_address(),
-            'password': hash_password('AdminPassword123!'),  # Default secure password
+            'password': hash_password('password'),  # Default password
             'profile_picture': generate_profile_picture(first_name, last_name),
             'createdAt': current_time,
             'updatedAt': current_time,

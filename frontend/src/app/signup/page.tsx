@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import api from '@/lib/axios';
+import debounce from 'lodash.debounce';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -34,34 +35,77 @@ export default function SignupPage() {
 
   const router = useRouter();
 
-  // Debounced validation functions
-  const validateField = useCallback(async (field: string, value: string) => {
-    if (!value) return;
-
+  const validateField = async (field: string, value: string) => {
     try {
-      const response = await api.post<ApiResponse<ValidationResponse>>('/auth/validate', {
+      const response = await api.post('/auth/validate-field', {
         field,
         value
       });
+      return response.data.success;
+    } catch (error) {
+      return true; // Consider valid if validation fails
+    }
+  };
 
-      if (response.data.success) {
-        const { isAvailable, message } = response.data.data;
-        switch (field) {
-          case 'email':
-            setEmailError(isAvailable ? '' : message || 'Email is already taken');
-            break;
-          case 'username':
-            setUsernameError(isAvailable ? '' : message || 'Username is already taken');
-            break;
-          case 'phoneNumber':
-            setPhoneNumberError(isAvailable ? '' : message || 'Phone number is already registered');
-            break;
+  const validateEmail = useCallback(
+    debounce(async (email: string) => {
+      if (email && email.length > 0) {
+        const isValid = await validateField('email', email);
+        if (!isValid) {
+          setEmailError('Email already registered');
+        } else {
+          setEmailError('');
         }
       }
-    } catch (err) {
-      console.error(`Error validating ${field}:`, err);
-    }
-  }, []);
+    }, 500),
+    []
+  );
+
+  const validateUsername = useCallback(
+    debounce(async (username: string) => {
+      if (username && username.length > 0) {
+        const isValid = await validateField('username', username);
+        if (!isValid) {
+          setUsernameError('Username already taken');
+        } else {
+          setUsernameError('');
+        }
+      }
+    }, 500),
+    []
+  );
+
+  const validatePhoneNumber = useCallback(
+    debounce(async (phoneNumber: string) => {
+      if (phoneNumber && phoneNumber.length > 0) {
+        const isValid = await validateField('phone_number', phoneNumber);
+        if (!isValid) {
+          setPhoneNumberError('Phone number already registered');
+        } else {
+          setPhoneNumberError('');
+        }
+      }
+    }, 500),
+    []
+  );
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    validateEmail(value);
+  };
+
+  const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setUsername(value);
+    validateUsername(value);
+  };
+
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhoneNumber(value);
+    validatePhoneNumber(value);
+  };
 
   // Handle form submission with comprehensive validation
   const handleSubmit = async (e: React.FormEvent) => {
@@ -142,23 +186,25 @@ export default function SignupPage() {
       });
 
       if (response.data.success) {
-        // Registration successful, redirect to login
-        router.push('/login');
-      } else {
-        throw new Error(response.data.error || 'Registration failed');
+        // Registration successful, redirect to pending approval
+        router.push('/pending-approval');
       }
-    } catch (err) {
-      const error = err instanceof Error ? err.message : 'Registration failed';
-      // Set appropriate error based on the response
-      if (error.includes('email')) {
-        setEmailError(error);
-      } else if (error.includes('username')) {
-        setUsernameError(error);
-      } else if (error.includes('phone')) {
-        setPhoneNumberError(error);
+    } catch (err: any) {
+      // Clear any previous errors
+      setEmailError('');
+      setUsernameError('');
+      setPhoneNumberError('');
+
+      const error = err.response?.data?.error;
+      if (error?.type === 'ValidationError' && error.errors) {
+        // Set specific field errors if they exist
+        if (error.errors.email) setEmailError(error.errors.email);
+        if (error.errors.username) setUsernameError(error.errors.username);
+        if (error.errors.phoneNumber) setPhoneNumberError(error.errors.phoneNumber);
       } else {
-        // Set a general error
-        setEmailError(error);
+        // Handle general error
+        const errorMessage = error?.message || 'Registration failed';
+        setEmailError(errorMessage);
       }
     } finally {
       setLoading(false);
@@ -189,12 +235,9 @@ export default function SignupPage() {
                   autoComplete="email"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email address"
                   value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    validateField('email', e.target.value);
-                  }}
+                  onChange={handleEmailChange}
                 />
                 {emailError && (
                   <p className="text-red-500 text-xs">{emailError}</p>
@@ -213,12 +256,9 @@ export default function SignupPage() {
                   autoComplete="username"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Choose a username"
+                  placeholder="Choose a unique username"
                   value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    validateField('username', e.target.value);
-                  }}
+                  onChange={handleUsernameChange}
                 />
                 {usernameError && (
                   <p className="text-red-500 text-xs">{usernameError}</p>
@@ -236,7 +276,7 @@ export default function SignupPage() {
                   type="text"
                   autoComplete="given-name"
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="First Name"
+                  placeholder="Enter your first name"
                   value={firstName}
                   onChange={(e) => setFirstName(e.target.value)}
                 />
@@ -253,7 +293,7 @@ export default function SignupPage() {
                   type="text"
                   autoComplete="family-name"
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Last Name"
+                  placeholder="Enter your last name"
                   value={lastName}
                   onChange={(e) => setLastName(e.target.value)}
                 />
@@ -271,12 +311,9 @@ export default function SignupPage() {
                   autoComplete="tel"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="+60 123 456 789"
+                  placeholder="Enter your phone number"
                   value={phoneNumber}
-                  onChange={(e) => {
-                    setPhoneNumber(e.target.value);
-                    validateField('phoneNumber', e.target.value);
-                  }}
+                  onChange={handlePhoneNumberChange}
                 />
                 {phoneNumberError && (
                   <p className="text-red-500 text-xs">{phoneNumberError}</p>
@@ -295,7 +332,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Enter your password"
+                  placeholder="Create a strong password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -316,7 +353,7 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   required
                   className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Confirm your password"
+                  placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
@@ -377,12 +414,9 @@ export default function SignupPage() {
                     autoComplete="email"
                     required
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="you@example.com"
+                    placeholder="Enter your email address"
                     value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      validateField('email', e.target.value);
-                    }}
+                    onChange={handleEmailChange}
                   />
                   {emailError && (
                     <p className="text-red-500 text-xs">{emailError}</p>
@@ -401,12 +435,9 @@ export default function SignupPage() {
                     autoComplete="username"
                     required
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Choose a username"
+                    placeholder="Choose a unique username"
                     value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      validateField('username', e.target.value);
-                    }}
+                    onChange={handleUsernameChange}
                   />
                   {usernameError && (
                     <p className="text-red-500 text-xs">{usernameError}</p>
@@ -424,7 +455,7 @@ export default function SignupPage() {
                     type="text"
                     autoComplete="given-name"
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="First Name"
+                    placeholder="Enter your first name"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                   />
@@ -441,7 +472,7 @@ export default function SignupPage() {
                     type="text"
                     autoComplete="family-name"
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Last Name"
+                    placeholder="Enter your last name"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                   />
@@ -459,12 +490,9 @@ export default function SignupPage() {
                     autoComplete="tel"
                     required
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="+60 123 456 789"
+                    placeholder="Enter your phone number"
                     value={phoneNumber}
-                    onChange={(e) => {
-                      setPhoneNumber(e.target.value);
-                      validateField('phoneNumber', e.target.value);
-                    }}
+                    onChange={handlePhoneNumberChange}
                   />
                   {phoneNumberError && (
                     <p className="text-red-500 text-xs">{phoneNumberError}</p>
@@ -483,7 +511,7 @@ export default function SignupPage() {
                     autoComplete="new-password"
                     required
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Enter your password"
+                    placeholder="Create a strong password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                   />
@@ -504,7 +532,7 @@ export default function SignupPage() {
                     autoComplete="new-password"
                     required
                     className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                    placeholder="Confirm your password"
+                    placeholder="Re-enter your password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                   />

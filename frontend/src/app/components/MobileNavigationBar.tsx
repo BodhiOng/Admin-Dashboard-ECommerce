@@ -1,17 +1,21 @@
 "use client";
+import React from 'react';
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from '@/contexts/AuthContext';
 
-// Horizontal Sidebar component for mobile navigation in the admin dashboard
-export default function SidebarHorizontal({ className }: { className?: string }) {
+// Mobile navigation bar for the admin dashboard
+export default function MobileNavigationBar({ className }: { className?: string }) {
   // Get the current pathname to determine active navigation item
   const pathname = usePathname();
 
   const activeTab = pathname.split('/')[1] || '';
 
+  const { logout } = useAuth();
+
   return (
-    // Horizontal mobile sidebar with dark background and flexible layout
-    <aside className={`fixed bottom-0 left-0 w-full bg-gray-800 text-white flex justify-between items-center p-2 z-50 md:hidden ${className || ''}`}>
+    // Mobile navigation bar with dark background and flexible layout
+    <nav className={`fixed bottom-0 left-0 w-full bg-gray-800 text-white flex justify-between items-center p-2 z-50 md:hidden ${className || ''}`}>
       {/* Navigation links */}
       <div className="flex justify-between w-full">
         {/* Dashboard navigation link */}
@@ -96,12 +100,12 @@ export default function SidebarHorizontal({ className }: { className?: string })
         </Link>
 
         {/* Logout navigation link */}
-        <Link
-          href="/login"
+        <button
+          onClick={logout}
           className={`flex flex-col items-center justify-center w-full p-2 rounded-lg transition-colors text-red-400 ${activeTab === 'logout'
-              ? 'bg-gray-900 text-red-300'
-              : ''
-            }`}
+            ? 'bg-gray-900 text-red-300'
+            : ''
+          }`}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -118,8 +122,8 @@ export default function SidebarHorizontal({ className }: { className?: string })
             />
           </svg>
           <span className="text-[10px] mt-1">Logout</span>
-        </Link>
+        </button>
       </div>
-    </aside>
+    </nav>
   );
 }

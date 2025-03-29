@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { FaKey } from 'react-icons/fa';
 import Link from 'next/link';
-import api from '@/lib/axios';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -23,13 +22,7 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const response = await api.post<ApiResponse<{ message: string }>>('/auth/forgot-password', { email });
-
-      if (response.data.success) {
-        setIsSubmitted(true);
-      } else {
-        throw new Error(response.data.error || 'Failed to process password reset request');
-      }
+      setIsSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unexpected error occurred');
       setIsSubmitted(false);
@@ -79,7 +72,7 @@ export default function ForgotPasswordPage() {
             ) : (
               <div className="p-6 rounded-lg">
                 <p className="text-gray-800 text-lg mb-4">
-                  If an account exists with this email, you will receive password reset instructions shortly.
+                  You will receive password reset instructions in your personal email shortly.
                 </p>
                 <Link 
                   href="/login" 

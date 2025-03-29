@@ -1,6 +1,6 @@
 import express, { Request } from 'express';
 import multer, { FileFilterCallback } from 'multer';
-import { login, register, me, updateProfile, verifyPassword } from '../controllers/authController';
+import { login, register, me, updateProfile, verifyPassword, validateField } from '../controllers/authController';
 import { auth } from '../middleware/auth';
 
 const router = express.Router();
@@ -24,6 +24,7 @@ const upload = multer({
 // Public routes
 router.post('/login', login);
 router.post('/register', register);
+router.post('/validate-field', validateField);
 
 // Protected routes
 router.get('/me', auth, me);

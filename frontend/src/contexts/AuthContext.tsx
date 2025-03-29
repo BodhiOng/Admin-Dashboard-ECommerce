@@ -6,8 +6,13 @@ import api from '@/lib/axios';
 import { AuthState, LoginCredentials, User } from '@/types/auth';
 
 interface AuthContextType extends AuthState {
-  login: (credentials: LoginCredentials) => Promise<void>;
+  login: (options: LoginOptions) => Promise<void>;
   logout: () => void;
+}
+
+interface LoginOptions {
+  credentials: LoginCredentials;
+  rememberMe?: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -50,8 +55,13 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 }
 
 interface AuthResponse {
-  user: User;
-  token: string;
+  success: boolean;
+  data: {
+    isApplicant: boolean;
+    user?: User;
+    token?: string;
+    message?: string;
+  };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -61,8 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const userStr = localStorage.getItem('user');
+    const rememberMe = localStorage.getItem('rememberMe') === 'true';
 
-    if (token && userStr) {
+    if (token && userStr && rememberMe) {
       try {
         const user = JSON.parse(userStr) as User;
         dispatch({
@@ -74,25 +85,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'SET_LOADING', payload: false });
       }
     } else {
+      // Clear storage if not remembered
+      if (!rememberMe) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('rememberMe');
+      }
       dispatch({ type: 'SET_LOADING', payload: false });
     }
   }, []);
 
-  const login = async (credentials: LoginCredentials) => {
+  const login = async ({ credentials, rememberMe = false }: LoginOptions) => {
     try {
-      const { data } = await api.post<AuthResponse>('/auth/login', credentials);
-      const { user, token } = data;
+      const response = await api.post<AuthResponse>('/auth/login', credentials);
       
+      if (!response.data.success) {
+        throw new Error('Login failed');
+      }
+
+      const { isApplicant, user, token, message } = response.data.data;
+
+      if (isApplicant) {
+        // Don't store any auth data for applicants
+        router.push('/pending-approval');
+        return;
+      }
+
       if (!user || !token) {
         throw new Error('Invalid response from server');
       }
 
-      // Store in localStorage for client-side access
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
+      // Store remember me preference
+      localStorage.setItem('rememberMe', rememberMe.toString());
 
-      // Store in cookies for middleware authentication
-      document.cookie = `token=${token}; path=/; max-age=86400`;
+      // Store auth data
+      if (rememberMe) {
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+
+      // Always set cookie for current session
+      document.cookie = `token=${token}; path=/; ${rememberMe ? 'max-age=2592000' : ''}`; // 30 days if remember me
 
       dispatch({
         type: 'SET_USER',
@@ -110,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
     document.cookie = 'token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
     dispatch({ type: 'LOGOUT' });
     router.replace('/login');

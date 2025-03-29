@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction, RequestHandler } from 'express';
 import type { Multer } from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt, { SignOptions, Secret, JwtPayload } from 'jsonwebtoken';
@@ -42,6 +42,11 @@ interface RequestWithFile extends Request {
   body: UpdateProfileBody;
 }
 
+interface ValidateFieldBody {
+  field: 'email' | 'username' | 'phone_number';
+  value: string;
+}
+
 const createToken = (payload: JWTPayload): string => {
   const options: SignOptions = {
     expiresIn: '24h' // Hardcode to match JWT_EXPIRES_IN from .env
@@ -49,7 +54,7 @@ const createToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, JWT_SECRET as Secret, options);
 };
 
-export const login = async (req: Request<{}, {}, LoginBody>, res: Response, next: NextFunction): Promise<void> => {
+export const login: RequestHandler<{}, {}, LoginBody> = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -77,7 +82,19 @@ export const login = async (req: Request<{}, {}, LoginBody>, res: Response, next
       return next(error);
     }
 
-    // Generate JWT token
+    // Check if user is an admin applicant
+    if (admin.role === 'Admin Applicant') {
+      res.json({
+        success: true,
+        data: {
+          isApplicant: true,
+          message: 'Your application is still under review'
+        }
+      });
+      return;
+    }
+
+    // Generate JWT token for approved admins
     const payload: JWTPayload = { 
       id: admin.id,
       email: admin.email,
@@ -91,8 +108,12 @@ export const login = async (req: Request<{}, {}, LoginBody>, res: Response, next
     adminObject.password = undefined;
 
     res.json({
-      user: adminObject,
-      token
+      success: true,
+      data: {
+        isApplicant: false,
+        user: adminObject,
+        token
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -104,32 +125,59 @@ interface RegisterBody {
   email: string;
   password: string;
   username: string;
-  first_name?: string;
-  last_name?: string;
-  phone_number?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
 }
 
-export const register = async (req: Request<{}, {}, RegisterBody>, res: Response, next: NextFunction): Promise<void> => {
+export const register = async (req: Request<{}, any, RegisterBody>, res: Response, next: NextFunction) => {
   try {
-    const { email, password, username, first_name, last_name, phone_number } = req.body;
+    const { email, password, username, firstName, lastName, phoneNumber } = req.body;
 
     // Validate input
     if (!email || !password || !username) {
-      const error = new Error('Email, password, and username are required');
-      error.name = 'ValidationError';
-      return next(error);
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Email, password, and username are required',
+          type: 'ValidationError',
+          errors: {
+            email: !email ? 'Email is required' : '',
+            password: !password ? 'Password is required' : '',
+            username: !username ? 'Username is required' : ''
+          }
+        }
+      });
+      return;
     }
 
     // Check if admin already exists
     const existingAdmin = await Admin.findOne({ 
-      $or: [{ email }, { username }] 
+      $or: [{ email }, { username }, { phone_number: phoneNumber }] 
     });
 
     if (existingAdmin) {
-      const errorMessage = existingAdmin.email === email ? 'Email already registered' : 'Username already taken';
-      const error = new Error(errorMessage);
-      error.name = 'DuplicateEntryError';
-      return next(error);
+      const errors: { [key: string]: string } = {};
+      
+      if (existingAdmin.email === email) {
+        errors.email = 'Email already registered';
+      }
+      if (existingAdmin.username === username) {
+        errors.username = 'Username already taken';
+      } 
+      if (existingAdmin.phone_number === phoneNumber) {
+        errors.phoneNumber = 'Phone number already registered';
+      }
+
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation failed',
+          type: 'ValidationError',
+          errors
+        }
+      });
+      return;
     }
 
     // Hash password
@@ -140,13 +188,13 @@ export const register = async (req: Request<{}, {}, RegisterBody>, res: Response
     const admin = await Admin.create({
       _id: id,
       id,
-      email,
-      password: hashedPassword,
       username,
-      first_name: first_name || '',
-      last_name: last_name || '',
-      phone_number: phone_number || '',
-      role: 'Current Admin'
+      email,
+      phone_number: phoneNumber || '',  
+      role: 'Admin Applicant',
+      first_name: firstName || '',      
+      last_name: lastName || '',        
+      password: hashedPassword,
     }) as AdminDocument;
 
     // Generate JWT token
@@ -162,17 +210,26 @@ export const register = async (req: Request<{}, {}, RegisterBody>, res: Response
     const adminObject = admin.toObject();
     adminObject.password = undefined;
 
-    res.status(201).json({
-      user: adminObject,
-      token
+    res.json({
+      success: true,
+      data: {
+        user: adminObject,
+        token
+      }
     });
   } catch (error) {
     console.error('Registration error:', error);
-    next(error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Internal server error',
+        type: 'ServerError'
+      }
+    });
   }
 };
 
-export const me = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const me: RequestHandler = async (req, res, next) => {
   try {
     const user = (req as any).user;
     if (!user?.id) {
@@ -200,7 +257,7 @@ export const me = async (req: Request, res: Response, next: NextFunction): Promi
   }
 };
 
-export const updateProfile = async (req: RequestWithFile, res: Response, next: NextFunction): Promise<void> => {
+export const updateProfile: RequestHandler<{}, {}, UpdateProfileBody> = async (req, res, next) => {
   try {
     const user = (req as any).user;
     if (!user?.id) {
@@ -278,7 +335,7 @@ export const updateProfile = async (req: RequestWithFile, res: Response, next: N
   }
 };
 
-export const verifyPassword = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+export const verifyPassword: RequestHandler<{}, {}, { password: string }> = async (req, res, next) => {
   try {
     const user = (req as any).user;
     if (!user?.id) {
@@ -316,5 +373,48 @@ export const verifyPassword = async (req: Request, res: Response, next: NextFunc
   } catch (error) {
     console.error('Verify password error:', error);
     next(error);
+  }
+};
+
+export const validateField: RequestHandler = async (req, res) => {
+  try {
+    const { field, value } = req.body;
+
+    if (!field || !value || !['email', 'username', 'phone_number'].includes(field)) {
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Invalid field or value'
+        }
+      });
+    }
+
+    // Create query based on field
+    const query = { [field]: value };
+    
+    // Check if admin exists with this field value
+    const existingAdmin = await Admin.findOne(query);
+
+    if (existingAdmin) {
+      res.status(200).json({
+        success: false,
+        error: {
+          message: `This ${field.replace('_', ' ')} is already taken`
+        }
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: `${field.replace('_', ' ')} is available`
+      });
+    }
+  } catch (error) {
+    console.error('Validation error:', error);
+    res.status(500).json({
+      success: false,
+      error: {
+        message: 'Internal server error'
+      }
+    });
   }
 };

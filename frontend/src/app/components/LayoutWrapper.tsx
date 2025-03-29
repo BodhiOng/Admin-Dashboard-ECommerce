@@ -35,6 +35,7 @@ export default function LayoutWrapper({
     return (
       <div className="h-screen w-screen absolute inset-0 flex items-center justify-center">
         {children}
+        <AttributionPopup />
       </div>
     );
   }

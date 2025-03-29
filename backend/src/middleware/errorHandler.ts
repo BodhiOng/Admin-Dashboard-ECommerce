@@ -6,15 +6,25 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
 
   // Handle Mongoose validation errors
   if (err.name === 'ValidationError') {
-    res.status(400).json({
-      success: false,
-      error: {
-        message: 'Validation Error',
-        type: 'ValidationError',
-        details: err.message
-      },
-      timestamp: new Date().toISOString()
-    });
+    // Check if we have field-specific errors
+    if (err.errors) {
+      res.status(400).json({
+        success: false,
+        error: {
+          message: 'Validation Error',
+          type: 'ValidationError',
+          errors: err.errors
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: {
+          message: err.message,
+          type: 'ValidationError'
+        }
+      });
+    }
     return;
   }
 

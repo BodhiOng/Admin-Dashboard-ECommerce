@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-const publicPaths = ['/login', '/register'];
+const publicPaths = [
+  '/login',
+  '/signup',
+  '/pending-approval',
+  '/forgot-password'
+];
 
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('token');
