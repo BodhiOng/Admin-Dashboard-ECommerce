@@ -4,30 +4,30 @@ A modern, responsive admin dashboard for e-commerce management built with Next.j
 
 ## Features
 
-- 🔐 **Authentication & Authorization**
+🔐 **Authentication & Authorization**
   - Secure login with JWT
   - Role-based access control (Admin, Admin Applicant)
   - Remember me functionality
 
-- 👥 **User Management**
+👥 **User Management**
   - Admin user CRUD operations
   - Profile management
   - Role-based permissions
   - Admin application system
 
-- 📦 **Product Management**
+📦 **Product Management**
   - Product CRUD operations
   - Image upload and management
   - Category organization
   - Stock tracking
 
-- 📊 **Order Management**
+📊 **Order Management**
   - Order tracking and updates
   - Order details view
   - Order status management
   - Customer information
 
-- 🎨 **Modern UI/UX**
+🎨 **Modern UI/UX**
   - Responsive design
   - Mobile-friendly navigation
   - Interactive data tables
@@ -95,22 +95,16 @@ JWT_SECRET=my-secret-key
 JWT_EXPIRES_IN=24h
 ```
 
-4. Populate the database with sample data:
+4. Populate the database with sample data (use cmd):
 ```bash
 # Navigate to the db-scripts directory
 cd db-scripts
 
 # For Windows users, run the batch file
 populate_db.bat
-
-# This will populate the database with:
-# - Sample admin users (default password: admin123)
-# - Product categories
-# - Sample products
-# - Sample orders
 ```
 
-5. Start the development servers:
+5. Start the development servers (navigate to root):
 
 ```bash
 npm start
