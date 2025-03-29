@@ -104,7 +104,7 @@ JWT_EXPIRES_IN=24h
 cd db-scripts
 
 # For Windows users, run the batch file
-populate_db.bat
+setup_and_run.bat
 ```
 
 5. Start the development servers (navigate to root):
