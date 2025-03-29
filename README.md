@@ -65,15 +65,15 @@ cd Admin-Dashboard-ECommerce
 2. Install dependencies:
 ```bash
 # Install root dependencies
-npm install --legacy-peer-deps
+npm install
 
 # Install frontend dependencies
 cd frontend
-npm install --legacy-peer-deps
+npm install
 
 # Install backend dependencies
 cd ../backend
-npm install --legacy-peer-deps
+npm install
 ```
 
 3. Set up environment variables:
