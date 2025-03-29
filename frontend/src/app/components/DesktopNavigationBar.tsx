@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useCallback } from 'react';
 import { useSidebar } from '@/app/contexts/SidebarContext';
@@ -113,11 +114,15 @@ export default function SidebarVertical({ className = '' }: { className?: string
         {loading ? (
           <div className="w-20 h-20 rounded-full mb-2 bg-gray-600 animate-pulse"></div>
         ) : (
-          <img
-            src={avatarUrl}
-            alt="Profile"
-            className="w-20 h-20 rounded-full mb-2 object-cover"
-          />
+          <div className="relative w-20 h-20 mb-2">
+            <Image
+              src={avatarUrl}
+              alt="Profile"
+              fill
+              sizes="80px"
+              className="rounded-full object-cover"
+            />
+          </div>
         )}
         {!loading && username && (
           <span className="font-medium truncate w-full text-center" title={username}>{username}</span>

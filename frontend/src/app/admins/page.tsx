@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import AddAdminModal from './components/AddAdminModal';
 import EditAdminModal from './components/EditAdminModal';
 import api from '@/lib/axios';
@@ -46,7 +46,9 @@ interface AdminFormData {
     email: string;
     phone_number: string;
     role: 'Current Admin' | 'Admin Applicant';
-    password: string;
+    password?: string; // Make password optional since it's not always required
+    first_name?: string;
+    last_name?: string;
 }
 
 export default function AdminsPage() {
@@ -59,7 +61,8 @@ export default function AdminsPage() {
         email: '',
         phone_number: '',
         role: 'Admin Applicant',
-        password: ''
+        first_name: '',
+        last_name: ''
     });
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -74,7 +77,7 @@ export default function AdminsPage() {
         direction: 'ascending' | 'descending';
     } | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [_error, setError] = useState<string | null>(null);
 
     // Function to fetch admins
     const fetchAdmins = async () => {
@@ -99,17 +102,17 @@ export default function AdminsPage() {
 
                 // Update pagination metadata
                 if (data.pagination) {
-                    setTotalPages(data.pagination.totalPages);
-                    setTotalAdmins(data.pagination.totalProducts);
-                    setHasNextPage(data.pagination.hasNextPage);
-                    setHasPreviousPage(data.pagination.hasPreviousPage);
+                    const { currentPage, pageSize, totalPages, totalProducts, hasNextPage, hasPreviousPage } = data.pagination;
+                    setCurrentPage(currentPage);
+                    setPageSize(pageSize);
+                    setTotalPages(totalPages);
+                    setTotalAdmins(totalProducts);
+                    setHasNextPage(hasNextPage);
+                    setHasPreviousPage(hasPreviousPage);
                 }
-            } else {
-                throw new Error(data.error || 'Unknown error occurred');
             }
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'An unexpected error occurred');
-            setAdmins([]); // Clear admins on error
+            setError(err instanceof Error ? err.message : 'An error occurred while fetching admins');
         } finally {
             setLoading(false);
         }
@@ -140,10 +143,10 @@ export default function AdminsPage() {
             : <span className="ml-1 text-gray-600">▼</span>;
     };
 
-    // Fetch admins when dependencies change
+    // Fetch admins when page, pageSize, search query, or sort config changes
     useEffect(() => {
         fetchAdmins();
-    }, [currentPage, pageSize, debouncedSearchQuery, sortConfig]);
+    }, [currentPage, pageSize, debouncedSearchQuery, sortConfig]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Filter admins based on search query
     const filteredAdmins = admins.filter(admin => 
@@ -166,8 +169,8 @@ export default function AdminsPage() {
                 email: formData.email,
                 phone_number: formData.phone_number,
                 role: formData.role,
-                first_name: '',
-                last_name: '',
+                first_name: formData.first_name || '',
+                last_name: formData.last_name || '',
                 address: '',
                 profile_picture: ''
             };
@@ -188,7 +191,8 @@ export default function AdminsPage() {
                     email: '',
                     phone_number: '',
                     role: 'Admin Applicant',
-                    password: ''
+                    first_name: '',
+                    last_name: ''
                 });
             } else {
                 throw new Error(data.error || 'Failed to create admin');
@@ -252,8 +256,8 @@ export default function AdminsPage() {
             email: formData.email,
             phone_number: formData.phone_number,
             role: formData.role,
-            first_name: selectedAdmin.first_name,
-            last_name: selectedAdmin.last_name,
+            first_name: formData.first_name || selectedAdmin.first_name,
+            last_name: formData.last_name || selectedAdmin.last_name,
             address: selectedAdmin.address,
             profile_picture: selectedAdmin.profile_picture,
         };
@@ -324,7 +328,8 @@ export default function AdminsPage() {
             email: '',
             phone_number: '',
             role: 'Admin Applicant',
-            password: ''
+            first_name: '',
+            last_name: ''
         });
         setIsAddModalOpen(true);
     };

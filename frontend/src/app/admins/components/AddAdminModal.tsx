@@ -2,13 +2,23 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 
+interface AdminFormData {
+  username: string;
+  email: string;
+  phone_number: string;
+  first_name?: string;
+  last_name?: string;
+  role: 'Current Admin' | 'Admin Applicant';
+  password?: string;
+}
+
 // Define the props for the AddAdminModal
 interface AddAdminModalProps {
   isOpen: boolean;
-  formData: any;
+  formData: AdminFormData;
   onClose: () => void;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: AdminFormData) => void;
 }
 
 export default function AddAdminModal({
@@ -30,7 +40,7 @@ export default function AddAdminModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Check if fields are taken
-  const checkFieldAvailability = async (formData: any) => {
+  const checkFieldAvailability = async (formData: AdminFormData) => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admins/validate`, {
         method: 'POST',
