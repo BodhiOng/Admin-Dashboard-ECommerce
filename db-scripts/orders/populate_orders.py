@@ -1,18 +1,18 @@
-import random
-import uuid
-from datetime import datetime, timedelta, timezone
-from pymongo import MongoClient
-from dotenv import load_dotenv
 import os
 import sys
 
-# Add the parent directory to Python path
+# Add the parent directory to Python path BEFORE any local imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from pymongo import MongoClient
+from dotenv import load_dotenv
+from datetime import datetime, timezone, timedelta
 from reference.malaysian_names import FIRST_NAMES, LAST_NAMES
+import random
+import uuid
 
-# Explicitly set the project root and .env path
-PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'
+# Get project root directory in a device-agnostic way
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 dotenv_path = os.path.join(PROJECT_ROOT, '.env')
 
 # Load environment variables from the specific path

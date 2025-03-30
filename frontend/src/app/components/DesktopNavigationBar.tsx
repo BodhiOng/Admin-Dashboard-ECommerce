@@ -15,7 +15,7 @@ interface AdminUser {
   first_name: string;
   last_name: string;
   phone_number?: string;
-  profile_picture?: string;
+  profile_picture: string;
   address?: string;
   role: string;
 }
@@ -79,10 +79,18 @@ export default function SidebarVertical({ className = '' }: { className?: string
   
   const username = admin?.username ? `@${admin.username}` : '';
 
-  // Generate avatar URL if no profile picture
-  const avatarUrl = admin?.profile_picture 
-    ? admin.profile_picture // The profile_picture from backend is already in base64 format with data URL prefix
-    : `https://eu.ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&size=250`;
+  // Convert base64 to data URL for the profile picture
+  const convertBase64ToImage = (base64String: string) => {
+    // Check if it's already a data URL
+    if (base64String.startsWith('data:')) {
+      return base64String;
+    }
+    // Convert base64 to data URL
+    return `data:image/jpeg;base64,${base64String}`;
+  };
+
+  // Generate avatar URL from base64 profile picture
+  const avatarUrl = admin ? convertBase64ToImage(admin.profile_picture) : '';
 
   const { logout } = useAuth();
 

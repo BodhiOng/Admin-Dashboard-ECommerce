@@ -1,20 +1,20 @@
 import os
-from pymongo import MongoClient
-import random
-import uuid
-from dotenv import load_dotenv
 import sys
-import requests
-import base64
-from datetime import datetime, timezone
 
-# Add the parent directory to Python path
+# Add the parent directory to Python path BEFORE any local imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import uuid
+import random
+import requests
+import base64
+from pymongo import MongoClient
+from dotenv import load_dotenv
+from datetime import datetime, timezone
 from reference.product_types import PRODUCT_TYPES
 
-# Explicitly set the project root and .env path
-PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'
+# Get project root directory in a device-agnostic way
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 dotenv_path = os.path.join(PROJECT_ROOT, '.env')
 
 # Load environment variables from the specific path

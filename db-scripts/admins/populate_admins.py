@@ -1,22 +1,21 @@
 import os
 import sys
+
+# Add parent directory to Python path BEFORE any local imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import uuid
 import random
 import bcrypt
-import requests
 import base64
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from datetime import datetime, timezone
-
-# Add parent directory to Python path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from reference.malaysian_names import FIRST_NAMES, LAST_NAMES
 from reference.malaysian_addresses import STREET_NAMES, STREET_TYPES, STATES_AND_DISTRICTS
 
-# Explicitly set the project root and .env path
-PROJECT_ROOT = r'C:\Projects\Admin-Dashboard-ECommerce'
+# Get project root directory in a device-agnostic way
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 dotenv_path = os.path.join(PROJECT_ROOT, '.env')
 
 # Load environment variables from the specific path
@@ -57,25 +56,14 @@ def hash_password(password):
     """Hash a password using bcrypt"""
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-def generate_profile_picture(first_name, last_name):
-    """Generate a profile picture using an avatar API"""
+def get_default_profile_picture():
+    """Get the default profile picture as base64 string"""
     try:
-        # Use UI Avatars API to generate avatar based on name
-        # Ref: https://ui-avatars.com/
-        full_name = f"{first_name} {last_name}".replace(' ', '+')
-        avatar_url = f"https://ui-avatars.com/api/?name={full_name}&background=random&color=random&rounded=true&bold=true"
-        
-        # Fetch the avatar
-        response = requests.get(avatar_url)
-        
-        if response.status_code == 200:
-            # Convert image to base64
-            return base64.b64encode(response.content).decode('utf-8')
-        
-        return None
-    
+        image_path = os.path.join(PROJECT_ROOT, 'db-scripts', 'reference', 'blank-profile-picture-973460_1280.jpg')
+        with open(image_path, 'rb') as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
     except Exception as e:
-        print(f"Error generating profile picture: {e}")
+        print(f"Error reading default profile picture: {e}")
         return None
 
 def generate_admins(num_admins=50):
@@ -95,7 +83,7 @@ def generate_admins(num_admins=50):
         'last_name': "None", 
         'address': "None", 
         'password': hash_password('password'),
-        'profile_picture': generate_profile_picture("Master", "Admin"),
+        'profile_picture': get_default_profile_picture(),
         'createdAt': datetime.now(timezone.utc),
         'updatedAt': datetime.now(timezone.utc),
         '__v': 0
@@ -121,7 +109,7 @@ def generate_admins(num_admins=50):
             'last_name': last_name,
             'address': generate_address(),
             'password': hash_password('password'),  # Default password
-            'profile_picture': generate_profile_picture(first_name, last_name),
+            'profile_picture': get_default_profile_picture(),
             'createdAt': current_time,
             'updatedAt': current_time,
             '__v': 0
