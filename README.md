@@ -1,6 +1,6 @@
 # E-Commerce Admin Dashboard
 
-A modern, responsive admin dashboard for e-commerce management built with Next.js, TypeScript, and Tailwind CSS.
+An admin dashboard for E-commerce developed for GETHIRED.MY 
 
 ## Features
 
