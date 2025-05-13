@@ -1,6 +1,6 @@
 # E-Commerce Admin Dashboard
 
-An admin dashboard for E-commerce developed for GETHIRED.MY 
+This is an admin dashboard for E-commerce developed to simulate the core functionalities of managing products, orders, and sales performance
 
 ## Features
 
